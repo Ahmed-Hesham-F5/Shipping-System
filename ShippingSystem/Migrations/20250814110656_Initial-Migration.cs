@@ -32,7 +32,6 @@ namespace ShippingSystem.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    ShipperId = table.Column<int>(type: "int", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -163,19 +162,17 @@ namespace ShippingSystem.Migrations
                 name: "Shippers",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CompanyName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     CompanyLink = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    TypeOfTheProduction = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    TypeOfTheProduction = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Shippers", x => x.Id);
+                    table.PrimaryKey("PK_Shippers", x => x.ShipperId);
                     table.ForeignKey(
-                        name: "FK_Shippers_AspNetUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
+                        name: "FK_Shippers_AspNetUsers_ShipperId",
+                        column: x => x.ShipperId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -191,7 +188,7 @@ namespace ShippingSystem.Migrations
                     City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false, defaultValue: "Egypt"),
                     Details = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
-                    ShipperId = table.Column<int>(type: "int", nullable: false)
+                    ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -200,7 +197,7 @@ namespace ShippingSystem.Migrations
                         name: "FK_Addresses_Shippers_ShipperId",
                         column: x => x.ShipperId,
                         principalTable: "Shippers",
-                        principalColumn: "Id",
+                        principalColumn: "ShipperId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -208,19 +205,17 @@ namespace ShippingSystem.Migrations
                 name: "Phones",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
                     PhoneNumber = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
-                    ShipperId = table.Column<int>(type: "int", nullable: false)
+                    ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Phones", x => x.Id);
+                    table.PrimaryKey("PK_Phones", x => new { x.ShipperId, x.PhoneNumber });
                     table.ForeignKey(
                         name: "FK_Phones_Shippers_ShipperId",
                         column: x => x.ShipperId,
                         principalTable: "Shippers",
-                        principalColumn: "Id",
+                        principalColumn: "ShipperId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -267,17 +262,6 @@ namespace ShippingSystem.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Phones_ShipperId",
-                table: "Phones",
-                column: "ShipperId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Shippers_ApplicationUserId",
-                table: "Shippers",
-                column: "ApplicationUserId",
-                unique: true);
         }
 
         /// <inheritdoc />

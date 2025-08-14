@@ -8,8 +8,7 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(EntityTypeBuilder<Phone> builder)
         {
-            builder.HasKey(p => p.Id);
-            builder.Property(p => p.Id).ValueGeneratedOnAdd();
+            builder.HasKey(p => new { p.ShipperId,p.PhoneNumber });
 
             builder.Property(p => p.PhoneNumber)
                 .HasColumnType("nvarchar")

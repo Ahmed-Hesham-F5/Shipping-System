@@ -179,8 +179,9 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar");
 
-                    b.Property<int>("ShipperId")
-                        .HasColumnType("int");
+                    b.Property<string>("ShipperId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Street")
                         .IsRequired()
@@ -249,9 +250,6 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ShipperId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -274,37 +272,21 @@ namespace ShippingSystem.Migrations
 
             modelBuilder.Entity("ShippingSystem.Models.Phone", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("ShipperId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar");
 
-                    b.Property<int>("ShipperId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShipperId");
+                    b.HasKey("ShipperId", "PhoneNumber");
 
                     b.ToTable("Phones", (string)null);
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.Shipper", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
+                    b.Property<string>("ShipperId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("CompanyLink")
@@ -320,10 +302,7 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId")
-                        .IsUnique();
+                    b.HasKey("ShipperId");
 
                     b.ToTable("Shippers", (string)null);
                 });
@@ -404,17 +383,12 @@ namespace ShippingSystem.Migrations
             modelBuilder.Entity("ShippingSystem.Models.Shipper", b =>
                 {
                     b.HasOne("ShippingSystem.Models.ApplicationUser", "ApplicationUser")
-                        .WithOne("Shipper")
-                        .HasForeignKey("ShippingSystem.Models.Shipper", "ApplicationUserId")
+                        .WithOne()
+                        .HasForeignKey("ShippingSystem.Models.Shipper", "ShipperId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
-                });
-
-            modelBuilder.Entity("ShippingSystem.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("Shipper");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.Shipper", b =>

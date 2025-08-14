@@ -8,8 +8,8 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(EntityTypeBuilder<Shipper> builder)
         {
-            builder.HasKey(s => s.Id);
-            builder.Property(s => s.Id).ValueGeneratedOnAdd();
+            builder.HasKey(s => s.ShipperId);
+            builder.Property(s=>s.ShipperId).ValueGeneratedNever(); 
 
             builder.Property(s => s.CompanyName)
                 .HasColumnType("nvarchar")
@@ -27,9 +27,8 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(255);
 
             builder.HasOne(s => s.ApplicationUser)
-                .WithOne(u => u.Shipper)
-                .HasPrincipalKey<ApplicationUser>(u => u.Id)
-                .HasForeignKey<Shipper>(s => s.ApplicationUserId)
+                .WithOne()
+                .HasForeignKey<Shipper>(s => s.ShipperId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 

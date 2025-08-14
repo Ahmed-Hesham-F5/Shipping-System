@@ -1,7 +1,9 @@
-using Microsoft.AspNetCore.Identity;
+    using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
+using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
+using ShippingSystem.Repositories;
 
 namespace ShippingSystem
 {
@@ -18,10 +20,7 @@ namespace ShippingSystem
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            // Register DbContext with SQL Server
-            builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+     
             // Register Identity services
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
@@ -39,7 +38,12 @@ namespace ShippingSystem
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-
+            // Register DbContext with SQL Server
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+         
+            
+            builder.Services.AddScoped<IShipperRepository, ShipperRepository>();
             // Cors policy
             builder.Services.AddCors(options =>
             {
@@ -48,6 +52,8 @@ namespace ShippingSystem
                                     .AllowAnyMethod()
                                     .AllowAnyHeader());
             });
+
+        
 
 
             var app = builder.Build();

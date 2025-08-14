@@ -23,7 +23,7 @@ namespace ShippingSystem.Models
         public string? Details { get; set; }
 
         [Required]
-        public int ShipperId { get; set; }
+        public string ShipperId { get; set; }
 
         [ForeignKey("ShipperId")]
         public Shipper Shipper { get; set; } = null!;

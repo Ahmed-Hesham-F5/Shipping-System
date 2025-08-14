@@ -5,8 +5,12 @@ namespace ShippingSystem.Models
 {
     public class Shipper
     {
-        [Key]
-        public int Id { get; set; }
+      
+        [Key, ForeignKey("ApplicationUser")]
+        public string ShipperId { get; set; } = null!;
+
+        public ApplicationUser ApplicationUser { get; set; } = null!;
+
 
         [Required]
         [MaxLength(100)]
@@ -19,11 +23,9 @@ namespace ShippingSystem.Models
         public string? TypeOfTheProduction { get; set; }
 
 
-        [Required]
-        public string ApplicationUserId { get; set; } = null!;
+     
 
-        [ForeignKey("ApplicationUserId")]
-        public ApplicationUser ApplicationUser { get; set; } = null!;
+   
 
         public ICollection<Phone>? Phones { get; set; } = new List<Phone>();
 

@@ -16,9 +16,6 @@ namespace ShippingSystem.Models
         [MaxLength(50)]
         public string LastName { get; set; } = null!;
 
-        public int? ShipperId { get; set; }
-
-        [ForeignKey("ShipperId")]
-        public Shipper? Shipper { get; set; }
+      
     }
 }
