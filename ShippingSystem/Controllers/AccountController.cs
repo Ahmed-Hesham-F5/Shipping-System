@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using ShippingSystem.Data;
 using ShippingSystem.DTO;
 using ShippingSystem.Interfaces;
-using ShippingSystem.Models;
 
 namespace ShippingSystem.Controllers
 {
@@ -14,9 +11,8 @@ namespace ShippingSystem.Controllers
     {
      
         private readonly IShipperRepository _shipperRepository;
-        public AccountController( IShipperRepository shipperRepository)
+        public AccountController(IShipperRepository shipperRepository)
         {
-       
             _shipperRepository = shipperRepository;
         }
 
@@ -27,9 +23,20 @@ namespace ShippingSystem.Controllers
             {
                 return BadRequest(ModelState);
             }
-            await _shipperRepository.adduser(registerDto);   
-         
-         
+
+            var existingUser = await _shipperRepository.IsEmailExist(registerDto.Email);
+            
+            if (existingUser)
+            {
+                return BadRequest(new { message = "Email already exists, Try another one" });
+            }
+
+            var addUserResult = await _shipperRepository.AddUser(registerDto);
+
+            if (!addUserResult)
+            {
+                return StatusCode(500, new { message = "User registration failed" });
+            }
 
             return Ok(new { message = "User registered successfully" });
         }

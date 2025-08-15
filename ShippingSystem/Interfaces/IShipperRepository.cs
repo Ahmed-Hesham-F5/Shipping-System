@@ -5,6 +5,7 @@ namespace ShippingSystem.Interfaces
 {
     public interface IShipperRepository
     {
-        public Task<bool> adduser(RegisterDto registerDto);
+        public Task<bool> AddUser(RegisterDto registerDto);
+        public Task<bool> IsEmailExist(string email);
     }
 }

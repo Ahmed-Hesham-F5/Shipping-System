@@ -5,10 +5,8 @@ namespace ShippingSystem.Models
 {
     public class Phone
     {
-
-
         [Required]
-        [MaxLength(15)]
+        [MaxLength(11)]
         public string PhoneNumber { get; set; } = null!;
 
         [Required]

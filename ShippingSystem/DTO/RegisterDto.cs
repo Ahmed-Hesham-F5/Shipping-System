@@ -14,11 +14,12 @@ namespace ShippingSystem.DTO
 
         [Required]
         [EmailAddress]
-        [MaxLength(256)]
+        [MaxLength(255)]
         public string Email { get; set; } = null!;
 
         [Required]
-        [MaxLength(15)]
+        [MaxLength(11, ErrorMessage = "Phone number must be 11 digits.")]
+        [RegularExpression(@"^(010|011|012|015)\d{8}$", ErrorMessage = "Phone number must start with 010, 011, 012 or 015.")]
         public string PhoneNumber { get; set; } = null!;
 
         [Required]
@@ -39,16 +40,16 @@ namespace ShippingSystem.DTO
         [MaxLength(50)]
         public string Country { get; set; } = "Egypt";
 
-        [MaxLength(255)]
+        [MaxLength(500)]
         public string? Details { get; set; }
 
         [MaxLength(255)]
-        public string? TypeOfTheProduction { get; set; }
+        public string? TypeOfProduction { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
         [MinLength(8)]
-        [MaxLength(100)]
+        [MaxLength(50)]
         public string Password { get; set; } = null!;
 
         [DataType(DataType.Password)]

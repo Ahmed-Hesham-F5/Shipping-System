@@ -21,7 +21,7 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(255)
                 .IsRequired(false);
 
-            builder.Property(s => s.TypeOfTheProduction)
+            builder.Property(s => s.TypeOfProduction)
                 .HasColumnType("nvarchar")
                 .IsRequired(false)
                 .HasMaxLength(255);

@@ -6,19 +6,20 @@ using ShippingSystem.Models;
 
 namespace ShippingSystem.Repositories
 {
-    public class ShipperRepository: IShipperRepository
+    public class ShipperRepository : IShipperRepository
     {
         private readonly AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        public ShipperRepository(AppDbContext context, UserManager<ApplicationUser> userManager) {
+        public ShipperRepository(AppDbContext context, UserManager<ApplicationUser> userManager)
+        {
             _context = context;
             _userManager = userManager;
         }
 
-        public async Task<bool> adduser(RegisterDto registerDto)
+        public async Task<bool> AddUser(RegisterDto registerDto)
         {
-         
-
+            try
+            {
                 var user = new ApplicationUser
                 {
                     UserName = registerDto.Email,
@@ -28,27 +29,25 @@ namespace ShippingSystem.Repositories
                     LastName = registerDto.LastName
                 };
 
-                var result = await _userManager.CreateAsync(user, registerDto.Password);
+                var creatingUserResult = await _userManager.CreateAsync(user, registerDto.Password);
 
-                if (!result.Succeeded)
-                {
-                    foreach (var error in result.Errors)
-                    {
-                       Console.WriteLine( error.Description);
-                    }
-                }
+                if (!creatingUserResult.Succeeded)
+                    return false;
 
-                await _userManager.AddToRoleAsync(user, "Shipper");
+                var addingRoleResult = await _userManager.AddToRoleAsync(user, "Shipper");
+
+                if (!addingRoleResult.Succeeded)
+                    return false;
 
                 var shipper = new Shipper
                 {
                     CompanyName = registerDto.CompanyName,
                     CompanyLink = registerDto.CompanyLink,
-                    TypeOfTheProduction = registerDto.TypeOfTheProduction,
+                    TypeOfProduction = registerDto.TypeOfProduction,
                     ShipperId = user.Id,
                 };
 
-                shipper.Addresses.Add(new Address
+                shipper?.Addresses?.Add(new Address
                 {
                     City = registerDto.City,
                     Street = registerDto.Street,
@@ -57,16 +56,29 @@ namespace ShippingSystem.Repositories
                     ShipperId = shipper.ShipperId
                 });
 
-                shipper.Phones.Add(new Phone
+                shipper?.Phones?.Add(new Phone
                 {
                     PhoneNumber = registerDto.PhoneNumber,
                     ShipperId = shipper.ShipperId
                 });
 
-                _context.Shippers.Add(shipper);
-                await _context.SaveChangesAsync();
+                _context.Shippers.Add(shipper!);
+                var saveResult = await _context.SaveChangesAsync();
+                
+                if (saveResult <= 0)
+                    return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
 
             return true;
+        }
+
+        public async Task<bool> IsEmailExist(string email)
+        {
+            return await _userManager.FindByEmailAsync(email) != null;
         }
     }
 }

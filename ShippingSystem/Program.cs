@@ -41,9 +41,10 @@ namespace ShippingSystem
             // Register DbContext with SQL Server
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-         
-            
+
+            // Register repositories
             builder.Services.AddScoped<IShipperRepository, ShipperRepository>();
+
             // Cors policy
             builder.Services.AddCors(options =>
             {
@@ -53,9 +54,7 @@ namespace ShippingSystem
                                     .AllowAnyHeader());
             });
 
-        
-
-
+            // Build the application
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
