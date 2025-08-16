@@ -19,8 +19,9 @@ namespace ShippingSystem.Models
         [MaxLength(255)]
         public string? TypeOfProduction { get; set; }
    
-        public ICollection<Phone>? Phones { get; set; } = new List<Phone>();
+        public ICollection<ShipperPhone>? Phones { get; set; } = new List<ShipperPhone>();
 
-        public ICollection<Address>? Addresses { get; set; } = new List<Address>();
+        public ICollection<ShipperAddress>? Addresses { get; set; } = new List<ShipperAddress>();
+        public ICollection<Shipment>? Shipments { get; set; } = new List<Shipment>();
     }
 }

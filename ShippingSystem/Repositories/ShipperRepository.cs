@@ -47,7 +47,7 @@ namespace ShippingSystem.Repositories
                     ShipperId = user.Id,
                 };
 
-                shipper?.Addresses?.Add(new Address
+                shipper?.Addresses?.Add(new ShipperAddress
                 {
                     City = registerDto.City,
                     Street = registerDto.Street,
@@ -56,7 +56,7 @@ namespace ShippingSystem.Repositories
                     ShipperId = shipper.ShipperId
                 });
 
-                shipper?.Phones?.Add(new Phone
+                shipper?.Phones?.Add(new ShipperPhone
                 {
                     PhoneNumber = registerDto.PhoneNumber,
                     ShipperId = shipper.ShipperId

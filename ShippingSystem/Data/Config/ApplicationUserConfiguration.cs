@@ -8,13 +8,15 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
-            builder.Property(u => u.FirstName)
-                .IsRequired()
-                .HasMaxLength(50);
+            builder.Property(applicationUser => applicationUser.FirstName)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(50)
+                .IsRequired();
 
-            builder.Property(u => u.LastName)
-                .IsRequired()
-                .HasMaxLength(50);
+            builder.Property(applicationUser => applicationUser.LastName)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(50)
+                .IsRequired();
         }
     }
 }

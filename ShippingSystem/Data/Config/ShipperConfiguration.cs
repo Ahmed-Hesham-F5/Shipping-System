@@ -8,39 +8,45 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(EntityTypeBuilder<Shipper> builder)
         {
-            builder.HasKey(s => s.ShipperId);
-            builder.Property(s=>s.ShipperId).ValueGeneratedNever(); 
+            builder.HasKey(shipper => shipper.ShipperId);
+            builder.Property(shipper => shipper.ShipperId).ValueGeneratedNever();   
 
-            builder.Property(s => s.CompanyName)
+            builder.Property(shipper => shipper.CompanyName)
                 .HasColumnType("nvarchar")
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(s => s.CompanyLink)
+            builder.Property(shipper => shipper.CompanyLink)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(255)
                 .IsRequired(false);
 
-            builder.Property(s => s.TypeOfProduction)
+            builder.Property(shipper => shipper.TypeOfProduction)
                 .HasColumnType("nvarchar")
                 .IsRequired(false)
                 .HasMaxLength(255);
 
-            builder.HasOne(s => s.ApplicationUser)
+            builder.HasOne(shipper => shipper.ApplicationUser)
                 .WithOne()
-                .HasForeignKey<Shipper>(s => s.ShipperId)
+                .HasForeignKey<Shipper>(shipper => shipper.ShipperId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(s => s.Phones)
-                .WithOne(p => p.Shipper)
-                .HasForeignKey(p => p.ShipperId)
+            builder.HasMany(shipper => shipper.Phones)
+                .WithOne(phone => phone.Shipper)
+                .HasForeignKey(phone => phone.ShipperId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(s => s.Addresses)
-                .WithOne(a => a.Shipper)
-                .HasForeignKey(a => a.ShipperId)
+            builder.HasMany(shipper => shipper.Addresses)
+                .WithOne(address => address.Shipper)
+                .HasForeignKey(address => address.ShipperId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(shipper => shipper.Shipments)
+                .WithOne(shipment => shipment.Shipper)
+                .HasForeignKey(shipment => shipment.ShipperId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
