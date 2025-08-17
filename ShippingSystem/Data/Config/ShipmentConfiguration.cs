@@ -41,7 +41,7 @@ namespace ShippingSystem.Data.Config
 
                 address.Property(a => a.Details)
                 .HasColumnType("nvarchar")
-                .HasMaxLength(255)
+                .HasMaxLength(500)
                 .IsRequired(false);
             });
 
@@ -50,17 +50,22 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(255)
                 .IsRequired();
 
-            builder.Property(shipment => shipment.TrackingNumber)
+            builder.Property(shipment => shipment.ShipmentDescription)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(500)
+                .IsRequired();
+
+            builder.Property(shipment => shipment.ShipmentTrackingNumber)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(30)
                 .IsRequired();
 
-            builder.Property(shipment => shipment.Notes)
+            builder.Property(shipment => shipment.ShipmentNotes)
                 .HasColumnType("nvarchar")
-                .HasMaxLength(255)
-                .IsRequired();
+                .HasMaxLength(500)
+                .IsRequired(false);
 
-            builder.HasIndex(shipment => shipment.TrackingNumber)
+            builder.HasIndex(shipment => shipment.ShipmentTrackingNumber)
                 .IsUnique();
 
             builder.HasMany(shipment => shipment.ShipmentStatuses)

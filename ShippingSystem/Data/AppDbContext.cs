@@ -8,8 +8,10 @@ namespace ShippingSystem.Data
     public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Shipper> Shippers { get; set; }
-        public DbSet<ShipperAddress> Addresses { get; set; }
-        public DbSet<ShipperPhone> Phones { get; set; }
+        public DbSet<ShipperAddress> ShipperAddresses { get; set; }
+        public DbSet<ShipperPhone> ShipperPhones { get; set; }
+        public DbSet<Shipment> Shipments { get; set; }
+        public DbSet<ShipmentStatus> ShipmentStatuses { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -29,6 +31,9 @@ namespace ShippingSystem.Data
                 .Where(e => e.Entity is ITimeStamped &&
                            (e.State == EntityState.Added || e.State == EntityState.Modified));
 
+            var now = DateTime.UtcNow;
+            now = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Utc);
+
             foreach (var entry in entries)
             {
                 var entity = (ITimeStamped)entry.Entity;
@@ -37,12 +42,12 @@ namespace ShippingSystem.Data
 
                 if (entry.State == EntityState.Added)
                 {
-                    createdProp.CurrentValue = DateTime.UtcNow;
-                    updatedProp.CurrentValue = DateTime.UtcNow;
+                    createdProp.CurrentValue = now;
+                    updatedProp.CurrentValue = now;
                 }
                 else if (entry.State == EntityState.Modified)
                 {
-                    updatedProp.CurrentValue = DateTime.UtcNow;
+                    updatedProp.CurrentValue = now;
                 }
             }
 

@@ -20,7 +20,7 @@ namespace ShippingSystem.Data.Config
             builder.Property(shipmentStatus => shipmentStatus.Notes)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(500)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.ToTable("ShipmentStatuses");
         }

@@ -16,7 +16,7 @@ namespace ShippingSystem.Repositories
             _userManager = userManager;
         }
 
-        public async Task<bool> AddUser(RegisterDto registerDto)
+        public async Task<bool> AddShipper(RegisterDto registerDto)
         {
             try
             {

@@ -12,8 +12,8 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250814223048_Add-Roles-Using-Seeding")]
-    partial class AddRolesUsingSeeding
+    [Migration("20250817052744_ConsolidatedMigration")]
+    partial class ConsolidatedMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -208,46 +208,6 @@ namespace ShippingSystem.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.Address", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar")
-                        .HasDefaultValue("Egypt");
-
-                    b.Property<string>("Details")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar");
-
-                    b.Property<string>("ShipperId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShipperId");
-
-                    b.ToTable("Addresses", (string)null);
-                });
-
             modelBuilder.Entity("ShippingSystem.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -270,12 +230,12 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -323,18 +283,103 @@ namespace ShippingSystem.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.Phone", b =>
+            modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
                 {
-                    b.Property<string>("ShipperId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(15)
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReceiverEmail")
+                        .IsRequired()
+                        .HasMaxLength(255)
                         .HasColumnType("nvarchar");
 
-                    b.HasKey("ShipperId", "PhoneNumber");
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar");
 
-                    b.ToTable("Phones", (string)null);
+                    b.Property<string>("ReceiverPhone")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("ShipmentDescription")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<decimal>("ShipmentHeight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ShipmentLength")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ShipmentNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("ShipmentTrackingNumber")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<decimal>("ShipmentWeight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ShipmentWidth")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ShipperId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipmentTrackingNumber")
+                        .IsUnique();
+
+                    b.HasIndex("ShipperId");
+
+                    b.ToTable("Shipments", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.ShipmentStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<int>("ShipmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipmentId");
+
+                    b.ToTable("ShipmentStatuses", (string)null);
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.Shipper", b =>
@@ -351,13 +396,67 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar");
 
-                    b.Property<string>("TypeOfTheProduction")
+                    b.Property<string>("TypeOfProduction")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar");
 
                     b.HasKey("ShipperId");
 
                     b.ToTable("Shippers", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.ShipperAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar")
+                        .HasDefaultValue("Egypt");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("ShipperId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipperId");
+
+                    b.ToTable("ShipperAddresses", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.ShipperPhone", b =>
+                {
+                    b.Property<string>("ShipperId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar");
+
+                    b.HasKey("ShipperId", "PhoneNumber");
+
+                    b.ToTable("ShipperPhones", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -411,26 +510,60 @@ namespace ShippingSystem.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.Address", b =>
+            modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
                 {
                     b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
-                        .WithMany("Addresses")
+                        .WithMany("Shipments")
                         .HasForeignKey("ShipperId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("ShippingSystem.Models.ReceiverAddress", "ReceiverAddress", b1 =>
+                        {
+                            b1.Property<int>("ShipmentId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Country")
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Details")
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("nvarchar");
+
+                            b1.HasKey("ShipmentId");
+
+                            b1.ToTable("Shipments");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ShipmentId");
+                        });
+
+                    b.Navigation("ReceiverAddress")
                         .IsRequired();
 
                     b.Navigation("Shipper");
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.Phone", b =>
+            modelBuilder.Entity("ShippingSystem.Models.ShipmentStatus", b =>
                 {
-                    b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
-                        .WithMany("Phones")
-                        .HasForeignKey("ShipperId")
+                    b.HasOne("ShippingSystem.Models.Shipment", "Shipment")
+                        .WithMany("ShipmentStatuses")
+                        .HasForeignKey("ShipmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Shipper");
+                    b.Navigation("Shipment");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.Shipper", b =>
@@ -444,11 +577,40 @@ namespace ShippingSystem.Migrations
                     b.Navigation("ApplicationUser");
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.ShipperAddress", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
+                        .WithMany("Addresses")
+                        .HasForeignKey("ShipperId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shipper");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.ShipperPhone", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
+                        .WithMany("Phones")
+                        .HasForeignKey("ShipperId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shipper");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
+                {
+                    b.Navigation("ShipmentStatuses");
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.Shipper", b =>
                 {
                     b.Navigation("Addresses");
 
                     b.Navigation("Phones");
+
+                    b.Navigation("Shipments");
                 });
 #pragma warning restore 612, 618
         }

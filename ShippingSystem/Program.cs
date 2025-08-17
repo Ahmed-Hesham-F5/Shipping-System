@@ -44,6 +44,7 @@ namespace ShippingSystem
 
             // Register repositories
             builder.Services.AddScoped<IShipperRepository, ShipperRepository>();
+            builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
 
             // Cors policy
             builder.Services.AddCors(options =>

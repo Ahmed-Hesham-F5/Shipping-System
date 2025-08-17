@@ -1,6 +1,6 @@
 ﻿namespace ShippingSystem.Enums
 {
-    public enum ShipmentStatus
+    public enum ShipmentStatusEnum
     {
         Pending,
         Canceled,

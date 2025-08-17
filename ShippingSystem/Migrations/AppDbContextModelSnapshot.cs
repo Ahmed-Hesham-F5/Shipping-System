@@ -291,17 +291,6 @@ namespace ShippingSystem.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Height")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Length")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar");
-
                     b.Property<string>("ReceiverEmail")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -317,30 +306,45 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar");
 
-                    b.Property<string>("ShipperId")
+                    b.Property<string>("ShipmentDescription")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar");
 
-                    b.Property<string>("TrackingNumber")
+                    b.Property<decimal>("ShipmentHeight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ShipmentLength")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ShipmentNotes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("ShipmentTrackingNumber")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar");
 
+                    b.Property<decimal>("ShipmentWeight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ShipmentWidth")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ShipperId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Weight")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Width")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("ShipperId");
-
-                    b.HasIndex("TrackingNumber")
+                    b.HasIndex("ShipmentTrackingNumber")
                         .IsUnique();
+
+                    b.HasIndex("ShipperId");
 
                     b.ToTable("Shipments", (string)null);
                 });
@@ -354,7 +358,6 @@ namespace ShippingSystem.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar");
 
@@ -527,7 +530,7 @@ namespace ShippingSystem.Migrations
                                 .HasColumnType("nvarchar");
 
                             b1.Property<string>("Details")
-                                .HasMaxLength(255)
+                                .HasMaxLength(500)
                                 .HasColumnType("nvarchar");
 
                             b1.Property<string>("Street")

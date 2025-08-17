@@ -28,12 +28,12 @@ namespace ShippingSystem.Controllers
             
             if (existingUser)
             {
-                return BadRequest(new { message = "Email already exists, Try another one" });
+                return BadRequest(new { message = "Email already registered!" });
             }
 
-            var addUserResult = await _shipperRepository.AddUser(registerDto);
+            var addShipperResult = await _shipperRepository.AddShipper(registerDto);
 
-            if (!addUserResult)
+            if (!addShipperResult)
             {
                 return StatusCode(500, new { message = "User registration failed" });
             }

@@ -1,26 +1,22 @@
-﻿using ShippingSystem.Interfaces;
+﻿using ShippingSystem.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ShippingSystem.Models
+namespace ShippingSystem.DTO
 {
-    public class Shipment : ITimeStamped
+    public class GetShipmentsDto
     {
-        [Key]
+        [Required]
         public int Id { get; set; }
-
         [Required]
         public string ShipperId { get; set; } = null!;
-        [ForeignKey("ShipperId")]
-        public Shipper Shipper { get; set; } = null!;
-        
         [Required, MaxLength(100)]
         public string ReceiverName { get; set; } = null!;
         [Required, MaxLength(11)]
         public string ReceiverPhone { get; set; } = null!;
 
         [Required]
-        public ReceiverAddress ReceiverAddress { get; set; } = null!;
+        public ReceiverAddressDto ReceiverAddress { get; set; } = null!;
 
         [Required, MaxLength(255)]
         public string ReceiverEmail { get; set; } = null!;
@@ -38,18 +34,14 @@ namespace ShippingSystem.Models
         public decimal ShipmentHeight { get; set; }
 
         [NotMapped]
-        public decimal ShipmentVolume => ShipmentLength * ShipmentWidth * ShipmentHeight;
+        public decimal ShipmentVolume { get; set; }
 
-        public DateTime CreatedAt { get; private set; }
-        public DateTime UpdatedAt { get; private set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
         [Required, MaxLength(30)]
-        public string ShipmentTrackingNumber { get; private set; } = 
-            $"SHIP-{DateTime.UtcNow:ddMMyyyy}-{Guid.NewGuid().ToString("N")[..12]}";
-        
-        [MaxLength(500)]
-        public string? ShipmentNotes { get; set; }
+        public string ShipmentTrackingNumber { get; set; } = null!;
 
-        public ICollection<ShipmentStatus> ShipmentStatuses { get; set; } = new List<ShipmentStatus>();
+        public ICollection<ShipmentStatusDto> ShipmentStatuses { get; set; } = new List<ShipmentStatusDto>();
     }
 }
