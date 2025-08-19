@@ -1,9 +1,14 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ShippingSystem.Data;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
 using ShippingSystem.Repositories;
+using ShippingSystem.Services;
+using ShippingSystem.Settings;
+using System.Text;
 
 namespace ShippingSystem
 {
@@ -20,7 +25,6 @@ namespace ShippingSystem
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-     
             // Register Identity services
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
@@ -42,9 +46,37 @@ namespace ShippingSystem
             builder.Services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // JWT class mapper
+            builder.Services.Configure<JWT>(builder.Configuration.GetSection("JWT"));
+
+            // Register JWT authentication
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(o =>
+            {
+                o.RequireHttpsMetadata = false;
+                o.SaveToken = false;
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = builder.Configuration["JWT:Issuer"],
+                    ValidAudience = builder.Configuration["JWT:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                        builder.Configuration["JWT:Key"]!
+                    ))
+                };
+            });
+
             // Register repositories
             builder.Services.AddScoped<IShipperRepository, ShipperRepository>();
             builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             // Cors policy
             builder.Services.AddCors(options =>
@@ -62,14 +94,14 @@ namespace ShippingSystem
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(); 
             }
 
             app.UseHttpsRedirection();
 
             app.UseCors("AllowAll");
 
-            app.UseAuthentication(); 
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

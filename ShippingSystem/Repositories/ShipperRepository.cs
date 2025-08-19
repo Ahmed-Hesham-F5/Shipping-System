@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using ShippingSystem.Data;
 using ShippingSystem.DTO;
+using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
 
@@ -16,7 +17,7 @@ namespace ShippingSystem.Repositories
             _userManager = userManager;
         }
 
-        public async Task<bool> AddShipper(RegisterDto registerDto)
+        public async Task<bool> AddShipperAsync(RegisterDto registerDto)
         {
             try
             {
@@ -24,17 +25,18 @@ namespace ShippingSystem.Repositories
                 {
                     UserName = registerDto.Email,
                     Email = registerDto.Email,
-                    PhoneNumber = registerDto.PhoneNumber,
                     FirstName = registerDto.FirstName,
                     LastName = registerDto.LastName
                 };
 
-                var creatingUserResult = await _userManager.CreateAsync(user, registerDto.Password);
+                var creatingUserResult =
+                    await _userManager.CreateAsync(user, registerDto.Password);
 
                 if (!creatingUserResult.Succeeded)
                     return false;
 
-                var addingRoleResult = await _userManager.AddToRoleAsync(user, "Shipper");
+                var addingRoleResult =
+                    await _userManager.AddToRoleAsync(user, RolesEnum.Shipper.ToString());
 
                 if (!addingRoleResult.Succeeded)
                     return false;
@@ -64,7 +66,7 @@ namespace ShippingSystem.Repositories
 
                 _context.Shippers.Add(shipper!);
                 var saveResult = await _context.SaveChangesAsync();
-                
+
                 if (saveResult <= 0)
                     return false;
             }
@@ -76,7 +78,7 @@ namespace ShippingSystem.Repositories
             return true;
         }
 
-        public async Task<bool> IsEmailExist(string email)
+        public async Task<bool> IsEmailExistAsync(string email)
         {
             return await _userManager.FindByEmailAsync(email) != null;
         }

@@ -5,7 +5,7 @@ namespace ShippingSystem.Interfaces
 {
     public interface IShipmentRepository
     {
-        public Task<bool> AddShipment(string userId, ShipmentDto shipmentDto);
-        public Task<List<GetShipmentsDto>> GetAllShipments(string userId);
+        Task<bool> AddShipment(string userId, ShipmentDto shipmentDto);
+        Task<List<GetShipmentsDto>> GetAllShipments(string userId);
     }
 }

@@ -21,7 +21,7 @@ namespace ShippingSystem.Repositories
 
         public async Task<bool> AddShipment(string userId, ShipmentDto shipmentDto)
         {
-            if (_userManager.FindByIdAsync(userId) == null)
+            if (await _userManager.FindByIdAsync(userId) == null)
                 return false;
 
             var shipment = new Shipment

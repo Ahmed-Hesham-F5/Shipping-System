@@ -4,17 +4,13 @@ namespace ShippingSystem.DTO
 {
     public class RegisterDto
     {
-        [Required]
-        [MaxLength(50)]
+        [Required, MaxLength(50)]
         public string FirstName { get; set; } = null!;
 
-        [Required]
-        [MaxLength(50)]
+        [Required, MaxLength(50)]
         public string LastName { get; set; } = null!;
 
-        [Required]
-        [EmailAddress]
-        [MaxLength(255)]
+        [Required, EmailAddress, MaxLength(255)]
         public string Email { get; set; } = null!;
 
         [Required]
@@ -22,19 +18,16 @@ namespace ShippingSystem.DTO
         [RegularExpression(@"^(010|011|012|015)\d{8}$", ErrorMessage = "Phone number must start with 010, 011, 012 or 015.")]
         public string PhoneNumber { get; set; } = null!;
 
-        [Required]
-        [MaxLength(100)]
+        [Required, MaxLength(100)]
         public string CompanyName { get; set; } = null!;
 
         [MaxLength(255)]
         public string? CompanyLink { get; set; }
 
-        [Required]
-        [MaxLength(50)]
+        [Required, MaxLength(50)]
         public string City { get; set; } = null!;
 
-        [Required]
-        [MaxLength(100)]
+        [Required, MaxLength(100)]
         public string Street { get; set; } = null!;
 
         [MaxLength(50)]
@@ -46,10 +39,7 @@ namespace ShippingSystem.DTO
         [MaxLength(255)]
         public string? TypeOfProduction { get; set; }
 
-        [Required]
-        [DataType(DataType.Password)]
-        [MinLength(8)]
-        [MaxLength(50)]
+        [Required, DataType(DataType.Password), MinLength(8), MaxLength(50)]
         public string Password { get; set; } = null!;
 
         [DataType(DataType.Password)]
