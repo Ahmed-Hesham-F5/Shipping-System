@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ShippingSystem.Data;
 using ShippingSystem.Interfaces;
+using ShippingSystem.Midleware;
 using ShippingSystem.Models;
 using ShippingSystem.Repositories;
 using ShippingSystem.Services;
@@ -61,6 +62,7 @@ namespace ShippingSystem
                 o.SaveToken = false;
                 o.TokenValidationParameters = new TokenValidationParameters
                 {
+                    RequireSignedTokens = true,
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
@@ -87,6 +89,7 @@ namespace ShippingSystem
                                     .AllowAnyHeader());
             });
 
+
             // Build the application
             var app = builder.Build();
 
@@ -96,8 +99,14 @@ namespace ShippingSystem
                 app.UseSwagger();
                 app.UseSwaggerUI(); 
             }
+           
+            //2.GLOBAL SECURITY HEADERS
 
+            app.UseNoSniffHeader();
+            app.HeaderChecker();
+            
             app.UseHttpsRedirection();
+
 
             app.UseCors("AllowAll");
 
