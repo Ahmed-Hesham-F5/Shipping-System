@@ -17,5 +17,8 @@ namespace ShippingSystem.Models
 
         [MaxLength(500)]
         public string? Details { get; set; }
+
+        [MaxLength(255), Url]
+        public string? GoogleMapAddressLink { get; set; }
     }
 }

@@ -21,7 +21,7 @@ namespace ShippingSystem.DTO
         [Required, MaxLength(100)]
         public string CompanyName { get; set; } = null!;
 
-        [MaxLength(255)]
+        [MaxLength(255), Url]
         public string? CompanyLink { get; set; }
 
         [Required, MaxLength(50)]

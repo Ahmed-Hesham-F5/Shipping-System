@@ -8,7 +8,7 @@ namespace ShippingSystem.DTO
         public string ReceiverName { get; set; } = null!;
         [Required, MaxLength(11)]
         public string ReceiverPhone { get; set; } = null!;
-        [Required, MaxLength(255)]
+        [Required, MaxLength(255), EmailAddress]
         public string ReceiverEmail { get; set; } = null!;
         [Required, MaxLength(100)]
         public string Street { get; set; } = null!;

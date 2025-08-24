@@ -54,7 +54,7 @@ namespace ShippingSystem.Repositories
 
 
             var shipmentStatus = ShipmentStatus.Create(shipment.Id,
-                ShipmentStatusEnum.Pending.ToString(), null);
+                ShipmentStatusEnum.Pending.ToString(), "تم إنشاء الشحنة");
 
             _context.ShipmentStatuses.Add(shipmentStatus);
 
