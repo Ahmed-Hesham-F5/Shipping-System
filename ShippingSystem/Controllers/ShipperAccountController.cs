@@ -9,25 +9,30 @@ namespace ShippingSystem.Controllers
     [ApiController]
     public class ShipperAccountController : ControllerBase
     {
+        private readonly IShipperRepository _shipperRepository;
+
         private readonly IAuthService _authService;
 
-        public ShipperAccountController(IAuthService authService)
+        public ShipperAccountController(IShipperRepository shipperRepository,IAuthService authService)
         {
-            _authService = authService;
+            _shipperRepository = shipperRepository;
+              _authService = authService;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] ShipperRegisterDto ShipperRegisterDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _authService.RegisterAsync(registerDto);
+          //  var result = await _authService.RegisterAsync(ShipperRegisterDto);
+            var result = await _shipperRepository.AddShipperAsync(ShipperRegisterDto);
 
-            if (!result.IsAuthenticated)
-                return BadRequest(result.Message);
+            if (!result.IsAuthenticated)    
+                return BadRequest(result);
+            
 
-            return Ok(new {result.Token, result.ExpiresOn });
+            return Ok(result);
         }
 
         [HttpPost("login")]
@@ -39,9 +44,9 @@ namespace ShippingSystem.Controllers
             var result = await _authService.LoginAsync(loginDto);
 
             if (!result.IsAuthenticated)
-                return BadRequest(result.Message);
+                return BadRequest(result);
 
-            return Ok(new { result.Token, result.ExpiresOn });
+            return Ok(result);
         }
     }
 }

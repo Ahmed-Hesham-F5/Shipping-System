@@ -2,7 +2,7 @@
 
 namespace ShippingSystem.DTO
 {
-    public class RegisterDto
+    public class ShipperRegisterDto
     {
         [Required, MaxLength(50)]
         public string FirstName { get; set; } = null!;

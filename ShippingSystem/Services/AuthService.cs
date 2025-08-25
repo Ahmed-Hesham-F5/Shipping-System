@@ -15,43 +15,12 @@ namespace ShippingSystem.Services
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IShipperRepository _shipperRepository;
         private readonly IOptions<JWT> _jwt;
 
-        public AuthService(UserManager<ApplicationUser> userManager,
-            IShipperRepository shipperRepository, IOptions<JWT> jwt)
+        public AuthService(UserManager<ApplicationUser> userManager, IOptions<JWT> jwt)
         {
             _userManager = userManager;
-            _shipperRepository = shipperRepository;
             _jwt = jwt;
-        }
-
-        public async Task<AuthResponse> RegisterAsync(RegisterDto registerDto)
-        {
-            if (await _shipperRepository.IsEmailExistAsync(registerDto.Email))
-                return new AuthResponse { Message = "Email is already registered!" };
-
-            var isShipperAdded = await _shipperRepository.AddShipperAsync(registerDto);
-
-            if (!isShipperAdded)
-                return new AuthResponse { Message = "Failed to register shipper!" };
-
-            var user = await _userManager.FindByEmailAsync(registerDto.Email);
-
-            var userRoles = await _userManager.GetRolesAsync(user!);
-
-            var jwtSecurityToken = await CreateJwtToken(user!);
-
-            return new AuthResponse
-            {
-                UserName = user!.UserName!,
-                Email = user!.Email!,
-                IsAuthenticated = true,
-                Message = "User registered successfully!",
-                Roles = userRoles.ToList(),
-                Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                ExpiresOn = jwtSecurityToken.ValidTo
-            };
         }
 
         public async Task<AuthResponse> LoginAsync(LoginDto loginDto)
@@ -104,7 +73,7 @@ namespace ShippingSystem.Services
                 issuer: _jwt.Value.Issuer,
                 audience: _jwt.Value.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(_jwt.Value.DurationInMinutes),
+                expires: DateTime.Now.AddMinutes(_jwt.Value.DurationInMinutesForAccessToken),
                 signingCredentials: signingCredentials);
 
             return jwtSecurityToken;

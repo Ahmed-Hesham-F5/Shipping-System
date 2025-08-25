@@ -1,4 +1,6 @@
-﻿namespace ShippingSystem.Midleware
+﻿using ShippingSystem.Response;
+
+namespace ShippingSystem.Midleware
 {
     public static class SecurityHeaderExtensionsMiddlware
     {
@@ -26,8 +28,10 @@
            if (!context.Request.Headers.ContainsKey("X-Client-Key"))
            {
                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-               await context.Response.WriteAsync("Missing X-Client-Key header.");
-               return; // stop pipeline
+               await context.Response.WriteAsJsonAsync(new ApiResponse<string>
+                   (false, StatusCodes.Status400BadRequest,message: "Missing X-Client-Key header."));
+
+               return ; // stop pipeline
            }
 
            // Optionally: validate the header value here (length, HMAC, etc.)
