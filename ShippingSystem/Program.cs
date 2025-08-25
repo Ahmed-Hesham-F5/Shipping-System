@@ -102,7 +102,6 @@ namespace ShippingSystem
             }
            
             //2.GLOBAL SECURITY HEADERS
-
             app.UseNoSniffHeader();
             app.HeaderChecker();
             

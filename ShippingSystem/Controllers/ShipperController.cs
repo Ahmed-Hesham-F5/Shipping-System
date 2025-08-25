@@ -10,17 +10,17 @@ namespace ShippingSystem.Controllers
     [Authorize(Roles = "Shipper")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ShipmentsController : ControllerBase
+    public class ShipperController : ControllerBase
     {
 
         private readonly IShipmentRepository _shipmentRepository;
 
-        public ShipmentsController(IShipmentRepository shipmentRepository)
+        public ShipperController(IShipmentRepository shipmentRepository)
         {
             _shipmentRepository = shipmentRepository;
         }
 
-        [HttpPost("add")]
+        [HttpPost("addShipment")]
         public async Task<IActionResult> AddShipment([FromBody] ShipmentDto shipmentDto)
         {
             if (!ModelState.IsValid)

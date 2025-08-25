@@ -26,7 +26,6 @@ namespace ShippingSystem.Repositories
 
         public async Task<AuthResponse> AddShipperAsync(ShipperRegisterDto ShipperRegisterDto)
         {
-
             AuthResponse auth = new AuthResponse();
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -44,7 +43,7 @@ namespace ShippingSystem.Repositories
 
                 if (!creatingUserResult.Succeeded)
                     throw new Exception(creatingUserResult.Errors.FirstOrDefault()?.Description);
-                 
+
                 var addingRoleResult =
                     await _userManager.AddToRoleAsync(user, RolesEnum.Shipper.ToString());
 
@@ -84,7 +83,7 @@ namespace ShippingSystem.Repositories
                 return await _authService.LoginAsync(new LoginDto
                 {
                     Email = ShipperRegisterDto.Email,
-                    Password= ShipperRegisterDto.Password
+                    Password = ShipperRegisterDto.Password
                 });
             }
             catch (Exception e)
@@ -95,13 +94,9 @@ namespace ShippingSystem.Repositories
                 auth.Message = e.Message;
                 return auth;
             }
-            
-
         }
 
-        public async Task<bool> IsEmailExistAsync(string email)
-        {
-            return await _userManager.FindByEmailAsync(email) != null;
-        }
+        public async Task<bool> IsEmailExistAsync(string email) =>
+            await _userManager.FindByEmailAsync(email) != null;
     }
 }
