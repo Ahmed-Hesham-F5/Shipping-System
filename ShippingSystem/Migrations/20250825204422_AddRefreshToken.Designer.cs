@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShippingSystem.Data;
 
@@ -11,9 +12,11 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250825204422_AddRefreshToken")]
+    partial class AddRefreshToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -312,7 +315,7 @@ namespace ShippingSystem.Migrations
                     b.HasIndex("Token")
                         .IsUnique();
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
@@ -577,7 +580,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Shipment.ReceiverAddress#ShippingSystem.Models.ReceiverAddress", "ReceiverAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.ReceiverAddress", "ReceiverAddress", b1 =>
                         {
                             b1.Property<int>("ShipmentId")
                                 .HasColumnType("int");
@@ -606,7 +609,7 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("ShipmentId");
 
-                            b1.ToTable("Shipments", (string)null);
+                            b1.ToTable("Shipments");
 
                             b1.WithOwner()
                                 .HasForeignKey("ShipmentId");

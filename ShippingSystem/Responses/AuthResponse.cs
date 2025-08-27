@@ -1,4 +1,6 @@
-﻿namespace ShippingSystem.Responses
+﻿using System.Text.Json.Serialization;
+
+namespace ShippingSystem.Responses
 {
     public class AuthResponse
     {
@@ -9,5 +11,11 @@
         public List<string> Roles { get; set; }
         public string Token { get; set; }
         public DateTime ExpiresOn { get; set; }
+
+//        [JsonIgnore]
+        public string? RefreshToken { get; set; }
+
+        public DateTime RefreshTokenExpiration { get; set; }
+        //public static AuthResponse Fail(string Message) => 
     }
 }

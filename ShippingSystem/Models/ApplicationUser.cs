@@ -13,7 +13,7 @@ namespace ShippingSystem.Models
         public string LastName { get; set; } = null!;
 
         public AccountStatus AccountStatus { get; set; } = AccountStatus.Active;
-    //    public ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();
+        public ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();
 
     }
 }

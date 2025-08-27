@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using ShippingSystem.Data;
 using ShippingSystem.DTO;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
@@ -8,53 +9,23 @@ using ShippingSystem.Responses;
 using ShippingSystem.Settings;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ShippingSystem.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IOptions<JWT> _jwt;
+        private readonly AppDbContext _dbContext;
 
-        public AuthService(UserManager<ApplicationUser> userManager, IOptions<JWT> jwt)
+        public AuthService(IOptions<JWT> jwt,AppDbContext dbContext)
         {
-            _userManager = userManager;
             _jwt = jwt;
+            _dbContext = dbContext;
         }
-
-        public async Task<AuthResponse> LoginAsync(LoginDto loginDto)
+        public void CreateJwtToken(ApplicationUser user, IList<Claim> Userclaims,out string Token, out DateTime ExpiresOn)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
-
-            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
-                return new AuthResponse { Message = "Email or password is incorrect!" };
-
-            var jwtSecurityToken = await CreateJwtToken(user);
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-
-            return new AuthResponse
-            {
-                UserName = user.UserName!,
-                Email = user.Email!,
-                IsAuthenticated = true,
-                Message = "User logged in successfully!",
-                Roles = userRoles.ToList(),
-                Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                ExpiresOn = jwtSecurityToken.ValidTo
-            };
-        }
-
-        private async Task<JwtSecurityToken> CreateJwtToken(ApplicationUser user)
-        {
-            var userClaims = await _userManager.GetClaimsAsync(user);
-            var roles = await _userManager.GetRolesAsync(user);
-            var roleClaims = new List<Claim>();
-
-            foreach (var role in roles)
-                roleClaims.Add(new Claim("roles", role));
-
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id!),
@@ -63,12 +34,11 @@ namespace ShippingSystem.Services
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName!),
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             }
-            .Union(userClaims)
-            .Union(roleClaims);
+            .Union(Userclaims);
 
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Value.Key));
             var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-
+  
             var jwtSecurityToken = new JwtSecurityToken(
                 issuer: _jwt.Value.Issuer,
                 audience: _jwt.Value.Audience,
@@ -76,7 +46,20 @@ namespace ShippingSystem.Services
                 expires: DateTime.Now.AddMinutes(_jwt.Value.DurationInMinutesForAccessToken),
                 signingCredentials: signingCredentials);
 
-            return jwtSecurityToken;
+            ExpiresOn = jwtSecurityToken.ValidTo;
+            Token= new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+        }
+        public RefreshToken GenerateRefreshToken()
+        {
+            string _token;
+            _token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+            
+            return new RefreshToken
+            {
+                Token = _token,
+                ExpiresOn = DateTime.UtcNow.AddMinutes(_jwt.Value.DurationInMinutesForRefreshToken),
+                CreatedOn = DateTime.UtcNow
+            };
         }
     }
 }

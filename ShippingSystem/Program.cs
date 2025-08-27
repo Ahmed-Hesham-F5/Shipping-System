@@ -80,6 +80,7 @@ namespace ShippingSystem
             builder.Services.AddScoped<IShipperRepository, ShipperRepository>();
             builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             // Cors policy
             builder.Services.AddCors(options =>

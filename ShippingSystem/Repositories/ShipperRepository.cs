@@ -6,6 +6,8 @@ using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
 using ShippingSystem.Responses;
+using ShippingSystem.Results;
+using System.Data;
 using System.Transactions;
 
 namespace ShippingSystem.Repositories
@@ -13,20 +15,16 @@ namespace ShippingSystem.Repositories
     public class ShipperRepository : IShipperRepository
     {
         private readonly AppDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IAuthService _authService;
+        private readonly IUserRepository _userRepository;
 
-        public ShipperRepository(AppDbContext context, UserManager<ApplicationUser> userManager,
-            IAuthService authService)
+        public ShipperRepository(AppDbContext context,IUserRepository userRepository)
         {
             _context = context;
-            _userManager = userManager;
-            _authService = authService;
+            _userRepository = userRepository;
         }
 
-        public async Task<AuthResponse> AddShipperAsync(ShipperRegisterDto ShipperRegisterDto)
+        public async Task<ValueOperationResult<AuthResponse>> AddShipperAsync(ShipperRegisterDto ShipperRegisterDto)
         {
-            AuthResponse auth = new AuthResponse();
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -37,19 +35,14 @@ namespace ShippingSystem.Repositories
                     FirstName = ShipperRegisterDto.FirstName,
                     LastName = ShipperRegisterDto.LastName
                 };
+                var CreateUserResult= await _userRepository.CreateUserAsync(user, ShipperRegisterDto.Password);
+                if (!CreateUserResult.Success)
+                    return ValueOperationResult<AuthResponse>.Fail(CreateUserResult.ErrorMessage);
 
-                var creatingUserResult =
-                    await _userManager.CreateAsync(user, ShipperRegisterDto.Password);
-
-                if (!creatingUserResult.Succeeded)
-                    throw new Exception(creatingUserResult.Errors.FirstOrDefault()?.Description);
-
-                var addingRoleResult =
-                    await _userManager.AddToRoleAsync(user, RolesEnum.Shipper.ToString());
-
-                if (!addingRoleResult.Succeeded)
-                    throw new Exception(addingRoleResult.Errors.FirstOrDefault()?.Description);
-
+                var addShipperRoleResult = await _userRepository.AddRoleAsync(user, RolesEnum.Shipper);
+                if (!addShipperRoleResult.Success)
+                    return ValueOperationResult<AuthResponse>.Fail(addShipperRoleResult.ErrorMessage);
+             
                 var shipper = new Shipper
                 {
                     CompanyName = ShipperRegisterDto.CompanyName,
@@ -77,26 +70,22 @@ namespace ShippingSystem.Repositories
                 var saveResult = await _context.SaveChangesAsync();
 
                 if (saveResult <= 0)
-                    throw new Exception("Bad request");
-
+                    return ValueOperationResult<AuthResponse>.Fail("Bad request");
+           
                 await transaction.CommitAsync();
-                return await _authService.LoginAsync(new LoginDto
-                {
-                    Email = ShipperRegisterDto.Email,
-                    Password = ShipperRegisterDto.Password
-                });
+                return ValueOperationResult<AuthResponse>.Ok(await _userRepository.GetUserTokensAsync(user));
             }
             catch (Exception e)
             {
                 await transaction.RollbackAsync();
-
-                auth.IsAuthenticated = false;
-                auth.Message = e.Message;
-                return auth;
+                Console.WriteLine(e.Message.ToString());
+                return ValueOperationResult<AuthResponse>.Fail("Bad request");
             }
         }
 
-        public async Task<bool> IsEmailExistAsync(string email) =>
-            await _userManager.FindByEmailAsync(email) != null;
+
+
+
+
     }
 }
