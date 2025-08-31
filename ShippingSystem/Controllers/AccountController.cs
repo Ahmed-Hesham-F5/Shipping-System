@@ -30,6 +30,7 @@ namespace ShippingSystem.Controllers
 
             if (!result.Success)
                 return BadRequest(result.ErrorMessage);
+
             SetRefreshTokenInCookie(result.Value.RefreshToken, result.Value.RefreshTokenExpiration);
 
             return Ok(result);

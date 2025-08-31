@@ -72,7 +72,7 @@ namespace ShippingSystem
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                         builder.Configuration["JWT:Key"]!
                     )),
-                    ClockSkew=TimeSpan.Zero
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 
@@ -86,9 +86,12 @@ namespace ShippingSystem
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll",
-                    policy => policy.AllowAnyOrigin()
+                    policy =>
+                    {
+                        policy.AllowAnyOrigin()
                                     .AllowAnyMethod()
-                                    .AllowAnyHeader());
+                                    .AllowAnyHeader();
+                    });
             });
 
 
@@ -99,13 +102,13 @@ namespace ShippingSystem
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI(); 
+                app.UseSwaggerUI();
             }
-           
+
             //2.GLOBAL SECURITY HEADERS
             app.UseNoSniffHeader();
             app.HeaderChecker();
-            
+
             app.UseHttpsRedirection();
 
 

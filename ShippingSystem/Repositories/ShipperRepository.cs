@@ -82,10 +82,5 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<AuthResponse>.Fail("Bad request");
             }
         }
-
-
-
-
-
     }
 }
