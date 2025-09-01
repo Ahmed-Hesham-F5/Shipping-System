@@ -7,8 +7,6 @@ using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
 using ShippingSystem.Responses;
 using ShippingSystem.Results;
-using System.Data;
-using System.Transactions;
 
 namespace ShippingSystem.Repositories
 {
@@ -35,11 +33,14 @@ namespace ShippingSystem.Repositories
                     FirstName = ShipperRegisterDto.FirstName,
                     LastName = ShipperRegisterDto.LastName
                 };
+
                 var CreateUserResult= await _userRepository.CreateUserAsync(user, ShipperRegisterDto.Password);
+
                 if (!CreateUserResult.Success)
                     return ValueOperationResult<AuthResponse>.Fail(CreateUserResult.ErrorMessage);
 
                 var addShipperRoleResult = await _userRepository.AddRoleAsync(user, RolesEnum.Shipper);
+
                 if (!addShipperRoleResult.Success)
                     return ValueOperationResult<AuthResponse>.Fail(addShipperRoleResult.ErrorMessage);
              
@@ -73,6 +74,7 @@ namespace ShippingSystem.Repositories
                     return ValueOperationResult<AuthResponse>.Fail("Bad request");
            
                 await transaction.CommitAsync();
+
                 return ValueOperationResult<AuthResponse>.Ok(await _userRepository.GetUserTokensAsync(user));
             }
             catch (Exception e)

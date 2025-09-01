@@ -14,16 +14,15 @@ namespace ShippingSystem.DTO
         public string ReceiverName { get; set; } = null!;
         [Required, MaxLength(11)]
         public string ReceiverPhone { get; set; } = null!;
-
+        [MaxLength(11)]
+        public string? ReceiverAdditionalPhone { get; set; }
         [Required]
         public ReceiverAddressDto ReceiverAddress { get; set; } = null!;
-
         [Required, MaxLength(255)]
         public string ReceiverEmail { get; set; } = null!;
 
         [Required, MaxLength(500)]
         public string ShipmentDescription { get; set; } = null!;
-
         [Required]
         public decimal ShipmentWeight { get; set; }
         [Required]
@@ -32,9 +31,14 @@ namespace ShippingSystem.DTO
         public decimal ShipmentWidth { get; set; }
         [Required]
         public decimal ShipmentHeight { get; set; }
-
-        [NotMapped]
         public decimal ShipmentVolume { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0.")]
+        public int Quantity { get; set; }
+        public string? ShipmentNotes { get; set; }
+        public bool CashOnDeliveryEnabled { get; set; }
+        public bool OpenPackageOnDeliveryEnabled { get; set; }
+        public bool ExpressDeliveryEnabled { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

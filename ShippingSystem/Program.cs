@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using ShippingSystem.Data;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Midleware;
@@ -82,6 +83,36 @@ namespace ShippingSystem
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+                // Define a custom header (example: X-Custom-Header)
+                c.AddSecurityDefinition("X-Client-Key", new OpenApiSecurityScheme
+                {
+                    Name = "X-Client-Key",
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header,
+                    Description = "Enter your custom header value"
+                });
+
+                // Apply it globally
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "X-Client-Key"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
+                });
+            });
+
             // Cors policy
             builder.Services.AddCors(options =>
             {
@@ -102,7 +133,10 @@ namespace ShippingSystem
             //if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                });
             }
 
             //2.GLOBAL SECURITY HEADERS
