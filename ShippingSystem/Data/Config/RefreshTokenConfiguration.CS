@@ -14,7 +14,6 @@ namespace ShippingSystem.Data.Config
             builder.Property(o=>o.Id).ValueGeneratedOnAdd();
 
             builder.HasIndex(o => o.Token).IsUnique();
-
         }
     }
 }

@@ -32,12 +32,6 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(500)
                 .IsRequired(false);
 
-            builder.HasOne(shipperAddress => shipperAddress.Shipper)
-                .WithMany(shipper => shipper.Addresses)
-                .HasForeignKey(shipperAddress => shipperAddress.ShipperId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.ToTable("ShipperAddresses");
         }
     }

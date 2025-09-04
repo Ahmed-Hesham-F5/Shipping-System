@@ -17,7 +17,7 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(100);
 
             builder.Property(shipper => shipper.CompanyLink)
-                .HasColumnType("nvarchar")
+                .HasColumnType("varchar")
                 .HasMaxLength(255)
                 .IsRequired(false);
 

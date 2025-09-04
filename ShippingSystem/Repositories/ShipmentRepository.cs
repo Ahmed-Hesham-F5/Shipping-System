@@ -69,6 +69,7 @@ namespace ShippingSystem.Repositories
         public async Task<List<GetShipmentsDto>> GetAllShipments(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
                 return new List<GetShipmentsDto>();
 

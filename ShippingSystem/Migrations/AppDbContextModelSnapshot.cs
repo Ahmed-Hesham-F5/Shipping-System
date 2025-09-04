@@ -312,7 +312,7 @@ namespace ShippingSystem.Migrations
                     b.HasIndex("Token")
                         .IsUnique();
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
@@ -340,7 +340,7 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("ReceiverAdditionalPhone")
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
+                        .HasColumnType("varchar");
 
                     b.Property<string>("ReceiverEmail")
                         .IsRequired()
@@ -355,7 +355,7 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("ReceiverPhone")
                         .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar");
+                        .HasColumnType("varchar");
 
                     b.Property<string>("ShipmentDescription")
                         .IsRequired()
@@ -437,7 +437,7 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("CompanyLink")
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar");
+                        .HasColumnType("varchar");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
@@ -500,7 +500,7 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar");
+                        .HasColumnType("varchar");
 
                     b.HasKey("ShipperId", "PhoneNumber");
 
@@ -577,7 +577,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Shipment.ReceiverAddress#ShippingSystem.Models.ReceiverAddress", "ReceiverAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.ReceiverAddress", "ReceiverAddress", b1 =>
                         {
                             b1.Property<int>("ShipmentId")
                                 .HasColumnType("int");
@@ -606,7 +606,7 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("ShipmentId");
 
-                            b1.ToTable("Shipments", (string)null);
+                            b1.ToTable("Shipments");
 
                             b1.WithOwner()
                                 .HasForeignKey("ShipmentId");

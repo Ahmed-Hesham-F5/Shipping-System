@@ -10,6 +10,5 @@ namespace ShippingSystem.Interfaces
     {
         public void CreateJwtToken(ApplicationUser user, IList<Claim> Userclaims, out string Token, out DateTime ExpiresOn);
         public RefreshToken GenerateRefreshToken();
-
     }
 }

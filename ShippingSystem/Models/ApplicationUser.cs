@@ -14,6 +14,5 @@ namespace ShippingSystem.Models
 
         public AccountStatus AccountStatus { get; set; } = AccountStatus.Active;
         public ICollection<RefreshToken>? RefreshTokens { get; set; } = new List<RefreshToken>();
-
     }
 }

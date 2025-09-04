@@ -11,7 +11,7 @@ namespace ShippingSystem.Data.Config
             builder.HasKey(phone => new { phone.ShipperId, phone.PhoneNumber });
 
             builder.Property(phone => phone.PhoneNumber)
-                .HasColumnType("nvarchar")
+                .HasColumnType("varchar")
                 .HasMaxLength(11)
                 .IsRequired();
 

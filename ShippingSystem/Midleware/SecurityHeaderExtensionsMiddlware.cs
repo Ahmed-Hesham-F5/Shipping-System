@@ -28,6 +28,7 @@ namespace ShippingSystem.Midleware
            if (!context.Request.Headers.ContainsKey("X-Client-Key"))
            {
                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
                await context.Response.WriteAsJsonAsync(new ApiResponse<string>
                    (false, StatusCodes.Status400BadRequest,message: "Missing X-Client-Key header."));
 

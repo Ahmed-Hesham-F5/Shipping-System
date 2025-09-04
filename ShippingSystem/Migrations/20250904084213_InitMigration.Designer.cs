@@ -12,8 +12,8 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250817052744_ConsolidatedMigration")]
-    partial class ConsolidatedMigration
+    [Migration("20250904084213_InitMigration")]
+    partial class InitMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -216,6 +216,9 @@ namespace ShippingSystem.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<short>("AccountStatus")
+                        .HasColumnType("smallint");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -283,6 +286,38 @@ namespace ShippingSystem.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.RefreshToken", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RevokedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
                 {
                     b.Property<int>("Id")
@@ -291,8 +326,24 @@ namespace ShippingSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("CashOnDeliveryEnabled")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("ExpressDeliveryEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("OpenPackageOnDeliveryEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReceiverAdditionalPhone")
+                        .HasMaxLength(11)
+                        .HasColumnType("varchar");
 
                     b.Property<string>("ReceiverEmail")
                         .IsRequired()
@@ -307,7 +358,7 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("ReceiverPhone")
                         .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar");
+                        .HasColumnType("varchar");
 
                     b.Property<string>("ShipmentDescription")
                         .IsRequired()
@@ -389,7 +440,7 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("CompanyLink")
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar");
+                        .HasColumnType("varchar");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
@@ -452,7 +503,7 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar");
+                        .HasColumnType("varchar");
 
                     b.HasKey("ShipperId", "PhoneNumber");
 
@@ -510,6 +561,17 @@ namespace ShippingSystem.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.RefreshToken", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.ApplicationUser", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
                 {
                     b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
@@ -535,6 +597,10 @@ namespace ShippingSystem.Migrations
                             b1.Property<string>("Details")
                                 .HasMaxLength(500)
                                 .HasColumnType("nvarchar");
+
+                            b1.Property<string>("GoogleMapAddressLink")
+                                .HasMaxLength(255)
+                                .HasColumnType("nvarchar(255)");
 
                             b1.Property<string>("Street")
                                 .IsRequired()
@@ -597,6 +663,11 @@ namespace ShippingSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("Shipper");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>

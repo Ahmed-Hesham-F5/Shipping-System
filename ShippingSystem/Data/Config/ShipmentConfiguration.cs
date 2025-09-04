@@ -18,9 +18,14 @@ namespace ShippingSystem.Data.Config
                 .IsRequired();
 
             builder.Property(shipment => shipment.ReceiverPhone)
-                .HasColumnType("nvarchar")
+                .HasColumnType("varchar")
                 .HasMaxLength(11)
                 .IsRequired();
+
+            builder.Property(shipment => shipment.ReceiverAdditionalPhone)
+                .HasColumnType("varchar")
+                .HasMaxLength(11)
+                .IsRequired(false);
 
             builder.OwnsOne(shipment => shipment.ReceiverAddress, address =>
             {

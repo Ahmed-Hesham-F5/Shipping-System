@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTO;
 using ShippingSystem.Interfaces;
-using ShippingSystem.Repositories;
-using ShippingSystem.Services;
 
 namespace ShippingSystem.Controllers
 {
@@ -23,15 +20,15 @@ namespace ShippingSystem.Controllers
         [HttpPost("shipperRegistration")]
         public async Task<IActionResult> ShipperRegistration([FromBody] ShipperRegisterDto shipperRegisterDto)
         {
-            //if (!ModelState.IsValid)
-            //    return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var result = await _shipperRepository.AddShipperAsync(shipperRegisterDto);
 
             if (!result.Success)
                 return BadRequest(result.ErrorMessage);
 
-            SetRefreshTokenInCookie(result.Value.RefreshToken, result.Value.RefreshTokenExpiration);
+            SetRefreshTokenInCookie(result!.Value!.RefreshToken!, result!.Value!.RefreshTokenExpiration);
 
             return Ok(result);
         }
@@ -47,8 +44,7 @@ namespace ShippingSystem.Controllers
             if (!result.IsAuthenticated)
                 return BadRequest(result);
 
-            SetRefreshTokenInCookie(result.RefreshToken, result.RefreshTokenExpiration);
-
+            SetRefreshTokenInCookie(result.RefreshToken!, result.RefreshTokenExpiration);
 
             return Ok(result);
         }
@@ -58,17 +54,15 @@ namespace ShippingSystem.Controllers
         {
             var refreshToken = Request.Cookies["refreshToken"];
 
-            var result = await _userRepository.RefreshTokenAsync(refreshToken);
+            var result = await _userRepository.RefreshTokenAsync(refreshToken!);
 
             if (!result.IsAuthenticated)
                 return BadRequest(result);
 
-            SetRefreshTokenInCookie(result.RefreshToken, result.RefreshTokenExpiration);
+            SetRefreshTokenInCookie(result.RefreshToken!, result.RefreshTokenExpiration);
 
             return Ok(result);
         }
-
-
 
         [HttpPost("revokeToken")]
         public async Task<IActionResult> RevokeToken()

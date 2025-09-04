@@ -7,8 +7,6 @@ using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
 using ShippingSystem.Responses;
 using ShippingSystem.Results;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq.Expressions;
 using System.Security.Claims;
 
 namespace ShippingSystem.Repositories
@@ -28,7 +26,7 @@ namespace ShippingSystem.Repositories
 
         public async Task<OperationResult> CreateUserAsync(ApplicationUser user,string Password)
         {
-            bool res = await IsEmailExistAsync(user.Email);
+            bool res = await IsEmailExistAsync(user.Email!);
             if (res)
                 return OperationResult.Fail("Email already registered");
             try
@@ -38,10 +36,8 @@ namespace ShippingSystem.Repositories
 
                 if (!creatingUserResult.Succeeded)
                 {
-                    ///////////
                     Console.WriteLine(creatingUserResult.Errors.FirstOrDefault()?.Description);
                     return OperationResult.Fail("Bad request");
-
                 }
             }
             catch (Exception ex)
@@ -52,6 +48,7 @@ namespace ShippingSystem.Repositories
 
             return OperationResult.Ok();   
         }
+
         public async Task<OperationResult> AddRoleAsync(ApplicationUser user, RolesEnum role)
         {
             try
@@ -72,9 +69,7 @@ namespace ShippingSystem.Repositories
             }
 
             return OperationResult.Ok();
-
         }
-
 
         public async Task<bool> IsEmailExistAsync(string email) =>
            await _userManager.FindByEmailAsync(email) != null;
@@ -85,6 +80,7 @@ namespace ShippingSystem.Repositories
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
                 return new AuthResponse { Message = "Email or password is incorrect!" };
+
             if(user.AccountStatus == AccountStatus.Banned)
                 return new AuthResponse { Message = "Account is banned" };
 
@@ -98,11 +94,11 @@ namespace ShippingSystem.Repositories
 
             var roles = await _userManager.GetRolesAsync(user);
 
-
             foreach (var role in roles)
                 userClaims.Add(new Claim("roles", role));
 
             _authService.CreateJwtToken(user, userClaims, out string Token, out DateTime ExpiresOn);
+
             RefreshToken refreshToken;
             do
             {
@@ -126,15 +122,15 @@ namespace ShippingSystem.Repositories
                 RefreshTokenExpiration=refreshToken.ExpiresOn
             };
         }
+
         public async Task<AuthResponse> RefreshTokenAsync(string token)
         {
             try
             {
-
-
                 var AuthResponse = new AuthResponse();
                 var user =
                 _context.RefreshTokens.Include(rt => rt.User).SingleOrDefault(t => t.Token == token)?.User;
+                
                 if (user == null)
                 {
                     AuthResponse.Message = "Invalid token";
@@ -157,7 +153,6 @@ namespace ShippingSystem.Repositories
             {
                return new AuthResponse{Message= ex.Message };
             }
-            
         }
 
         public async Task<bool> RevokeTokenAsync(string token)
@@ -178,11 +173,5 @@ namespace ShippingSystem.Repositories
 
             return true;
         }
-
-
-
-
-
-
     }
 }

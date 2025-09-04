@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ShippingSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class ConsolidatedMigration : Migration
+    public partial class InitMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -34,6 +34,7 @@ namespace ShippingSystem.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    AccountStatus = table.Column<short>(type: "smallint", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -161,12 +162,35 @@ namespace ShippingSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ExpiresOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RevokedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => new { x.UserId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Shippers",
                 columns: table => new
                 {
                     ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CompanyName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CompanyLink = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    CompanyLink = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true),
                     TypeOfProduction = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
@@ -188,21 +212,27 @@ namespace ShippingSystem.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ReceiverName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    ReceiverPhone = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    ReceiverPhone = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false),
+                    ReceiverAdditionalPhone = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: true),
                     ReceiverAddress_Street = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     ReceiverAddress_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ReceiverAddress_Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     ReceiverAddress_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ReceiverAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     ReceiverEmail = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     ShipmentDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ShipmentWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ShipmentLength = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ShipmentWidth = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ShipmentHeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    ShipmentNotes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CashOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    OpenPackageOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    ExpressDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ShipmentTrackingNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    ShipmentNotes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    ShipmentTrackingNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -242,7 +272,7 @@ namespace ShippingSystem.Migrations
                 name: "ShipperPhones",
                 columns: table => new
                 {
-                    PhoneNumber = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false),
                     ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -333,6 +363,12 @@ namespace ShippingSystem.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_Token",
+                table: "RefreshTokens",
+                column: "Token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Shipments_ShipmentTrackingNumber",
                 table: "Shipments",
                 column: "ShipmentTrackingNumber",
@@ -371,6 +407,9 @@ namespace ShippingSystem.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "ShipmentStatuses");

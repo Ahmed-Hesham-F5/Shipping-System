@@ -87,16 +87,27 @@ namespace ShippingSystem
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 
-                // Define a custom header (example: X-Custom-Header)
+                // Custom header: X-Client-Key
                 c.AddSecurityDefinition("X-Client-Key", new OpenApiSecurityScheme
                 {
                     Name = "X-Client-Key",
                     Type = SecuritySchemeType.ApiKey,
                     In = ParameterLocation.Header,
-                    Description = "Enter your custom header value"
+                    Description = "Enter your custom client key"
                 });
 
-                // Apply it globally
+                // Bearer token header
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter JWT token like: Bearer {your token}"
+                });
+
+                // Apply both globally
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
                     {
@@ -109,9 +120,21 @@ namespace ShippingSystem
                             }
                         },
                         Array.Empty<string>()
+                     },
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
                     }
                 });
             });
+
 
             // Cors policy
             builder.Services.AddCors(options =>
@@ -124,7 +147,6 @@ namespace ShippingSystem
                                     .AllowAnyHeader();
                     });
             });
-
 
             // Build the application
             var app = builder.Build();
@@ -144,7 +166,6 @@ namespace ShippingSystem
             app.HeaderChecker();
 
             app.UseHttpsRedirection();
-
 
             app.UseCors("AllowAll");
 

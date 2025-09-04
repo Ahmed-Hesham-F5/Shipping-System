@@ -15,7 +15,7 @@ namespace ShippingSystem.Repositories
         private readonly AppDbContext _context;
         private readonly IUserRepository _userRepository;
 
-        public ShipperRepository(AppDbContext context,IUserRepository userRepository)
+        public ShipperRepository(AppDbContext context, IUserRepository userRepository)
         {
             _context = context;
             _userRepository = userRepository;
@@ -34,7 +34,7 @@ namespace ShippingSystem.Repositories
                     LastName = ShipperRegisterDto.LastName
                 };
 
-                var CreateUserResult= await _userRepository.CreateUserAsync(user, ShipperRegisterDto.Password);
+                var CreateUserResult = await _userRepository.CreateUserAsync(user, ShipperRegisterDto.Password);
 
                 if (!CreateUserResult.Success)
                     return ValueOperationResult<AuthResponse>.Fail(CreateUserResult.ErrorMessage);
@@ -43,7 +43,7 @@ namespace ShippingSystem.Repositories
 
                 if (!addShipperRoleResult.Success)
                     return ValueOperationResult<AuthResponse>.Fail(addShipperRoleResult.ErrorMessage);
-             
+
                 var shipper = new Shipper
                 {
                     CompanyName = ShipperRegisterDto.CompanyName,
@@ -72,7 +72,7 @@ namespace ShippingSystem.Repositories
 
                 if (saveResult <= 0)
                     return ValueOperationResult<AuthResponse>.Fail("Bad request");
-           
+
                 await transaction.CommitAsync();
 
                 return ValueOperationResult<AuthResponse>.Ok(await _userRepository.GetUserTokensAsync(user));

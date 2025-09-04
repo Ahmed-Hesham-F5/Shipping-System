@@ -16,6 +16,5 @@ namespace ShippingSystem.Responses
         public string? RefreshToken { get; set; }
 
         public DateTime RefreshTokenExpiration { get; set; }
-        //public static AuthResponse Fail(string Message) => 
     }
 }

@@ -2,7 +2,7 @@
 
 namespace ShippingSystem.DTO
 {
-    public class GetShipmentsDto
+    public class ShipmentDetailsDto
     {
         [Required]
         public int Id { get; set; }

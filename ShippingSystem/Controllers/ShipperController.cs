@@ -30,15 +30,10 @@ namespace ShippingSystem.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var refreshToken = Request.Cookies["refreshToken"];
-            var storedToken = await _context.RefreshTokens
-                .Include(rt => rt.User)
-                .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (storedToken == null || !storedToken.IsActive)
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
-
-            var userId = storedToken.UserId;  
 
             var result = await _shipmentRepository.AddShipment(userId, shipmentDto);
 
@@ -51,15 +46,10 @@ namespace ShippingSystem.Controllers
         [HttpGet("getShipments")]
         public async Task<IActionResult> GetShipments()
         {
-            var refreshToken = Request.Cookies["refreshToken"];
-            var storedToken = await _context.RefreshTokens
-                .Include(rt => rt.User)
-                .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (storedToken == null || !storedToken.IsActive)
+            if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
-
-            var userId = storedToken.UserId;
 
             var shipments = await _shipmentRepository.GetAllShipments(userId);
 
