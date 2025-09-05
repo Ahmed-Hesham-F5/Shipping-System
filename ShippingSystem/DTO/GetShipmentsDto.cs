@@ -6,8 +6,6 @@ namespace ShippingSystem.DTO
     {
         [Required]
         public int Id { get; set; }
-        [Required]
-        public string ShipperId { get; set; } = null!;
         [Required, MaxLength(100)]
         public string ReceiverName { get; set; } = null!;
         [Required, MaxLength(11)]
