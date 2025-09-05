@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ShippingSystem.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTO;
 using ShippingSystem.Interfaces;
 using System.Security.Claims;
@@ -16,12 +12,10 @@ namespace ShippingSystem.Controllers
     {
 
         private readonly IShipmentRepository _shipmentRepository;
-        private readonly AppDbContext _context;
 
-        public ShipperController(IShipmentRepository shipmentRepository, AppDbContext context)
+        public ShipperController(IShipmentRepository shipmentRepository)
         {
             _shipmentRepository = shipmentRepository;
-            _context = context;
         }
 
         [HttpPost("addShipment")]

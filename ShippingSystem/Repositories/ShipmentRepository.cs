@@ -42,7 +42,11 @@ namespace ShippingSystem.Repositories
                 ShipmentLength = shipmentDto.ShipmentLength,
                 ShipmentWidth = shipmentDto.ShipmentWidth,
                 ShipmentHeight = shipmentDto.ShipmentHeight,
+                Quantity = shipmentDto.Quantity,
                 ShipmentNotes = shipmentDto.ShipmentNotes,
+                CashOnDeliveryEnabled = shipmentDto.CashOnDeliveryEnabled,
+                OpenPackageOnDeliveryEnabled = shipmentDto.OpenPackageOnDeliveryEnabled,
+                ExpressDeliveryEnabled = shipmentDto.ExpressDeliveryEnabled
             };
 
             _context.Shipments.Add(shipment);
@@ -95,6 +99,11 @@ namespace ShippingSystem.Repositories
                     ShipmentWidth = shipment.ShipmentWidth,
                     ShipmentHeight = shipment.ShipmentHeight,
                     ShipmentVolume = shipment.ShipmentLength * shipment.ShipmentWidth * shipment.ShipmentHeight,
+                    Quantity = shipment.Quantity,
+                    ShipmentNotes = shipment.ShipmentNotes,
+                    CashOnDeliveryEnabled = shipment.CashOnDeliveryEnabled,
+                    OpenPackageOnDeliveryEnabled = shipment.OpenPackageOnDeliveryEnabled,
+                    ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
                     CreatedAt = shipment.CreatedAt,
                     UpdatedAt = shipment.UpdatedAt,
                     ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
