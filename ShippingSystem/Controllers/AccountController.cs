@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTO;
 using ShippingSystem.Interfaces;
+using ShippingSystem.Responses;
 
 namespace ShippingSystem.Controllers
 {
@@ -10,7 +11,7 @@ namespace ShippingSystem.Controllers
     {
         private readonly IShipperRepository _shipperRepository;
         private readonly IUserRepository _userRepository;
-        
+
         public AccountController(IShipperRepository shipperRepository, IUserRepository userRepository)
         {
             _shipperRepository = shipperRepository;
@@ -26,11 +27,18 @@ namespace ShippingSystem.Controllers
             var result = await _shipperRepository.AddShipperAsync(shipperRegisterDto);
 
             if (!result.Success)
-                return BadRequest(result.ErrorMessage);
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<AuthDto>(false, result.ErrorMessage));
 
-            SetRefreshTokenInCookie(result!.Value!.RefreshToken!, result!.Value!.RefreshTokenExpiration);
+            SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
-            return Ok(result);
+            ApiResponse<AuthDto> response = new ApiResponse<AuthDto>(
+                success: true,
+                message: "User registered successfully!",
+                data: result.Value
+            );
+
+            return StatusCode(StatusCodes.Status201Created, response);
         }
 
         [HttpPost("login")]
@@ -41,10 +49,11 @@ namespace ShippingSystem.Controllers
 
             var result = await _userRepository.LoginUserAsync(loginDto);
 
-            if (!result.IsAuthenticated)
-                return BadRequest(result);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<AuthDto>(false, result.ErrorMessage));
 
-            SetRefreshTokenInCookie(result.RefreshToken!, result.RefreshTokenExpiration);
+            SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
             return Ok(result);
         }
@@ -54,12 +63,16 @@ namespace ShippingSystem.Controllers
         {
             var refreshToken = Request.Cookies["refreshToken"];
 
-            var result = await _userRepository.RefreshTokenAsync(refreshToken!);
+            if (string.IsNullOrEmpty(refreshToken))
+                return BadRequest("Token is required!");
 
-            if (!result.IsAuthenticated)
-                return BadRequest(result);
+            var result = await _userRepository.RefreshTokenAsync(refreshToken);
 
-            SetRefreshTokenInCookie(result.RefreshToken!, result.RefreshTokenExpiration);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<AuthDto>(success: false, message: result.ErrorMessage));
+
+            SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
             return Ok(result);
         }
@@ -74,8 +87,11 @@ namespace ShippingSystem.Controllers
 
             var result = await _userRepository.RevokeTokenAsync(token);
 
-            if (!result)
-                return BadRequest("Token is invalid!");
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<AuthDto>(success: false, message: result.ErrorMessage));
+
+            Response.Cookies.Delete("refreshToken");
 
             return Ok();
         }

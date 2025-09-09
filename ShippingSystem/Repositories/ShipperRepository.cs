@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using ShippingSystem.Data;
+﻿using ShippingSystem.Data;
 using ShippingSystem.DTO;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
-using ShippingSystem.Responses;
 using ShippingSystem.Results;
 
 namespace ShippingSystem.Repositories
@@ -21,7 +18,7 @@ namespace ShippingSystem.Repositories
             _userRepository = userRepository;
         }
 
-        public async Task<ValueOperationResult<AuthResponse>> AddShipperAsync(ShipperRegisterDto ShipperRegisterDto)
+        public async Task<ValueOperationResult<AuthDto>> AddShipperAsync(ShipperRegisterDto ShipperRegisterDto)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -37,12 +34,12 @@ namespace ShippingSystem.Repositories
                 var CreateUserResult = await _userRepository.CreateUserAsync(user, ShipperRegisterDto.Password);
 
                 if (!CreateUserResult.Success)
-                    return ValueOperationResult<AuthResponse>.Fail(CreateUserResult.ErrorMessage);
+                    return ValueOperationResult<AuthDto>.Fail(CreateUserResult.StatusCode, CreateUserResult.ErrorMessage);
 
                 var addShipperRoleResult = await _userRepository.AddRoleAsync(user, RolesEnum.Shipper);
 
                 if (!addShipperRoleResult.Success)
-                    return ValueOperationResult<AuthResponse>.Fail(addShipperRoleResult.ErrorMessage);
+                    return ValueOperationResult<AuthDto>.Fail(addShipperRoleResult.StatusCode, addShipperRoleResult.ErrorMessage);
 
                 var shipper = new Shipper
                 {
@@ -71,17 +68,17 @@ namespace ShippingSystem.Repositories
                 var saveResult = await _context.SaveChangesAsync();
 
                 if (saveResult <= 0)
-                    return ValueOperationResult<AuthResponse>.Fail("Bad request");
+                    return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
 
                 await transaction.CommitAsync();
 
-                return ValueOperationResult<AuthResponse>.Ok(await _userRepository.GetUserTokensAsync(user));
+                return await _userRepository.GetUserTokensAsync(user);
             }
             catch (Exception e)
             {
                 await transaction.RollbackAsync();
                 Console.WriteLine(e.Message.ToString());
-                return ValueOperationResult<AuthResponse>.Fail("Bad request");
+                return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
     }

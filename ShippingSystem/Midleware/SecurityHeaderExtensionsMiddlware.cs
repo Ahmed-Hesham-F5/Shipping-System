@@ -1,4 +1,4 @@
-﻿using ShippingSystem.Response;
+﻿using ShippingSystem.Responses;
 
 namespace ShippingSystem.Midleware
 {
@@ -11,8 +11,8 @@ namespace ShippingSystem.Midleware
                   ctx.Response.Headers.Append("X-Content-Type-Options", "nosniff");
                   return next();
               });
-       
-        
+
+
         //triggers a pre-flight OPTIONS request (“non-simple" request ).
         public static IApplicationBuilder HeaderChecker(this IApplicationBuilder app) =>
        app.Use(async (context, next) =>
@@ -30,9 +30,9 @@ namespace ShippingSystem.Midleware
                context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
                await context.Response.WriteAsJsonAsync(new ApiResponse<string>
-                   (false, StatusCodes.Status400BadRequest,message: "Missing X-Client-Key header."));
+                   (false, message: "Missing X-Client-Key header."));
 
-               return ; // stop pipeline
+               return; // stop pipeline
            }
 
            // Optionally: validate the header value here (length, HMAC, etc.)

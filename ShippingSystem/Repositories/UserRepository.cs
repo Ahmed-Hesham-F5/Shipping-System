@@ -5,30 +5,30 @@ using ShippingSystem.DTO;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
-using ShippingSystem.Responses;
 using ShippingSystem.Results;
 using System.Security.Claims;
 
 namespace ShippingSystem.Repositories
 {
-    public class UserRepository: IUserRepository
+    public class UserRepository : IUserRepository
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAuthService _authService;
         private readonly AppDbContext _context;
 
-        public UserRepository(UserManager<ApplicationUser> userManager,IAuthService authService,
-            AppDbContext context ) {
+        public UserRepository(UserManager<ApplicationUser> userManager, IAuthService authService,
+            AppDbContext context)
+        {
             _userManager = userManager;
             _authService = authService;
             _context = context;
         }
 
-        public async Task<OperationResult> CreateUserAsync(ApplicationUser user,string Password)
+        public async Task<OperationResult> CreateUserAsync(ApplicationUser user, string Password)
         {
             bool res = await IsEmailExistAsync(user.Email!);
             if (res)
-                return OperationResult.Fail("Email already registered");
+                return OperationResult.Fail(409, "Email already registered");
             try
             {
                 var creatingUserResult =
@@ -37,16 +37,16 @@ namespace ShippingSystem.Repositories
                 if (!creatingUserResult.Succeeded)
                 {
                     Console.WriteLine(creatingUserResult.Errors.FirstOrDefault()?.Description);
-                    return OperationResult.Fail("Bad request");
+                    return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return OperationResult.Fail("Bad request");
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
 
-            return OperationResult.Ok();   
+            return OperationResult.Ok();
         }
 
         public async Task<OperationResult> AddRoleAsync(ApplicationUser user, RolesEnum role)
@@ -59,13 +59,13 @@ namespace ShippingSystem.Repositories
                 if (!addingRoleResult.Succeeded)
                 {
                     Console.WriteLine(addingRoleResult.Errors.FirstOrDefault()?.Description);
-                    return OperationResult.Fail("Bad request");
+                    return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return OperationResult.Fail("Bad request");
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
 
             return OperationResult.Ok();
@@ -74,22 +74,22 @@ namespace ShippingSystem.Repositories
         public async Task<bool> IsEmailExistAsync(string email) =>
            await _userManager.FindByEmailAsync(email) != null;
 
-        public async Task<AuthResponse> LoginUserAsync(LoginDto loginDto)
+        public async Task<ValueOperationResult<AuthDto>> LoginUserAsync(LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
-                return new AuthResponse { Message = "Email or password is incorrect!" };
+                return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status400BadRequest, "Email or password is incorrect!");
 
-            if(user.AccountStatus == AccountStatus.Banned)
-                return new AuthResponse { Message = "Account is banned" };
+            if (user.AccountStatus == AccountStatus.Banned)
+                return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status400BadRequest, "Account is banned");
 
-            return await GetUserTokensAsync(user);    
+            return await GetUserTokensAsync(user);
         }
 
-        public async Task<AuthResponse> GetUserTokensAsync(ApplicationUser user)
+        public async Task<ValueOperationResult<AuthDto>> GetUserTokensAsync(ApplicationUser user)
         {
-           
+
             var userClaims = await _userManager.GetClaimsAsync(user);
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -105,45 +105,38 @@ namespace ShippingSystem.Repositories
                 refreshToken = _authService.GenerateRefreshToken();
 
             } while (user.RefreshTokens!.Any(x => x.Token == refreshToken.Token));
-            
+
             user.RefreshTokens!.Add(refreshToken);
             await _userManager.UpdateAsync(user);
 
-            return new AuthResponse
+            return ValueOperationResult<AuthDto>.Ok(new AuthDto
             {
-                UserName = user.UserName!,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email!,
                 IsAuthenticated = true,
-                Message = "User logged in successfully!",
                 Roles = roles.ToList(),
                 Token = Token,
                 ExpiresOn = ExpiresOn,
-                RefreshToken=refreshToken.Token,
-                RefreshTokenExpiration=refreshToken.ExpiresOn
-            };
+                RefreshToken = refreshToken.Token,
+                RefreshTokenExpiration = refreshToken.ExpiresOn
+            });
         }
 
-        public async Task<AuthResponse> RefreshTokenAsync(string token)
+        public async Task<ValueOperationResult<AuthDto>> RefreshTokenAsync(string token)
         {
             try
             {
-                var AuthResponse = new AuthResponse();
                 var user =
                 _context.RefreshTokens.Include(rt => rt.User).SingleOrDefault(t => t.Token == token)?.User;
-                
+
                 if (user == null)
-                {
-                    AuthResponse.Message = "Invalid token";
-                    return AuthResponse;
-                }
+                    return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status400BadRequest, "Invalid token");
 
-                var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
+                var refreshToken = user.RefreshTokens?.Single(t => t.Token == token);
 
-                if (!refreshToken.IsActive)
-                {
-                    AuthResponse.Message = "Inactive token";
-                    return AuthResponse;
-                }
+                if (!refreshToken!.IsActive)
+                    return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status400BadRequest, "Inactive token");
 
                 refreshToken.RevokedOn = DateTime.UtcNow;
 
@@ -151,27 +144,27 @@ namespace ShippingSystem.Repositories
             }
             catch (Exception ex)
             {
-               return new AuthResponse{Message= ex.Message };
+                return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
-        public async Task<bool> RevokeTokenAsync(string token)
+        public async Task<OperationResult> RevokeTokenAsync(string token)
         {
-            var user = _context.RefreshTokens.Include(rt=>rt.User).SingleOrDefault(t => t.Token == token)?.User;
+            var user = _context.RefreshTokens.Include(rt => rt.User).SingleOrDefault(t => t.Token == token)?.User;
 
             if (user == null)
-                return false;
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "Invalid token");
 
-            var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
+            var refreshToken = user.RefreshTokens?.Single(t => t.Token == token);
 
-            if (!refreshToken.IsActive)
-                return false;
+            if (!refreshToken!.IsActive)
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "Inactive token");
 
             refreshToken.RevokedOn = DateTime.UtcNow;
 
             await _userManager.UpdateAsync(user);
 
-            return true;
+            return OperationResult.Ok();
         }
     }
 }

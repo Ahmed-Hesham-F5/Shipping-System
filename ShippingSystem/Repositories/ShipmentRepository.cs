@@ -5,6 +5,7 @@ using ShippingSystem.DTO;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
+using ShippingSystem.Results;
 
 namespace ShippingSystem.Repositories
 {
@@ -19,10 +20,10 @@ namespace ShippingSystem.Repositories
             _userManager = userManager;
         }
 
-        public async Task<bool> AddShipment(string userId, ShipmentDto shipmentDto)
+        public async Task<OperationResult> AddShipment(string userId, ShipmentDto shipmentDto)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
-                return false;
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
             var shipment = new Shipment
             {
@@ -54,28 +55,26 @@ namespace ShippingSystem.Repositories
             var addShipmentResult = await _context.SaveChangesAsync() > 0;
 
             if (!addShipmentResult)
-                return false;
-
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
 
             var shipmentStatus = ShipmentStatus.Create(shipment.Id,
-                ShipmentStatusEnum.Pending.ToString(), "تم إنشاء الشحنة");
+                ShipmentStatusEnum.Pending.ToString(), "Shipment created");
 
             _context.ShipmentStatuses.Add(shipmentStatus);
 
             var addShipmentStatusResult = await _context.SaveChangesAsync() > 0;
 
             if (!addShipmentStatusResult)
-                return false;
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
 
-            return true;
+            return OperationResult.Ok();
         }
 
-        public async Task<List<GetShipmentsDto>> GetAllShipments(string userId)
+        public async Task<ValueOperationResult<List<GetShipmentsDto>>> GetAllShipments(string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-                return new List<GetShipmentsDto>();
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return ValueOperationResult<List<GetShipmentsDto>>
+                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
             var shipmentsList = await _context.Shipments
                 .Where(s => s.ShipperId == userId)
@@ -118,71 +117,80 @@ namespace ShippingSystem.Repositories
                 .AsNoTracking()
                 .ToListAsync();
 
-            return shipmentsList;
+            ValueOperationResult<List<GetShipmentsDto>> shipments =
+                ValueOperationResult<List<GetShipmentsDto>>.Ok(shipmentsList);
+
+            return shipments;
         }
 
-        public async Task<GetShipmentDetailsDto?> GetShipmentById(string userId, int id)
+        public async Task<ValueOperationResult<GetShipmentDetailsDto?>> GetShipmentById(string userId, int id)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-                return null;
-            var shipment = await _context.Shipments
-                .Where(s => s.ShipperId == userId && s.Id == id)
-                .Select(shipment => new GetShipmentDetailsDto
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return ValueOperationResult<GetShipmentDetailsDto?>
+                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
+
+            var result = await _context.Shipments
+                .FirstOrDefaultAsync(s => s.ShipperId == userId && s.Id == id);
+
+            if (result == null)
+                return ValueOperationResult<GetShipmentDetailsDto?>
+                    .Fail(StatusCodes.Status403Forbidden, "Forbidden");
+
+            var shipmentDetails = await _context.Shipments
+            .Where(s => s.ShipperId == userId && s.Id == id)
+            .Select(shipment => new GetShipmentDetailsDto
+            {
+                Id = shipment.Id,
+                ReceiverName = shipment.ReceiverName,
+                ReceiverPhone = shipment.ReceiverPhone,
+                ReceiverAdditionalPhone = shipment.ReceiverAdditionalPhone,
+                ReceiverEmail = shipment.ReceiverEmail,
+                ReceiverAddress = new ReceiverAddressDto
                 {
-                    Id = shipment.Id,
-                    ReceiverName = shipment.ReceiverName,
-                    ReceiverPhone = shipment.ReceiverPhone,
-                    ReceiverAdditionalPhone = shipment.ReceiverAdditionalPhone,
-                    ReceiverEmail = shipment.ReceiverEmail,
-                    ReceiverAddress = new ReceiverAddressDto
+                    Street = shipment.ReceiverAddress.Street,
+                    City = shipment.ReceiverAddress.City,
+                    Country = shipment.ReceiverAddress.Country,
+                    Details = shipment.ReceiverAddress.Details
+                },
+                ShipmentDescription = shipment.ShipmentDescription,
+                ShipmentWeight = shipment.ShipmentWeight,
+                ShipmentLength = shipment.ShipmentLength,
+                ShipmentWidth = shipment.ShipmentWidth,
+                ShipmentHeight = shipment.ShipmentHeight,
+                ShipmentVolume = shipment.ShipmentLength * shipment.ShipmentWidth * shipment.ShipmentHeight,
+                Quantity = shipment.Quantity,
+                ShipmentNotes = shipment.ShipmentNotes,
+                CashOnDeliveryEnabled = shipment.CashOnDeliveryEnabled,
+                OpenPackageOnDeliveryEnabled = shipment.OpenPackageOnDeliveryEnabled,
+                ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
+                CreatedAt = shipment.CreatedAt,
+                UpdatedAt = shipment.UpdatedAt,
+                ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
+                ShipmentStatuses = shipment.ShipmentStatuses
+                    .Select(ss => new ShipmentStatusDto
                     {
-                        Street = shipment.ReceiverAddress.Street,
-                        City = shipment.ReceiverAddress.City,
-                        Country = shipment.ReceiverAddress.Country,
-                        Details = shipment.ReceiverAddress.Details
-                    },
-                    ShipmentDescription = shipment.ShipmentDescription,
-                    ShipmentWeight = shipment.ShipmentWeight,
-                    ShipmentLength = shipment.ShipmentLength,
-                    ShipmentWidth = shipment.ShipmentWidth,
-                    ShipmentHeight = shipment.ShipmentHeight,
-                    ShipmentVolume = shipment.ShipmentLength * shipment.ShipmentWidth * shipment.ShipmentHeight,
-                    Quantity = shipment.Quantity,
-                    ShipmentNotes = shipment.ShipmentNotes,
-                    CashOnDeliveryEnabled = shipment.CashOnDeliveryEnabled,
-                    OpenPackageOnDeliveryEnabled = shipment.OpenPackageOnDeliveryEnabled,
-                    ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
-                    CreatedAt = shipment.CreatedAt,
-                    UpdatedAt = shipment.UpdatedAt,
-                    ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
-                    ShipmentStatuses = shipment.ShipmentStatuses
-                        .Select(ss => new ShipmentStatusDto
-                        {
-                            Id = ss.Id,
-                            Status = ss.Status,
-                            Timestamp = ss.Timestamp,
-                            Notes = ss.Notes
-                        }).ToList()
-                })
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                        Id = ss.Id,
+                        Status = ss.Status,
+                        Timestamp = ss.Timestamp,
+                        Notes = ss.Notes
+                    }).ToList()
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync();
 
-            return shipment;
+            return ValueOperationResult<GetShipmentDetailsDto?>.Ok(shipmentDetails);
         }
 
-        public async Task<bool> UpdateShipment(string userId, int id, ShipmentDto shipmentDto)
+        public async Task<OperationResult> UpdateShipment(string userId, int id, ShipmentDto shipmentDto)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-            
-            if (user == null)
-                return false;
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
             var shipment = await _context.Shipments
                 .FirstOrDefaultAsync(s => s.ShipperId == userId && s.Id == id);
-           
+
             if (shipment == null)
-                return false;
+                return OperationResult.Fail(StatusCodes.Status403Forbidden, "Forbidden");
 
             shipment.ReceiverName = shipmentDto.ReceiverName;
             shipment.ReceiverPhone = shipmentDto.ReceiverPhone;
@@ -201,32 +209,38 @@ namespace ShippingSystem.Repositories
             shipment.CashOnDeliveryEnabled = shipmentDto.CashOnDeliveryEnabled;
             shipment.OpenPackageOnDeliveryEnabled = shipmentDto.OpenPackageOnDeliveryEnabled;
             shipment.ExpressDeliveryEnabled = shipmentDto.ExpressDeliveryEnabled;
-            
+
             _context.Shipments.Update(shipment);
-            
+
             var result = await _context.SaveChangesAsync() > 0;
-           
-            return result;
+
+            if (!result)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
         }
 
-        public async Task<bool> DeleteShipment(string userId, int id)
+        public async Task<OperationResult> DeleteShipment(string userId, int id)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-                return false;
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
             var shipment = await _context.Shipments
                 .FirstOrDefaultAsync(s => s.ShipperId == userId && s.Id == id);
 
             if (shipment == null)
-                return false;
+                return OperationResult.Fail(StatusCodes.Status403Forbidden, "Forbidden");
 
             _context.Shipments.Remove(shipment);
 
             var result = await _context.SaveChangesAsync() > 0;
 
-            return result;
+            if (!result)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
         }
     }
 }

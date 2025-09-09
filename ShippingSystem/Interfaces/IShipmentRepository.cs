@@ -1,13 +1,14 @@
 ﻿using ShippingSystem.DTO;
+using ShippingSystem.Results;
 
 namespace ShippingSystem.Interfaces
 {
     public interface IShipmentRepository
     {
-        Task<bool> AddShipment(string userId, ShipmentDto shipmentDto);
-        Task<List<GetShipmentsDto>> GetAllShipments(string userId);
-        Task<GetShipmentDetailsDto?> GetShipmentById(string userId, int id);
-        Task<bool> UpdateShipment(string userId, int id, ShipmentDto shipmentDto);
-        Task<bool> DeleteShipment(string userId, int id);
+        Task<OperationResult> AddShipment(string userId, ShipmentDto shipmentDto);
+        Task<ValueOperationResult<List<GetShipmentsDto>>> GetAllShipments(string userId);
+        Task<ValueOperationResult<GetShipmentDetailsDto?>> GetShipmentById(string userId, int id);
+        Task<OperationResult> UpdateShipment(string userId, int id, ShipmentDto shipmentDto);
+        Task<OperationResult> DeleteShipment(string userId, int id);
     }
 }

@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTO;
 using ShippingSystem.Interfaces;
+using ShippingSystem.Responses;
 using System.Security.Claims;
 
 namespace ShippingSystem.Controllers
 {
-    //[Authorize(Roles = "Shipper")]
+    [Authorize(Roles = "Shipper")]
     [Route("api/[controller]")]
     [ApiController]
     public class ShipmentController : ControllerBase
@@ -31,10 +33,10 @@ namespace ShippingSystem.Controllers
 
             var result = await _shipmentRepository.AddShipment(userId, shipmentDto);
 
-            if (!result)
-                return StatusCode(StatusCodes.Status500InternalServerError, "Failed to add shipment.");
+            if (!result.Success)
+                return StatusCode(result.StatusCode, result.ErrorMessage);
 
-            return Ok("Shipment added successfully.");
+            return StatusCode(StatusCodes.Status201Created, "Shipment added successfully");
         }
 
         [HttpGet("getShipments")]
@@ -58,25 +60,37 @@ namespace ShippingSystem.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
 
-            var shipment = await _shipmentRepository.GetShipmentById(userId, id);
-           
-            if (shipment == null)
-                return NotFound("Shipment not found.");
+            var result = await _shipmentRepository.GetShipmentById(userId, id);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode, result.ErrorMessage);
+
+            ApiResponse<GetShipmentDetailsDto?> shipment = new ApiResponse<GetShipmentDetailsDto?>
+            (
+                data: result.Value!,
+                message: null!,
+                success: true
+            );
 
             return Ok(shipment);
         }
 
-        [HttpPut("updateShipment/id")]
+        [HttpPut("updateShipment/{id}")]
         public async Task<IActionResult> UpdateShipment(int id, [FromBody] ShipmentDto shipmentDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
+
             var result = await _shipmentRepository.UpdateShipment(userId, id, shipmentDto);
-            if (!result)
-                return NotFound("Shipment not found or update failed.");
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode, result.ErrorMessage);
+
             return Ok("Shipment updated successfully.");
         }
 
@@ -90,8 +104,8 @@ namespace ShippingSystem.Controllers
 
             var result = await _shipmentRepository.DeleteShipment(userId, id);
 
-            if (!result)
-                return NotFound("Shipment not found.");
+            if (!result.Success)
+                return StatusCode(result.StatusCode, result.ErrorMessage);
 
             return NoContent();
         }
