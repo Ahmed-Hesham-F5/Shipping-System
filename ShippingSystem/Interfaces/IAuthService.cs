@@ -1,7 +1,4 @@
-﻿using ShippingSystem.DTO;
-using ShippingSystem.Models;
-using ShippingSystem.Responses;
-using System.IdentityModel.Tokens.Jwt;
+﻿using ShippingSystem.Models;
 using System.Security.Claims;
 
 namespace ShippingSystem.Interfaces

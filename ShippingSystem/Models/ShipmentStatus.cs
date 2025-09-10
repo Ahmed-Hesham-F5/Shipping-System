@@ -7,19 +7,13 @@ namespace ShippingSystem.Models
     {
         [Key]
         public int Id { get; private set; }
-
-        [Required]
         public int ShipmentId { get; private set; }
+
         [ForeignKey("ShipmentId")]
         public Shipment Shipment { get; private set; } = null!;
 
-        [Required, MaxLength(50)]
         public string Status { get; private set; } = null!;
-
-        [Required]
         public DateTime Timestamp { get; private set; }
-
-        [MaxLength(500)]
         public string? Notes { get; private set; }
 
         // Factory method to enforce immutability

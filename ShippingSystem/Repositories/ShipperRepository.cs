@@ -1,5 +1,5 @@
 ﻿using ShippingSystem.Data;
-using ShippingSystem.DTO;
+using ShippingSystem.DTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
@@ -18,49 +18,49 @@ namespace ShippingSystem.Repositories
             _userRepository = userRepository;
         }
 
-        public async Task<ValueOperationResult<AuthDto>> AddShipperAsync(ShipperRegisterDto ShipperRegisterDto)
+        public async Task<ValueOperationResult<AuthDTO>> AddShipperAsync(ShipperRegisterDTO shipperRegisterDTO)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var user = new ApplicationUser
                 {
-                    UserName = ShipperRegisterDto.Email,
-                    Email = ShipperRegisterDto.Email,
-                    FirstName = ShipperRegisterDto.FirstName,
-                    LastName = ShipperRegisterDto.LastName
+                    UserName = shipperRegisterDTO.Email,
+                    Email = shipperRegisterDTO.Email,
+                    FirstName = shipperRegisterDTO.FirstName,
+                    LastName = shipperRegisterDTO.LastName
                 };
 
-                var CreateUserResult = await _userRepository.CreateUserAsync(user, ShipperRegisterDto.Password);
+                var CreateUserResult = await _userRepository.CreateUserAsync(user, shipperRegisterDTO.Password);
 
                 if (!CreateUserResult.Success)
-                    return ValueOperationResult<AuthDto>.Fail(CreateUserResult.StatusCode, CreateUserResult.ErrorMessage);
+                    return ValueOperationResult<AuthDTO>.Fail(CreateUserResult.StatusCode, CreateUserResult.ErrorMessage);
 
                 var addShipperRoleResult = await _userRepository.AddRoleAsync(user, RolesEnum.Shipper);
 
                 if (!addShipperRoleResult.Success)
-                    return ValueOperationResult<AuthDto>.Fail(addShipperRoleResult.StatusCode, addShipperRoleResult.ErrorMessage);
+                    return ValueOperationResult<AuthDTO>.Fail(addShipperRoleResult.StatusCode, addShipperRoleResult.ErrorMessage);
 
                 var shipper = new Shipper
                 {
-                    CompanyName = ShipperRegisterDto.CompanyName,
-                    CompanyLink = ShipperRegisterDto.CompanyLink,
-                    TypeOfProduction = ShipperRegisterDto.TypeOfProduction,
+                    CompanyName = shipperRegisterDTO.CompanyName,
+                    CompanyLink = shipperRegisterDTO.CompanyLink,
+                    TypeOfProduction = shipperRegisterDTO.TypeOfProduction,
                     ShipperId = user.Id,
                 };
 
                 shipper?.Addresses?.Add(new ShipperAddress
                 {
-                    City = ShipperRegisterDto.City,
-                    Street = ShipperRegisterDto.Street,
-                    Country = ShipperRegisterDto.Country,
-                    Details = ShipperRegisterDto.Details,
+                    City = shipperRegisterDTO.City,
+                    Street = shipperRegisterDTO.Street,
+                    Country = shipperRegisterDTO.Country,
+                    Details = shipperRegisterDTO.Details,
                     ShipperId = shipper.ShipperId
                 });
 
                 shipper?.Phones?.Add(new ShipperPhone
                 {
-                    PhoneNumber = ShipperRegisterDto.PhoneNumber,
+                    PhoneNumber = shipperRegisterDTO.PhoneNumber,
                     ShipperId = shipper.ShipperId
                 });
 
@@ -68,7 +68,7 @@ namespace ShippingSystem.Repositories
                 var saveResult = await _context.SaveChangesAsync();
 
                 if (saveResult <= 0)
-                    return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+                    return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
 
                 await transaction.CommitAsync();
 
@@ -78,7 +78,7 @@ namespace ShippingSystem.Repositories
             {
                 await transaction.RollbackAsync();
                 Console.WriteLine(e.Message.ToString());
-                return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
     }

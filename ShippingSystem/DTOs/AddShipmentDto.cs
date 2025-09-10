@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShippingSystem.Validators;
+using System.ComponentModel.DataAnnotations;
 
-namespace ShippingSystem.DTO
+namespace ShippingSystem.DTOs
 {
-    public class ShipmentDto
+    public class AddShipmentDto
     {
         [Required, MaxLength(100)]
         public string ReceiverName { get; set; } = null!;
@@ -24,10 +25,13 @@ namespace ShippingSystem.DTO
 
         [Range(0.01, double.MaxValue, ErrorMessage = "Shipment weight must be greater than 0.")]
         public decimal ShipmentWeight { get; set; }
+
         [Range(0.01, double.MaxValue, ErrorMessage = "Shipment length must be greater than 0.")]
         public decimal ShipmentLength { get; set; }
+
         [Range(0.01, double.MaxValue, ErrorMessage = "Shipment width must be greater than 0.")]
         public decimal ShipmentWidth { get; set; }
+
         [Range(0.01, double.MaxValue, ErrorMessage = "Shipment height must be greater than 0.")]
         public decimal ShipmentHeight { get; set; }
 
@@ -40,5 +44,8 @@ namespace ShippingSystem.DTO
         public bool CashOnDeliveryEnabled { get; set; }
         public bool OpenPackageOnDeliveryEnabled { get; set; }
         public bool ExpressDeliveryEnabled { get; set; }
+
+        [ValueRequiredIfCod("CashOnDeliveryEnabled", ErrorMessage = "CollectionAmount is required when CashOnDeliveryEnabled is true and must be greater than 0.")]
+        public decimal? CollectionAmount { get; set; }
     }
 }

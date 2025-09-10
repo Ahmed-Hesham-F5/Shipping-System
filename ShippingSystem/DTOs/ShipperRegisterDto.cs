@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ShippingSystem.DTO
+namespace ShippingSystem.DTOs
 {
-    public class ShipperRegisterDto
+    public class ShipperRegisterDTO
     {
         [Required, MaxLength(50)]
         public string FirstName { get; set; } = null!;

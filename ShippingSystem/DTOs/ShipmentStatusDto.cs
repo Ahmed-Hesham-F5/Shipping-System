@@ -1,6 +1,6 @@
-﻿namespace ShippingSystem.DTO
+﻿namespace ShippingSystem.DTOs
 {
-    public class ShipmentStatusDto
+    public class ShipmentStatusDTO
     {
         public int Id { get; set; }
         public string Status { get; set; } = null!;

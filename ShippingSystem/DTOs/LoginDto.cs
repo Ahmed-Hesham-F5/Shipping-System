@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ShippingSystem.DTO
+namespace ShippingSystem.DTOs
 {
-    public class LoginDto
+    public class LoginDTO
     {
         [Required, MaxLength(255), EmailAddress]
         public string Email { get; set; } = null!;

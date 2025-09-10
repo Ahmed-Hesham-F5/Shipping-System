@@ -5,10 +5,7 @@ namespace ShippingSystem.Models
 {
     public class ShipperPhone
     {
-        [Required, MaxLength(11)]
         public string PhoneNumber { get; set; } = null!;
-
-        [Required]
         public string ShipperId { get; set; } = null!;
 
         [ForeignKey("ShipperId")]

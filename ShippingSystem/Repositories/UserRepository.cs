@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
-using ShippingSystem.DTO;
+using ShippingSystem.DTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
@@ -74,20 +74,20 @@ namespace ShippingSystem.Repositories
         public async Task<bool> IsEmailExistAsync(string email) =>
            await _userManager.FindByEmailAsync(email) != null;
 
-        public async Task<ValueOperationResult<AuthDto>> LoginUserAsync(LoginDto loginDto)
+        public async Task<ValueOperationResult<AuthDTO>> LoginUserAsync(LoginDTO loginDTO)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var user = await _userManager.FindByEmailAsync(loginDTO.Email);
 
-            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
-                return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status400BadRequest, "Email or password is incorrect!");
+            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDTO.Password))
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Email or password is incorrect!");
 
             if (user.AccountStatus == AccountStatus.Banned)
-                return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status400BadRequest, "Account is banned");
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Account is banned");
 
             return await GetUserTokensAsync(user);
         }
 
-        public async Task<ValueOperationResult<AuthDto>> GetUserTokensAsync(ApplicationUser user)
+        public async Task<ValueOperationResult<AuthDTO>> GetUserTokensAsync(ApplicationUser user)
         {
 
             var userClaims = await _userManager.GetClaimsAsync(user);
@@ -109,7 +109,7 @@ namespace ShippingSystem.Repositories
             user.RefreshTokens!.Add(refreshToken);
             await _userManager.UpdateAsync(user);
 
-            return ValueOperationResult<AuthDto>.Ok(new AuthDto
+            return ValueOperationResult<AuthDTO>.Ok(new AuthDTO
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
@@ -123,7 +123,7 @@ namespace ShippingSystem.Repositories
             });
         }
 
-        public async Task<ValueOperationResult<AuthDto>> RefreshTokenAsync(string token)
+        public async Task<ValueOperationResult<AuthDTO>> RefreshTokenAsync(string token)
         {
             try
             {
@@ -131,12 +131,12 @@ namespace ShippingSystem.Repositories
                 _context.RefreshTokens.Include(rt => rt.User).SingleOrDefault(t => t.Token == token)?.User;
 
                 if (user == null)
-                    return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status400BadRequest, "Invalid token");
+                    return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Invalid token");
 
                 var refreshToken = user.RefreshTokens?.Single(t => t.Token == token);
 
                 if (!refreshToken!.IsActive)
-                    return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status400BadRequest, "Inactive token");
+                    return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Inactive token");
 
                 refreshToken.RevokedOn = DateTime.UtcNow;
 
@@ -144,7 +144,7 @@ namespace ShippingSystem.Repositories
             }
             catch (Exception ex)
             {
-                return ValueOperationResult<AuthDto>.Fail(StatusCodes.Status500InternalServerError, ex.Message);
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 

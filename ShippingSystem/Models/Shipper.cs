@@ -9,14 +9,8 @@ namespace ShippingSystem.Models
         public string ShipperId { get; set; } = null!;
         public ApplicationUser ApplicationUser { get; set; } = null!;
 
-        [Required]
-        [MaxLength(100)]
         public string CompanyName { get; set; } = null!;
-
-        [MaxLength(255)]
         public string? CompanyLink { get; set; }
-
-        [MaxLength(255)]
         public string? TypeOfProduction { get; set; }
    
         public ICollection<ShipperPhone>? Phones { get; set; } = new List<ShipperPhone>();

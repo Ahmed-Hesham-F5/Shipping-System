@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ShippingSystem.DTO;
+using ShippingSystem.DTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
 using System.Security.Claims;
@@ -21,7 +21,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPost("addShipment")]
-        public async Task<IActionResult> AddShipment([FromBody] ShipmentDto shipmentDto)
+        public async Task<IActionResult> AddShipment([FromBody] AddShipmentDto shipmentDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -31,7 +31,7 @@ namespace ShippingSystem.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
 
-            var result = await _shipmentRepository.AddShipment(userId, shipmentDto);
+            var result = await _shipmentRepository.AddShipment(userId, shipmentDTO);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode, result.ErrorMessage);
@@ -65,7 +65,7 @@ namespace ShippingSystem.Controllers
             if (!result.Success)
                 return StatusCode(result.StatusCode, result.ErrorMessage);
 
-            ApiResponse<GetShipmentDetailsDto?> shipment = new ApiResponse<GetShipmentDetailsDto?>
+            ApiResponse<GetShipmentDetailsDTO?> shipment = new ApiResponse<GetShipmentDetailsDTO?>
             (
                 data: result.Value!,
                 message: null!,
@@ -76,7 +76,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPut("updateShipment/{id}")]
-        public async Task<IActionResult> UpdateShipment(int id, [FromBody] ShipmentDto shipmentDto)
+        public async Task<IActionResult> UpdateShipment(int id, [FromBody] AddShipmentDto shipmentDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -86,7 +86,7 @@ namespace ShippingSystem.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User not authenticated.");
 
-            var result = await _shipmentRepository.UpdateShipment(userId, id, shipmentDto);
+            var result = await _shipmentRepository.UpdateShipment(userId, id, shipmentDTO);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode, result.ErrorMessage);

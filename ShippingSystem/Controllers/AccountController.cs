@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ShippingSystem.DTO;
+using ShippingSystem.DTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
 
@@ -19,20 +19,20 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPost("shipperRegistration")]
-        public async Task<IActionResult> ShipperRegistration([FromBody] ShipperRegisterDto shipperRegisterDto)
+        public async Task<IActionResult> ShipperRegistration([FromBody] ShipperRegisterDTO shipperRegisterDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _shipperRepository.AddShipperAsync(shipperRegisterDto);
+            var result = await _shipperRepository.AddShipperAsync(shipperRegisterDTO);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<AuthDto>(false, result.ErrorMessage));
+                    new ApiResponse<AuthDTO>(false, result.ErrorMessage));
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
-            ApiResponse<AuthDto> response = new ApiResponse<AuthDto>(
+            ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
                 success: true,
                 message: "User registered successfully!",
                 data: result.Value
@@ -42,16 +42,16 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _userRepository.LoginUserAsync(loginDto);
+            var result = await _userRepository.LoginUserAsync(loginDTO);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<AuthDto>(false, result.ErrorMessage));
+                    new ApiResponse<AuthDTO>(false, result.ErrorMessage));
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
@@ -70,7 +70,7 @@ namespace ShippingSystem.Controllers
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<AuthDto>(success: false, message: result.ErrorMessage));
+                    new ApiResponse<AuthDTO>(success: false, message: result.ErrorMessage));
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
@@ -89,7 +89,7 @@ namespace ShippingSystem.Controllers
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<AuthDto>(success: false, message: result.ErrorMessage));
+                    new ApiResponse<AuthDTO>(success: false, message: result.ErrorMessage));
 
             Response.Cookies.Delete("refreshToken");
 
