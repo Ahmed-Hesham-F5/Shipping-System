@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ShippingSystem.DTOs
 {
-    public class AddShipmentDto
+    public class ShipmentRequestDto
     {
         [Required, MaxLength(100)]
         public string ReceiverName { get; set; } = null!;
@@ -46,6 +46,6 @@ namespace ShippingSystem.DTOs
         public bool ExpressDeliveryEnabled { get; set; }
 
         [ValueRequiredIfCod("CashOnDeliveryEnabled", ErrorMessage = "CollectionAmount is required when CashOnDeliveryEnabled is true and must be greater than 0.")]
-        public decimal? CollectionAmount { get; set; }
+        public decimal CollectionAmount { get; set; }
     }
 }

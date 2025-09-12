@@ -34,19 +34,26 @@ namespace ShippingSystem.Models
         public bool CashOnDeliveryEnabled { get; set; }
         public bool OpenPackageOnDeliveryEnabled { get; set; }
         public bool ExpressDeliveryEnabled { get; set; }
-        public decimal? CollectionAmount { get; set; }
+        public decimal CollectionAmount { get; set; } = 0m; // Default collection amount if cod is disabled
 
         // Managed by Hub/Admin
-        public decimal? ShippingCost { get; set; }
-        public decimal? AdditionalWeight { get; set; }
-        public decimal? AdditionalWeightCost { get; set; }
-        public decimal? CollectionFee { get; set; }
-        public decimal? AdditionalCost => (AdditionalWeight * AdditionalWeightCost) + CollectionFee;
+        public decimal ShippingCost { get; set; } = 20m; // Default shipping cost (will be changed later)
+        public decimal AdditionalWeight { get; set; } = 0m; // Weight above the base weight
+        public decimal AdditionalWeightCostPrtKg { get; set; } = 5m; // Default additional weight cost per kg
+        public decimal CollectionFeePercentage { get; set; } = 0.01m; // Default 1% fee
+        public decimal CollectionFeeThreshold { get; set; } = 3000m; // Default minimum for fee application
+
+        [NotMapped]
+        public decimal CollectionFee => CollectionAmount > CollectionFeeThreshold ? CollectionAmount * CollectionFeePercentage : 0m;
+        [NotMapped]
+        public decimal AdditionalWeightCost => AdditionalWeight * AdditionalWeightCostPrtKg;
+        [NotMapped]
+        public decimal AdditionalCost => AdditionalWeightCost + CollectionFee;
 
         // Auto-managed properties
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }
-        public string ShipmentTrackingNumber { get; private set; } = 
+        public string ShipmentTrackingNumber { get; private set; } =
             $"SHIP-{DateTime.UtcNow:ddMMyyyy}-{Guid.NewGuid().ToString("N")[..12]}";
     }
 }

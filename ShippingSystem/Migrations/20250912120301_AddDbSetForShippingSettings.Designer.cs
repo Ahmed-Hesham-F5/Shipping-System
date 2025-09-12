@@ -12,8 +12,8 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250904084213_InitMigration")]
-    partial class InitMigration
+    [Migration("20250912120301_AddDbSetForShippingSettings")]
+    partial class AddDbSetForShippingSettings
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -326,8 +326,23 @@ namespace ShippingSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("AdditionalWeight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("AdditionalWeightCost")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<bool>("CashOnDeliveryEnabled")
                         .HasColumnType("bit");
+
+                    b.Property<decimal>("CollectionAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CollectionFeePercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CollectionFeeThreshold")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -389,6 +404,9 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("ShipperId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("ShippingCost")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -510,6 +528,52 @@ namespace ShippingSystem.Migrations
                     b.ToTable("ShipperPhones", (string)null);
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.ShippingSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("ShippingSettings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Key = "AdditionalWeightCost",
+                            Value = "5"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Key = "CollectionFeePercentage",
+                            Value = "0.01"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Key = "CollectionFeeThreshold",
+                            Value = "3000"
+                        });
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -599,8 +663,7 @@ namespace ShippingSystem.Migrations
                                 .HasColumnType("nvarchar");
 
                             b1.Property<string>("GoogleMapAddressLink")
-                                .HasMaxLength(255)
-                                .HasColumnType("nvarchar(255)");
+                                .HasColumnType("nvarchar(max)");
 
                             b1.Property<string>("Street")
                                 .IsRequired()

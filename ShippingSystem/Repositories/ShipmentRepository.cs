@@ -20,7 +20,7 @@ namespace ShippingSystem.Repositories
             _userManager = userManager;
         }
 
-        public async Task<OperationResult> AddShipment(string userId, AddShipmentDto shipmentDTO)
+        public async Task<OperationResult> AddShipment(string userId, ShipmentRequestDto shipmentRequestDTO)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
@@ -28,26 +28,27 @@ namespace ShippingSystem.Repositories
             var shipment = new Shipment
             {
                 ShipperId = userId,
-                ReceiverName = shipmentDTO.ReceiverName,
-                ReceiverPhone = shipmentDTO.ReceiverPhone,
-                ReceiverEmail = shipmentDTO.ReceiverEmail,
+                ReceiverName = shipmentRequestDTO.ReceiverName,
+                ReceiverPhone = shipmentRequestDTO.ReceiverPhone,
+                ReceiverEmail = shipmentRequestDTO.ReceiverEmail,
                 ReceiverAddress = new ReceiverAddress
                 {
-                    Street = shipmentDTO.Street,
-                    City = shipmentDTO.City,
-                    Country = shipmentDTO.Country,
-                    Details = shipmentDTO.AddressDetails
+                    Street = shipmentRequestDTO.Street,
+                    City = shipmentRequestDTO.City,
+                    Country = shipmentRequestDTO.Country,
+                    Details = shipmentRequestDTO.AddressDetails
                 },
-                ShipmentDescription = shipmentDTO.ShipmentDescription,
-                ShipmentWeight = shipmentDTO.ShipmentWeight,
-                ShipmentLength = shipmentDTO.ShipmentLength,
-                ShipmentWidth = shipmentDTO.ShipmentWidth,
-                ShipmentHeight = shipmentDTO.ShipmentHeight,
-                Quantity = shipmentDTO.Quantity,
-                ShipmentNotes = shipmentDTO.ShipmentNotes,
-                CashOnDeliveryEnabled = shipmentDTO.CashOnDeliveryEnabled,
-                OpenPackageOnDeliveryEnabled = shipmentDTO.OpenPackageOnDeliveryEnabled,
-                ExpressDeliveryEnabled = shipmentDTO.ExpressDeliveryEnabled
+                ShipmentDescription = shipmentRequestDTO.ShipmentDescription,
+                ShipmentWeight = shipmentRequestDTO.ShipmentWeight,
+                ShipmentLength = shipmentRequestDTO.ShipmentLength,
+                ShipmentWidth = shipmentRequestDTO.ShipmentWidth,
+                ShipmentHeight = shipmentRequestDTO.ShipmentHeight,
+                Quantity = shipmentRequestDTO.Quantity,
+                ShipmentNotes = shipmentRequestDTO.ShipmentNotes,
+                CashOnDeliveryEnabled = shipmentRequestDTO.CashOnDeliveryEnabled,
+                OpenPackageOnDeliveryEnabled = shipmentRequestDTO.OpenPackageOnDeliveryEnabled,
+                ExpressDeliveryEnabled = shipmentRequestDTO.ExpressDeliveryEnabled,
+                CollectionAmount = shipmentRequestDTO.CollectionAmount
             };
 
             _context.Shipments.Add(shipment);
@@ -70,21 +71,22 @@ namespace ShippingSystem.Repositories
             return OperationResult.Ok();
         }
 
-        public async Task<ValueOperationResult<List<GetShipmentsDTO>>> GetAllShipments(string userId)
+        public async Task<ValueOperationResult<List<ShipmentListDto>>> GetAllShipments(string userId)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
-                return ValueOperationResult<List<GetShipmentsDTO>>
+                return ValueOperationResult<List<ShipmentListDto>>
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
-            var shipmentsList = await _context.Shipments
+            var AllShipments = await _context.Shipments
                 .Where(s => s.ShipperId == userId)
-                .Select(shipment => new GetShipmentsDTO
+                .Select(shipment => new ShipmentListDto
                 {
                     Id = shipment.Id,
                     ReceiverName = shipment.ReceiverName,
                     ReceiverPhone = shipment.ReceiverPhone,
+                    ReceiverAdditionalPhone = shipment.ReceiverAdditionalPhone,
                     ReceiverEmail = shipment.ReceiverEmail,
-                    ReceiverAddress = new AddressDTO
+                    ReceiverAddress = new ReceiverAddressDto
                     {
                         Street = shipment.ReceiverAddress.Street,
                         City = shipment.ReceiverAddress.City,
@@ -102,11 +104,12 @@ namespace ShippingSystem.Repositories
                     CashOnDeliveryEnabled = shipment.CashOnDeliveryEnabled,
                     OpenPackageOnDeliveryEnabled = shipment.OpenPackageOnDeliveryEnabled,
                     ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
+                    CollectionAmount = shipment.CollectionAmount,
                     CreatedAt = shipment.CreatedAt,
                     UpdatedAt = shipment.UpdatedAt,
                     ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
                     ShipmentStatuses = shipment.ShipmentStatuses
-                        .Select(ss => new ShipmentStatusDTO
+                        .Select(ss => new ShipmentStatusDto
                         {
                             Id = ss.Id,
                             Status = ss.Status,
@@ -117,71 +120,70 @@ namespace ShippingSystem.Repositories
                 .AsNoTracking()
                 .ToListAsync();
 
-            ValueOperationResult<List<GetShipmentsDTO>> shipments =
-                ValueOperationResult<List<GetShipmentsDTO>>.Ok(shipmentsList);
-
-            return shipments;
+            return ValueOperationResult<List<ShipmentListDto>>.Ok(AllShipments);
         }
 
-        public async Task<ValueOperationResult<GetShipmentDetailsDTO?>> GetShipmentById(string userId, int id)
+        public async Task<ValueOperationResult<ShipmentDetailsDto?>> GetShipmentById(string userId, int id)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
-                return ValueOperationResult<GetShipmentDetailsDTO?>
+                return ValueOperationResult<ShipmentDetailsDto?>
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
-            var result = await _context.Shipments
+            var result = await _context.Shipments.Include(s => s.ShipmentStatuses)
                 .FirstOrDefaultAsync(s => s.ShipperId == userId && s.Id == id);
 
             if (result == null)
-                return ValueOperationResult<GetShipmentDetailsDTO?>
+                return ValueOperationResult<ShipmentDetailsDto?>
                     .Fail(StatusCodes.Status403Forbidden, "Forbidden");
 
-            var shipmentDetails = await _context.Shipments
-            .Where(s => s.ShipperId == userId && s.Id == id)
-            .Select(shipment => new GetShipmentDetailsDTO
+            ShipmentDetailsDto ShipmentDetails = new ShipmentDetailsDto
             {
-                Id = shipment.Id,
-                ReceiverName = shipment.ReceiverName,
-                ReceiverPhone = shipment.ReceiverPhone,
-                ReceiverAdditionalPhone = shipment.ReceiverAdditionalPhone,
-                ReceiverEmail = shipment.ReceiverEmail,
-                ReceiverAddress = new AddressDTO
+                Id = result.Id,
+                ReceiverName = result.ReceiverName,
+                ReceiverPhone = result.ReceiverPhone,
+                ReceiverAdditionalPhone = result.ReceiverAdditionalPhone,
+                ReceiverEmail = result.ReceiverEmail,
+                ReceiverAddress = new ReceiverAddressDto
                 {
-                    Street = shipment.ReceiverAddress.Street,
-                    City = shipment.ReceiverAddress.City,
-                    Country = shipment.ReceiverAddress.Country,
-                    Details = shipment.ReceiverAddress.Details
+                    Street = result.ReceiverAddress.Street,
+                    City = result.ReceiverAddress.City,
+                    Country = result.ReceiverAddress.Country,
+                    Details = result.ReceiverAddress.Details
                 },
-                ShipmentDescription = shipment.ShipmentDescription,
-                ShipmentWeight = shipment.ShipmentWeight,
-                ShipmentLength = shipment.ShipmentLength,
-                ShipmentWidth = shipment.ShipmentWidth,
-                ShipmentHeight = shipment.ShipmentHeight,
-                ShipmentVolume = shipment.ShipmentLength * shipment.ShipmentWidth * shipment.ShipmentHeight,
-                Quantity = shipment.Quantity,
-                ShipmentNotes = shipment.ShipmentNotes,
-                CashOnDeliveryEnabled = shipment.CashOnDeliveryEnabled,
-                OpenPackageOnDeliveryEnabled = shipment.OpenPackageOnDeliveryEnabled,
-                ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
-                CreatedAt = shipment.CreatedAt,
-                UpdatedAt = shipment.UpdatedAt,
-                ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
-                ShipmentStatuses = shipment.ShipmentStatuses
-                    .Select(ss => new ShipmentStatusDTO
+                ShipmentDescription = result.ShipmentDescription,
+                ShipmentWeight = result.ShipmentWeight,
+                ShipmentLength = result.ShipmentLength,
+                ShipmentWidth = result.ShipmentWidth,
+                ShipmentHeight = result.ShipmentHeight,
+                ShipmentVolume = result.ShipmentLength * result.ShipmentWidth * result.ShipmentHeight,
+                Quantity = result.Quantity,
+                ShipmentNotes = result.ShipmentNotes,
+                CashOnDeliveryEnabled = result.CashOnDeliveryEnabled,
+                OpenPackageOnDeliveryEnabled = result.OpenPackageOnDeliveryEnabled,
+                ExpressDeliveryEnabled = result.ExpressDeliveryEnabled,
+                CollectionAmount = result.CollectionAmount,
+                ShippingCost = result.ShippingCost,
+                AdditionalWeight = result.AdditionalWeight,
+                AdditionalWeightCost = result.AdditionalWeightCost,
+                CollectionFee = result.CollectionFee,
+                AdditionalCost = result.AdditionalCost,
+                CreatedAt = result.CreatedAt,
+                UpdatedAt = result.UpdatedAt,
+                ShipmentTrackingNumber = result.ShipmentTrackingNumber,
+                ShipmentStatuses = result.ShipmentStatuses
+                    .Select(ss => new ShipmentStatusDto
                     {
                         Id = ss.Id,
                         Status = ss.Status,
                         Timestamp = ss.Timestamp,
                         Notes = ss.Notes
                     }).ToList()
-            })
-            .AsNoTracking()
-            .FirstOrDefaultAsync();
+            };
 
-            return ValueOperationResult<GetShipmentDetailsDTO?>.Ok(shipmentDetails);
+            return ValueOperationResult<ShipmentDetailsDto?>.Ok(ShipmentDetails);
         }
 
-        public async Task<OperationResult> UpdateShipment(string userId, int id, AddShipmentDto shipmentDTO)
+        public async Task<OperationResult> UpdateShipment(string userId, int id, ShipmentRequestDto shipmentRequestDTO)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
@@ -192,25 +194,30 @@ namespace ShippingSystem.Repositories
             if (shipment == null)
                 return OperationResult.Fail(StatusCodes.Status403Forbidden, "Forbidden");
 
-            shipment.ReceiverName = shipmentDTO.ReceiverName;
-            shipment.ReceiverPhone = shipmentDTO.ReceiverPhone;
-            shipment.ReceiverEmail = shipmentDTO.ReceiverEmail;
-            shipment.ReceiverAddress.Street = shipmentDTO.Street;
-            shipment.ReceiverAddress.City = shipmentDTO.City;
-            shipment.ReceiverAddress.Country = shipmentDTO.Country;
-            shipment.ReceiverAddress.Details = shipmentDTO.AddressDetails;
-            shipment.ShipmentDescription = shipmentDTO.ShipmentDescription;
-            shipment.ShipmentWeight = shipmentDTO.ShipmentWeight;
-            shipment.ShipmentLength = shipmentDTO.ShipmentLength;
-            shipment.ShipmentWidth = shipmentDTO.ShipmentWidth;
-            shipment.ShipmentHeight = shipmentDTO.ShipmentHeight;
-            shipment.Quantity = shipmentDTO.Quantity;
-            shipment.ShipmentNotes = shipmentDTO.ShipmentNotes;
-            shipment.CashOnDeliveryEnabled = shipmentDTO.CashOnDeliveryEnabled;
-            shipment.OpenPackageOnDeliveryEnabled = shipmentDTO.OpenPackageOnDeliveryEnabled;
-            shipment.ExpressDeliveryEnabled = shipmentDTO.ExpressDeliveryEnabled;
+            shipment.ReceiverName = shipmentRequestDTO.ReceiverName;
+            shipment.ReceiverPhone = shipmentRequestDTO.ReceiverPhone;
+            shipment.ReceiverEmail = shipmentRequestDTO.ReceiverEmail;
+            shipment.ReceiverAddress.Street = shipmentRequestDTO.Street;
+            shipment.ReceiverAddress.City = shipmentRequestDTO.City;
+            shipment.ReceiverAddress.Country = shipmentRequestDTO.Country;
+            shipment.ReceiverAddress.Details = shipmentRequestDTO.AddressDetails;
+            shipment.ShipmentDescription = shipmentRequestDTO.ShipmentDescription;
+            shipment.ShipmentWeight = shipmentRequestDTO.ShipmentWeight;
+            shipment.ShipmentLength = shipmentRequestDTO.ShipmentLength;
+            shipment.ShipmentWidth = shipmentRequestDTO.ShipmentWidth;
+            shipment.ShipmentHeight = shipmentRequestDTO.ShipmentHeight;
+            shipment.Quantity = shipmentRequestDTO.Quantity;
+            shipment.ShipmentNotes = shipmentRequestDTO.ShipmentNotes;
+            shipment.CashOnDeliveryEnabled = shipmentRequestDTO.CashOnDeliveryEnabled;
+            shipment.OpenPackageOnDeliveryEnabled = shipmentRequestDTO.OpenPackageOnDeliveryEnabled;
+            shipment.ExpressDeliveryEnabled = shipmentRequestDTO.ExpressDeliveryEnabled;
+            shipment.CollectionAmount = shipmentRequestDTO.CollectionAmount;
 
-            _context.Shipments.Update(shipment);
+            var hasChanges = _context.Entry(shipment).State == EntityState.Modified
+                     || _context.Entry(shipment.ReceiverAddress).State == EntityState.Modified;
+
+            if (!hasChanges)
+                return OperationResult.Fail(StatusCodes.Status304NotModified, "No changes detected.");
 
             var result = await _context.SaveChangesAsync() > 0;
 

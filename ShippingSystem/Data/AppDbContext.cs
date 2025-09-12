@@ -12,8 +12,8 @@ namespace ShippingSystem.Data
         public DbSet<ShipperPhone> ShipperPhones { get; set; }
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<ShipmentStatus> ShipmentStatuses { get; set; }
-
-        public DbSet<RefreshToken> RefreshTokens { get; set; }  
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<ShippingSetting> ShippingSettings { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

@@ -56,6 +56,20 @@ namespace ShippingSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ShippingSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Key = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShippingSettings", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -218,7 +232,7 @@ namespace ShippingSystem.Migrations
                     ReceiverAddress_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ReceiverAddress_Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     ReceiverAddress_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ReceiverAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    ReceiverAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ReceiverEmail = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     ShipmentDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ShipmentWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -230,6 +244,12 @@ namespace ShippingSystem.Migrations
                     CashOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
                     OpenPackageOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
                     ExpressDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    CollectionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShippingCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AdditionalWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AdditionalWeightCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CollectionFeePercentage = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CollectionFeeThreshold = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ShipmentTrackingNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
@@ -323,6 +343,16 @@ namespace ShippingSystem.Migrations
                     { "8", null, "TechnicalSupport", "TECHNICALSUPPORT" }
                 });
 
+            migrationBuilder.InsertData(
+                table: "ShippingSettings",
+                columns: new[] { "Id", "Key", "Value" },
+                values: new object[,]
+                {
+                    { 1, "AdditionalWeightCost", "5" },
+                    { 2, "CollectionFeePercentage", "0.01" },
+                    { 3, "CollectionFeeThreshold", "3000" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -388,6 +418,12 @@ namespace ShippingSystem.Migrations
                 name: "IX_ShipperAddresses_ShipperId",
                 table: "ShipperAddresses",
                 column: "ShipperId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShippingSettings_Key",
+                table: "ShippingSettings",
+                column: "Key",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -419,6 +455,9 @@ namespace ShippingSystem.Migrations
 
             migrationBuilder.DropTable(
                 name: "ShipperPhones");
+
+            migrationBuilder.DropTable(
+                name: "ShippingSettings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

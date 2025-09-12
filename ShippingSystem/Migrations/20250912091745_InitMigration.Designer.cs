@@ -12,8 +12,8 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250910193544_AddShipmentCostAndPriceProperties")]
-    partial class AddShipmentCostAndPriceProperties
+    [Migration("20250912091745_InitMigration")]
+    partial class InitMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -326,19 +326,22 @@ namespace ShippingSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal?>("AdditionalWeight")
+                    b.Property<decimal>("AdditionalWeight")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("AdditionalWeightCost")
+                    b.Property<decimal>("AdditionalWeightCost")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("CashOnDeliveryEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<decimal?>("CollectionAmount")
+                    b.Property<decimal>("CollectionAmount")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("CollectionFee")
+                    b.Property<decimal>("CollectionFeePercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CollectionFeeThreshold")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -402,7 +405,7 @@ namespace ShippingSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<decimal?>("ShippingCost")
+                    b.Property<decimal>("ShippingCost")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -523,6 +526,52 @@ namespace ShippingSystem.Migrations
                     b.HasKey("ShipperId", "PhoneNumber");
 
                     b.ToTable("ShipperPhones", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.ShippingSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("ShippingSettings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Key = "AdditionalWeightCost",
+                            Value = "5"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Key = "CollectionFeePercentage",
+                            Value = "0.01"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Key = "CollectionFeeThreshold",
+                            Value = "3000"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

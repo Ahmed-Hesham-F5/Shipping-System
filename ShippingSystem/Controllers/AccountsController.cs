@@ -7,12 +7,12 @@ namespace ShippingSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountsController : ControllerBase
     {
         private readonly IShipperRepository _shipperRepository;
         private readonly IUserRepository _userRepository;
 
-        public AccountController(IShipperRepository shipperRepository, IUserRepository userRepository)
+        public AccountsController(IShipperRepository shipperRepository, IUserRepository userRepository)
         {
             _shipperRepository = shipperRepository;
             _userRepository = userRepository;
@@ -55,7 +55,13 @@ namespace ShippingSystem.Controllers
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
-            return Ok(result);
+            ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
+                success: true,
+                message: "User logged in successfully!",
+                data: result.Value
+            );
+
+            return Ok(response);
         }
 
         [HttpGet("refreshToken")]
@@ -64,7 +70,8 @@ namespace ShippingSystem.Controllers
             var refreshToken = Request.Cookies["refreshToken"];
 
             if (string.IsNullOrEmpty(refreshToken))
-                return BadRequest("Token is required!");
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new ApiResponse<AuthDTO>(false, "Token is required!"));
 
             var result = await _userRepository.RefreshTokenAsync(refreshToken);
 
@@ -74,7 +81,13 @@ namespace ShippingSystem.Controllers
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
-            return Ok(result);
+            ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
+                success: true,
+                message: "Token refreshed successfully!",
+                data: result.Value
+            );
+
+            return Ok(response);
         }
 
         [HttpPost("revokeToken")]
@@ -83,7 +96,8 @@ namespace ShippingSystem.Controllers
             var token = Request.Cookies["refreshToken"];
 
             if (string.IsNullOrEmpty(token))
-                return BadRequest("Token is required!");
+                return StatusCode(StatusCodes.Status400BadRequest,
+                    new ApiResponse<AuthDTO>(false, "Token is required!"));
 
             var result = await _userRepository.RevokeTokenAsync(token);
 
@@ -93,7 +107,7 @@ namespace ShippingSystem.Controllers
 
             Response.Cookies.Delete("refreshToken");
 
-            return Ok();
+            return NoContent();
         }
 
         private void SetRefreshTokenInCookie(string refreshToken, DateTime expires)
