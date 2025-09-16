@@ -139,7 +139,7 @@ namespace ShippingSystem
             // Cors policy
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll",
+                options.AddPolicy("MyPolicy",
                     policy =>
                     {
                         policy.WithOrigins("https://shipping-factory.web.app")
@@ -167,7 +167,8 @@ namespace ShippingSystem
 
             app.UseHttpsRedirection();
 
-            app.UseCors("AllowAll");
+            app.UseRouting();
+            app.UseCors("MyPolicy");
 
             app.UseAuthentication();
 
