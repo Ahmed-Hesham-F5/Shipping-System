@@ -142,9 +142,9 @@ namespace ShippingSystem
                 options.AddPolicy("AllowAll",
                     policy =>
                     {
-                        policy.AllowAnyOrigin()
+                        policy.WithOrigins("https://shipping-factory.web.app")
                                     .AllowAnyMethod()
-                                    .AllowAnyHeader();
+                                    .AllowAnyHeader().AllowCredentials();
                     });
             });
 
