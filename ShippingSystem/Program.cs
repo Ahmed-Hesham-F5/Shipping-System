@@ -8,7 +8,7 @@ using ShippingSystem.Interfaces;
 using ShippingSystem.Midleware;
 using ShippingSystem.Models;
 using ShippingSystem.Repositories;
-using ShippingSystem.Services;
+using ShippingSystem.Helpers;
 using ShippingSystem.Settings;
 using System.Text;
 
@@ -77,6 +77,9 @@ namespace ShippingSystem
                 };
             });
 
+            // Register ShippingSettingsService
+            builder.Services.AddSingleton<IShippingSettingsService, ShippingSettingsService>();
+
             // Register repositories
             builder.Services.AddScoped<IShipperRepository, ShipperRepository>();
             builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
@@ -139,13 +142,16 @@ namespace ShippingSystem
             // Cors policy
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("MyPolicy",
-                    policy =>
-                    {
-                        policy.WithOrigins("https://shipping-factory.web.app")
-                                    .AllowAnyMethod()
-                                    .AllowAnyHeader().AllowCredentials();
-                    });
+                options.AddPolicy("MyPolicy", policy =>
+                {
+                    policy.WithOrigins(
+                        "https://shipping-factory.web.app", // deployed frontend
+                        "http://localhost:3000"             // React dev server
+                    )
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+                });
             });
 
             // Build the application
@@ -167,7 +173,6 @@ namespace ShippingSystem
 
             app.UseHttpsRedirection();
 
-            app.UseRouting();
             app.UseCors("MyPolicy");
 
             app.UseAuthentication();

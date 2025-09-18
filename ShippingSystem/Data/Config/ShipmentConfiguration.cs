@@ -69,15 +69,14 @@ namespace ShippingSystem.Data.Config
                 .HasColumnType("nvarchar")
                 .HasMaxLength(500)
                 .IsRequired(false);
-
-            builder.HasIndex(shipment => shipment.ShipmentTrackingNumber)
-                .IsUnique();
-
             builder.HasMany(shipment => shipment.ShipmentStatuses)
                 .WithOne(status => status.Shipment)
                 .HasForeignKey(status => status.ShipmentId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(shipment => shipment.ShipmentTrackingNumber)
+                .IsUnique();
 
             builder.ToTable("Shipments");
         }

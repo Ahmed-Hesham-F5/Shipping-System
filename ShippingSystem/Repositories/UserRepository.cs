@@ -166,5 +166,20 @@ namespace ShippingSystem.Repositories
 
             return OperationResult.Ok();
         }
+
+        public async Task<ValueOperationResult<string>> GetUserRoleAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return ValueOperationResult<string>.Fail(StatusCodes.Status404NotFound, "User not found");
+
+            var role = await _userManager.GetRolesAsync(user);
+
+            if (role == null || role.Count == 0)
+                return ValueOperationResult<string>.Fail(StatusCodes.Status404NotFound, "Role not found");
+
+            return ValueOperationResult<string>.Ok(role.FirstOrDefault()!);
+        }
     }
 }

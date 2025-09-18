@@ -26,7 +26,7 @@ namespace ShippingSystem.Data.Config
                 .IsRequired();
 
             builder.HasData(
-                new ShippingSetting { Id = 1, Key = ShippingSettingKeys.AdditionalWeightCost, Value = "5" },
+                new ShippingSetting { Id = 1, Key = ShippingSettingKeys.AdditionalWeightCostPrtKg, Value = "5" },
                 new ShippingSetting { Id = 2, Key = ShippingSettingKeys.CollectionFeePercentage, Value = "0.01" },
                 new ShippingSetting { Id = 3, Key = ShippingSettingKeys.CollectionFeeThreshold, Value = "3000" }
             );

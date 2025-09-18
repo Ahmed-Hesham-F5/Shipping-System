@@ -26,34 +26,5 @@ namespace ShippingSystem.Data
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
-
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            var entries = ChangeTracker.Entries()
-                .Where(e => e.Entity is ITimeStamped &&
-                           (e.State == EntityState.Added || e.State == EntityState.Modified));
-
-            var now = DateTime.UtcNow;
-            now = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, DateTimeKind.Utc);
-
-            foreach (var entry in entries)
-            {
-                var entity = (ITimeStamped)entry.Entity;
-                var createdProp = entry.Property(nameof(ITimeStamped.CreatedAt));
-                var updatedProp = entry.Property(nameof(ITimeStamped.UpdatedAt));
-
-                if (entry.State == EntityState.Added)
-                {
-                    createdProp.CurrentValue = now;
-                    updatedProp.CurrentValue = now;
-                }
-                else if (entry.State == EntityState.Modified)
-                {
-                    updatedProp.CurrentValue = now;
-                }
-            }
-
-            return base.SaveChangesAsync(cancellationToken);
-        }
     }
 }

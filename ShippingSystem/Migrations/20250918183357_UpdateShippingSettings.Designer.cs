@@ -12,8 +12,8 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250912123157_UpdateShipmentsTable")]
-    partial class UpdateShipmentsTable
+    [Migration("20250918183357_UpdateShippingSettings")]
+    partial class UpdateShippingSettings
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -557,7 +557,7 @@ namespace ShippingSystem.Migrations
                         new
                         {
                             Id = 1,
-                            Key = "AdditionalWeightCost",
+                            Key = "AdditionalWeightCostPrtKg",
                             Value = "5"
                         },
                         new

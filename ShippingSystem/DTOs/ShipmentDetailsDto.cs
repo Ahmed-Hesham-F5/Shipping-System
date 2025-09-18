@@ -25,6 +25,7 @@
         public decimal AdditionalWeightCost { get; set; }
         public decimal CollectionFee { get; set; }
         public decimal AdditionalCost { get; set; }
+        public decimal TotalCost { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string ShipmentTrackingNumber { get; set; } = null!;

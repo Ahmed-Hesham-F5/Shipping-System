@@ -554,7 +554,7 @@ namespace ShippingSystem.Migrations
                         new
                         {
                             Id = 1,
-                            Key = "AdditionalWeightCost",
+                            Key = "AdditionalWeightCostPrtKg",
                             Value = "5"
                         },
                         new

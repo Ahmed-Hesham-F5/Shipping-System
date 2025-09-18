@@ -14,5 +14,6 @@ namespace ShippingSystem.Interfaces
         Task<ValueOperationResult<AuthDTO>> RefreshTokenAsync(string token);
         Task<OperationResult> RevokeTokenAsync(string token);
         Task<bool> IsEmailExistAsync(string email);
+        Task<ValueOperationResult<string>> GetUserRoleAsync(string userId);
     }
 }

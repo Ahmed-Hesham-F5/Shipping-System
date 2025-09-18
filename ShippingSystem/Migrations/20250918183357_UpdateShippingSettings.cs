@@ -5,7 +5,7 @@
 namespace ShippingSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateShipmentsTable : Migration
+    public partial class UpdateShippingSettings : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,6 +14,13 @@ namespace ShippingSystem.Migrations
                 name: "AdditionalWeightCost",
                 table: "Shipments",
                 newName: "AdditionalWeightCostPrtKg");
+
+            migrationBuilder.UpdateData(
+                table: "ShippingSettings",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "Key",
+                value: "AdditionalWeightCostPrtKg");
         }
 
         /// <inheritdoc />
@@ -23,6 +30,13 @@ namespace ShippingSystem.Migrations
                 name: "AdditionalWeightCostPrtKg",
                 table: "Shipments",
                 newName: "AdditionalWeightCost");
+
+            migrationBuilder.UpdateData(
+                table: "ShippingSettings",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "Key",
+                value: "AdditionalWeightCost");
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     public enum ShippingSettingKeys
     {
-        AdditionalWeightCost,
+        AdditionalWeightCostPrtKg,
         CollectionFeePercentage,
         CollectionFeeThreshold
     }

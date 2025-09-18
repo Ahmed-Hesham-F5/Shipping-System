@@ -1,9 +1,8 @@
-﻿using ShippingSystem.Interfaces;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShippingSystem.Models
 {
-    public class Shipment : ITimeStamped
+    public class Shipment
     {
         public int Id { get; set; }
         public string ShipperId { get; set; } = null!;
@@ -24,8 +23,6 @@ namespace ShippingSystem.Models
         public decimal ShipmentLength { get; set; }
         public decimal ShipmentWidth { get; set; }
         public decimal ShipmentHeight { get; set; }
-        [NotMapped]
-        public decimal ShipmentVolume => ShipmentLength * ShipmentWidth * ShipmentHeight;
         public int Quantity { get; set; }
         public string? ShipmentNotes { get; set; }
         public ICollection<ShipmentStatus> ShipmentStatuses { get; set; } = new List<ShipmentStatus>();
@@ -34,26 +31,36 @@ namespace ShippingSystem.Models
         public bool CashOnDeliveryEnabled { get; set; }
         public bool OpenPackageOnDeliveryEnabled { get; set; }
         public bool ExpressDeliveryEnabled { get; set; }
-        public decimal CollectionAmount { get; set; } = 0m; // Default collection amount if cod is disabled
+        public decimal CollectionAmount { get; set; }
 
-        // Managed by Hub/Admin
+        // Will be managed by Hub
+        public decimal AdditionalWeight { get; set; }
+
+        // Will be managed by the Routing Algorithm
         public decimal ShippingCost { get; set; } = 20m; // Default shipping cost (will be changed later)
-        public decimal AdditionalWeight { get; set; } = 0m; // Weight above the base weight
-        public decimal AdditionalWeightCostPrtKg { get; set; } = 5m; // Default additional weight cost per kg
-        public decimal CollectionFeePercentage { get; set; } = 0.01m; // Default 1% fee
-        public decimal CollectionFeeThreshold { get; set; } = 3000m; // Default minimum for fee application
 
+        // Managed by Shipping Setting (Hub/Admin detemines the shipping setting values)
+        public decimal AdditionalWeightCostPrtKg { get; set; }
+        public decimal CollectionFeePercentage { get; set; }
+        public decimal CollectionFeeThreshold { get; set; }
+
+        // Auto-managed properties
+        [NotMapped]
+        public decimal ShipmentVolume => ShipmentLength * ShipmentWidth * ShipmentHeight;
         [NotMapped]
         public decimal CollectionFee => CollectionAmount > CollectionFeeThreshold ? CollectionAmount * CollectionFeePercentage : 0m;
         [NotMapped]
         public decimal AdditionalWeightCost => AdditionalWeight * AdditionalWeightCostPrtKg;
         [NotMapped]
         public decimal AdditionalCost => AdditionalWeightCost + CollectionFee;
+        [NotMapped]
+        public decimal TotalCost => ShippingCost + AdditionalCost;
 
-        // Auto-managed properties
-        public DateTime CreatedAt { get; private set; }
-        public DateTime UpdatedAt { get; private set; }
-        public string ShipmentTrackingNumber { get; private set; } =
-            $"SHIP-{DateTime.UtcNow:ddMMyyyy}-{Guid.NewGuid().ToString("N")[..12]}";
+        // Managed when adding the shipment
+        public string ShipmentTrackingNumber { get; set; }
+
+        // Timestamps, Managed in Add/Update operations
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

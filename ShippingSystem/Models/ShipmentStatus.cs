@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using static ShippingSystem.Helpers.DateTimeExtensions;
 
 namespace ShippingSystem.Models
 {
@@ -16,16 +17,12 @@ namespace ShippingSystem.Models
         public DateTime Timestamp { get; private set; }
         public string? Notes { get; private set; }
 
-        // Factory method to enforce immutability
-        public static ShipmentStatus Create(int shipmentId, string status, string? notes)
+        public ShipmentStatus(int shipmentId, string status, string? notes)
         {
-            return new ShipmentStatus
-            {
-                ShipmentId = shipmentId,
-                Status = status,
-                Timestamp = DateTime.UtcNow,
-                Notes = notes
-            };
+            ShipmentId = shipmentId;
+            Status = status;
+            Timestamp = UtcNowTrimmedToSeconds();
+            Notes = notes;
         }
     }
 }
