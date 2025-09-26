@@ -21,7 +21,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPost("addShipment")]
-        public async Task<IActionResult> AddShipment([FromBody] ShipmentRequestDto shipmentDTO)
+        public async Task<IActionResult> AddShipment([FromBody] ShipmentFromRequestDto shipmentDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -54,8 +54,8 @@ namespace ShippingSystem.Controllers
             var result = await _shipmentRepository.GetAllShipments(userId);
 
             if (!result.Success)
-                return StatusCode(result.StatusCode, 
-                    new ApiResponse<List<ShipmentListDto>>(false, result.ErrorMessage));
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
 
             ApiResponse<List<ShipmentListDto>> response = new ApiResponse<List<ShipmentListDto>>
             (
@@ -80,7 +80,7 @@ namespace ShippingSystem.Controllers
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<List<ShipmentDetailsDto>>(false, result.ErrorMessage));
+                    new ApiResponse<string>(false, result.ErrorMessage));
 
             ApiResponse<ShipmentDetailsDto?> response = new ApiResponse<ShipmentDetailsDto?>
             (
@@ -93,7 +93,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPut("updateShipment/{id}")]
-        public async Task<IActionResult> UpdateShipment(int id, [FromBody] ShipmentRequestDto shipmentDTO)
+        public async Task<IActionResult> UpdateShipment(int id, [FromBody] ShipmentFromRequestDto shipmentDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -107,10 +107,17 @@ namespace ShippingSystem.Controllers
             var result = await _shipmentRepository.UpdateShipment(userId, id, shipmentDTO);
 
             if (!result.Success)
-                return StatusCode(result.StatusCode, 
+                return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            return Ok(new ApiResponse<string>(true, "Shipment updated successfully."));
+            ApiResponse<ShipmentDetailsDto?> response = new ApiResponse<ShipmentDetailsDto?>
+            (
+                data: result.Value!,
+                message: null!,
+                success: true
+            );
+
+            return Ok(response);
         }
 
         [HttpDelete("deleteShipment/{id}")]

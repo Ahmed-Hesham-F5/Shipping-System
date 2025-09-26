@@ -1,14 +1,20 @@
 ﻿using ShippingSystem.Validators;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ShippingSystem.DTOs
 {
-    public class ShipmentRequestDto
+    public class ShipmentFromRequestDto
     {
         [Required, MaxLength(100)]
         public string ReceiverName { get; set; } = null!;
-        [Required, MaxLength(11)]
+        [Required]
+        [MaxLength(11, ErrorMessage = "Phone number must be 11 digits.")]
+        [RegularExpression(@"^(010|011|012|015)\d{8}$", ErrorMessage = "Phone number must start with 010, 011, 012 or 015.")]
         public string ReceiverPhone { get; set; } = null!;
+        [MaxLength(11, ErrorMessage = "Phone number must be 11 digits.")]
+        [RegularExpression(@"^(010|011|012|015)\d{8}$", ErrorMessage = "Phone number must start with 010, 011, 012 or 015.")]
+        public string? ReceiverAdditionalPhone { get; set; } = null;
         [Required, MaxLength(255), EmailAddress]
         public string ReceiverEmail { get; set; } = null!;
         [Required, MaxLength(100)]
@@ -19,6 +25,8 @@ namespace ShippingSystem.DTOs
         public string Country { get; set; } = "Egypt";
         [MaxLength(500)]
         public string? AddressDetails { get; set; }
+        [MaxLength(2083), Url]
+        public string? GoogleMapAddressLink { get; set; }
 
         [Required, MaxLength(500)]
         public string ShipmentDescription { get; set; } = null!;

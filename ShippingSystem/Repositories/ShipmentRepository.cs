@@ -31,7 +31,7 @@ namespace ShippingSystem.Repositories
             _userRepository = userRepository;
         }
 
-        public async Task<OperationResult> AddShipment(string userId, ShipmentRequestDto shipmentRequestDTO)
+        public async Task<OperationResult> AddShipment(string userId, ShipmentFromRequestDto shipmentRequestDTO)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
@@ -101,7 +101,7 @@ namespace ShippingSystem.Repositories
                 await transaction.RollbackAsync();
 
                 _logger.LogError(
-                    "Max retries reached for user {UserId}. Could not generate unique tracking number.",
+                    "Could not generate unique tracking number for user {UserId}.",
                     userId
                 );
 
@@ -138,7 +138,7 @@ namespace ShippingSystem.Repositories
 
             if (getUserRoleResult.Value == RolesEnum.Shipper.ToString() && shipment.ShipperId != userId)
                 return OperationResult.Fail(StatusCodes.Status403Forbidden, "Forbidden");
-                
+
             var latestStatus = shipment.ShipmentStatuses
                 .OrderByDescending(ss => ss.Timestamp)
                 .FirstOrDefault();
@@ -152,7 +152,7 @@ namespace ShippingSystem.Repositories
             _context.ShipmentStatuses.Add(shipmentStatus);
 
             var result = await _context.SaveChangesAsync() > 0;
-           
+
             if (!result)
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred. Please try again later.");
@@ -218,49 +218,50 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<ShipmentDetailsDto?>
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
-            var result = await _context.Shipments.Include(s => s.ShipmentStatuses)
+            var shipment = await _context.Shipments.Include(s => s.ShipmentStatuses)
                 .FirstOrDefaultAsync(s => s.ShipperId == userId && s.Id == id);
 
-            if (result == null)
+            if (shipment == null)
                 return ValueOperationResult<ShipmentDetailsDto?>
                     .Fail(StatusCodes.Status403Forbidden, "Forbidden");
 
             ShipmentDetailsDto ShipmentDetails = new ShipmentDetailsDto
             {
-                Id = result.Id,
-                ReceiverName = result.ReceiverName,
-                ReceiverPhone = result.ReceiverPhone,
-                ReceiverAdditionalPhone = result.ReceiverAdditionalPhone,
-                ReceiverEmail = result.ReceiverEmail,
+                Id = shipment.Id,
+                ReceiverName = shipment.ReceiverName,
+                ReceiverPhone = shipment.ReceiverPhone,
+                ReceiverAdditionalPhone = shipment.ReceiverAdditionalPhone,
+                ReceiverEmail = shipment.ReceiverEmail,
                 ReceiverAddress = new ReceiverAddressDto
                 {
-                    Street = result.ReceiverAddress.Street,
-                    City = result.ReceiverAddress.City,
-                    Country = result.ReceiverAddress.Country,
-                    Details = result.ReceiverAddress.Details
+                    Street = shipment.ReceiverAddress.Street,
+                    City = shipment.ReceiverAddress.City,
+                    Country = shipment.ReceiverAddress.Country,
+                    Details = shipment.ReceiverAddress.Details,
+                    GoogleMapAddressLink = shipment.ReceiverAddress.GoogleMapAddressLink
                 },
-                ShipmentDescription = result.ShipmentDescription,
-                ShipmentWeight = result.ShipmentWeight,
-                ShipmentLength = result.ShipmentLength,
-                ShipmentWidth = result.ShipmentWidth,
-                ShipmentHeight = result.ShipmentHeight,
-                ShipmentVolume = result.ShipmentLength * result.ShipmentWidth * result.ShipmentHeight,
-                Quantity = result.Quantity,
-                ShipmentNotes = result.ShipmentNotes,
-                CashOnDeliveryEnabled = result.CashOnDeliveryEnabled,
-                OpenPackageOnDeliveryEnabled = result.OpenPackageOnDeliveryEnabled,
-                ExpressDeliveryEnabled = result.ExpressDeliveryEnabled,
-                CollectionAmount = result.CollectionAmount,
-                ShippingCost = result.ShippingCost,
-                AdditionalWeight = result.AdditionalWeight,
-                AdditionalWeightCost = result.AdditionalWeightCost,
-                CollectionFee = result.CollectionFee,
-                AdditionalCost = result.AdditionalCost,
-                TotalCost = result.TotalCost,
-                CreatedAt = result.CreatedAt,
-                UpdatedAt = result.UpdatedAt,
-                ShipmentTrackingNumber = result.ShipmentTrackingNumber,
-                ShipmentStatuses = result.ShipmentStatuses
+                ShipmentDescription = shipment.ShipmentDescription,
+                ShipmentWeight = shipment.ShipmentWeight,
+                ShipmentLength = shipment.ShipmentLength,
+                ShipmentWidth = shipment.ShipmentWidth,
+                ShipmentHeight = shipment.ShipmentHeight,
+                ShipmentVolume = shipment.ShipmentVolume,
+                Quantity = shipment.Quantity,
+                ShipmentNotes = shipment.ShipmentNotes,
+                CashOnDeliveryEnabled = shipment.CashOnDeliveryEnabled,
+                OpenPackageOnDeliveryEnabled = shipment.OpenPackageOnDeliveryEnabled,
+                ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
+                CollectionAmount = shipment.CollectionAmount,
+                ShippingCost = shipment.ShippingCost,
+                AdditionalWeight = shipment.AdditionalWeight,
+                AdditionalWeightCost = shipment.AdditionalWeightCost,
+                CollectionFee = shipment.CollectionFee,
+                AdditionalCost = shipment.AdditionalCost,
+                TotalCost = shipment.TotalCost,
+                CreatedAt = shipment.CreatedAt,
+                UpdatedAt = shipment.UpdatedAt,
+                ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
+                ShipmentStatuses = shipment.ShipmentStatuses
                     .Select(ss => new ShipmentStatusDto
                     {
                         Id = ss.Id,
@@ -273,19 +274,22 @@ namespace ShippingSystem.Repositories
             return ValueOperationResult<ShipmentDetailsDto?>.Ok(ShipmentDetails);
         }
 
-        public async Task<OperationResult> UpdateShipment(string userId, int id, ShipmentRequestDto shipmentRequestDTO)
+        public async Task<ValueOperationResult<ShipmentDetailsDto?>> UpdateShipment(string userId, int id, ShipmentFromRequestDto shipmentRequestDTO)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
-                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
+                return ValueOperationResult<ShipmentDetailsDto?>
+                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
             var shipment = await _context.Shipments
                 .FirstOrDefaultAsync(s => s.ShipperId == userId && s.Id == id);
 
             if (shipment == null)
-                return OperationResult.Fail(StatusCodes.Status403Forbidden, "Forbidden");
+                return ValueOperationResult<ShipmentDetailsDto?>
+                    .Fail(StatusCodes.Status403Forbidden, "Forbidden");
 
             shipment.ReceiverName = shipmentRequestDTO.ReceiverName;
             shipment.ReceiverPhone = shipmentRequestDTO.ReceiverPhone;
+            shipment.ReceiverAdditionalPhone = shipmentRequestDTO.ReceiverAdditionalPhone;
             shipment.ReceiverEmail = shipmentRequestDTO.ReceiverEmail;
             shipment.ReceiverAddress.Street = shipmentRequestDTO.Street;
             shipment.ReceiverAddress.City = shipmentRequestDTO.City;
@@ -307,17 +311,19 @@ namespace ShippingSystem.Repositories
                      || _context.Entry(shipment.ReceiverAddress).State == EntityState.Modified;
 
             if (!hasChanges)
-                return OperationResult.Fail(StatusCodes.Status304NotModified, "No changes detected.");
+                return ValueOperationResult<ShipmentDetailsDto?>
+                    .Fail(StatusCodes.Status304NotModified, "No changes detected.");
 
             shipment.UpdatedAt = UtcNowTrimmedToSeconds();
 
             var result = await _context.SaveChangesAsync() > 0;
 
             if (!result)
-                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
-                    "An unexpected error occurred. Please try again later.");
+                return ValueOperationResult<ShipmentDetailsDto?>
+                    .Fail(StatusCodes.Status500InternalServerError,
+                        "An unexpected error occurred. Please try again later.");
 
-            return OperationResult.Ok();
+            return await GetShipmentById(userId, id);
         }
 
         public async Task<OperationResult> DeleteShipment(string userId, int id)
