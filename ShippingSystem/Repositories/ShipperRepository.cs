@@ -1,4 +1,5 @@
-﻿using ShippingSystem.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using ShippingSystem.Data;
 using ShippingSystem.DTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
@@ -80,6 +81,33 @@ namespace ShippingSystem.Repositories
                 Console.WriteLine(e.Message.ToString());
                 return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
+        }
+
+        public async Task<ValueOperationResult<ShipperAddressDto?>> GetShipperAddressAsync(string shipperUserEmail)
+        {
+            if (string.IsNullOrEmpty(shipperUserEmail))
+                return ValueOperationResult<ShipperAddressDto?>.Fail(StatusCodes.Status400BadRequest, "Invalid shipper username.");
+
+            var shipper = await _context.Shippers
+                .Include(s => s.ApplicationUser)
+                .Include(s => s.Addresses)
+                .Where(s => s.ApplicationUser.Email == shipperUserEmail)
+                .Select(s => new
+                {
+                    Addresses = s.Addresses!.Select(address => new ShipperAddressDto
+                    {
+                        City = address.City,
+                        Street = address.Street,
+                        Country = address.Country,
+                        Details = address.Details
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (shipper == null)
+                return ValueOperationResult<ShipperAddressDto?>.Fail(StatusCodes.Status404NotFound, "Shipper address not found.");
+
+            return ValueOperationResult<ShipperAddressDto?>.Ok(shipper.Addresses.FirstOrDefault());
         }
     }
 }

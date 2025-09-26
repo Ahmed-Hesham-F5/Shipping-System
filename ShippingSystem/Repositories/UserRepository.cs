@@ -109,19 +109,11 @@ namespace ShippingSystem.Repositories
             user.RefreshTokens!.Add(refreshToken);
             await _userManager.UpdateAsync(user);
 
-            var userCity = _context.ShipperAddresses    
-                .FirstOrDefault(s => s.ShipperId == user.Id)?.City;
-
-            var userCountry = _context.ShipperAddresses
-                .FirstOrDefault(s => s.ShipperId == user.Id)?.Country;
-
             return ValueOperationResult<AuthDTO>.Ok(new AuthDTO
             {
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email!,
-                City = userCity!,
-                Country = userCountry!,
                 IsAuthenticated = true,
                 Roles = roles.ToList(),
                 Token = Token,

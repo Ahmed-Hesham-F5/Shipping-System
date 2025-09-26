@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs;
+using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
 
@@ -32,6 +33,11 @@ namespace ShippingSystem.Controllers
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
+            var shipperAddress = await _shipperRepository.GetShipperAddressAsync(shipperRegisterDTO.Email);
+
+            result.Value.City = shipperAddress.Value?.City ?? string.Empty;
+            result.Value.Country = shipperAddress.Value?.Country ?? string.Empty;
+
             ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
                 success: true,
                 message: "User registered successfully!",
@@ -54,6 +60,13 @@ namespace ShippingSystem.Controllers
                     new ApiResponse<AuthDTO>(false, result.ErrorMessage));
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
+
+            if (result.Value.Roles.Contains(RolesEnum.Shipper.ToString()))
+            {
+                var shipperAddress = await _shipperRepository.GetShipperAddressAsync(loginDTO.Email);
+                result.Value.City = shipperAddress.Value?.City ?? string.Empty;
+                result.Value.Country = shipperAddress.Value?.Country ?? string.Empty;
+            }
 
             ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
                 success: true,
