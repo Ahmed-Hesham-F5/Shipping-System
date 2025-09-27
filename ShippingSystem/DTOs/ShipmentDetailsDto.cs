@@ -26,9 +26,10 @@
         public decimal CollectionFee { get; set; }
         public decimal AdditionalCost { get; set; }
         public decimal TotalCost { get; set; }
+        public decimal NetPayout { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string ShipmentTrackingNumber { get; set; } = null!;
-        public ICollection<ShipmentStatusDto> ShipmentStatuses { get; set; } = new List<ShipmentStatusDto>();
+        public ICollection<ShipmentStatusHistoryDto> ShipmentStatuses { get; set; } = new List<ShipmentStatusHistoryDto>();
     }
 }

@@ -13,19 +13,18 @@ namespace ShippingSystem.Data.Config
 
             builder.Property(shipperAddress => shipperAddress.Street)
                 .HasColumnType("nvarchar")
-                .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(256)
+                .IsRequired();
 
             builder.Property(shipperAddress => shipperAddress.City)
                 .HasColumnType("nvarchar")
-                .IsRequired()
-                .HasMaxLength(50);
-
-            builder.Property(shipperAddress => shipperAddress.Country)
-                .HasColumnType("nvarchar")
-                .IsRequired()
                 .HasMaxLength(50)
-                .HasDefaultValue("Egypt");
+                .IsRequired();
+
+            builder.Property(shipperAddress => shipperAddress.Governorate)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(50)
+                .IsRequired();
 
             builder.Property(shipperAddress => shipperAddress.Details)
                 .HasColumnType("nvarchar")

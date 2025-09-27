@@ -1,6 +1,5 @@
 ﻿using ShippingSystem.Validators;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace ShippingSystem.DTOs
 {
@@ -17,12 +16,12 @@ namespace ShippingSystem.DTOs
         public string? ReceiverAdditionalPhone { get; set; } = null;
         [Required, MaxLength(255), EmailAddress]
         public string ReceiverEmail { get; set; } = null!;
-        [Required, MaxLength(100)]
+        [Required, MaxLength(256)]
         public string Street { get; set; } = null!;
         [Required, MaxLength(50)]
         public string City { get; set; } = null!;
-        [MaxLength(50)]
-        public string Country { get; set; } = "Egypt";
+        [Required, MaxLength(50)]
+        public string Governorate { get; set; } = null!;
         [MaxLength(500)]
         public string? AddressDetails { get; set; }
         [MaxLength(2083), Url]

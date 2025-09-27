@@ -24,14 +24,14 @@ namespace ShippingSystem.DTOs
         [MaxLength(255), Url]
         public string? CompanyLink { get; set; }
 
+        [Required, MaxLength(256)]
+        public string Street { get; set; } = null!;
+
         [Required, MaxLength(50)]
         public string City { get; set; } = null!;
 
-        [Required, MaxLength(100)]
-        public string Street { get; set; } = null!;
-
-        [MaxLength(50)]
-        public string Country { get; set; } = "Egypt";
+        [Required, MaxLength(50)]
+        public string Governorate { get; set; } = null!;
 
         [MaxLength(500)]
         public string? Details { get; set; }

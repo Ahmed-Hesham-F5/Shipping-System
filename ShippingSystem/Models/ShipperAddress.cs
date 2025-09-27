@@ -9,7 +9,7 @@ namespace ShippingSystem.Models
         public int Id { get; set; }
         public string Street { get; set; } = null!;
         public string City { get; set; } = null!;
-        public string Country { get; set; } = "Egypt";
+        public string Governorate { get; set; } = null!;
         public string? Details { get; set; }
         public string ShipperId { get; set; } = null!;
 

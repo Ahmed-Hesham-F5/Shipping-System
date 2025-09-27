@@ -93,9 +93,10 @@ namespace ShippingSystem.Repositories
             var userClaims = await _userManager.GetClaimsAsync(user);
 
             var roles = await _userManager.GetRolesAsync(user);
+            var role = roles.FirstOrDefault();
 
-            foreach (var role in roles)
-                userClaims.Add(new Claim("roles", role));
+            if (role != null)
+                userClaims.Add(new Claim("role", role));
 
             _authService.CreateJwtToken(user, userClaims, out string Token, out DateTime ExpiresOn);
 
@@ -115,7 +116,7 @@ namespace ShippingSystem.Repositories
                 LastName = user.LastName,
                 Email = user.Email!,
                 IsAuthenticated = true,
-                Roles = roles.ToList(),
+                Role = role ?? string.Empty,
                 Token = Token,
                 ExpiresOn = ExpiresOn,
                 RefreshToken = refreshToken.Token,

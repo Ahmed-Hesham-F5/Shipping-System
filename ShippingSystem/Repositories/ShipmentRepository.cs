@@ -60,8 +60,9 @@ namespace ShippingSystem.Repositories
                     {
                         Street = shipmentRequestDTO.Street,
                         City = shipmentRequestDTO.City,
-                        Country = shipmentRequestDTO.Country,
-                        Details = shipmentRequestDTO.AddressDetails
+                        Governorate = shipmentRequestDTO.Governorate,
+                        Details = shipmentRequestDTO.AddressDetails,
+                        GoogleMapAddressLink = shipmentRequestDTO.GoogleMapAddressLink
                     },
                     ShipmentDescription = shipmentRequestDTO.ShipmentDescription,
                     ShipmentWeight = shipmentRequestDTO.ShipmentWeight,
@@ -173,38 +174,25 @@ namespace ShippingSystem.Repositories
                     Id = shipment.Id,
                     ReceiverName = shipment.ReceiverName,
                     ReceiverPhone = shipment.ReceiverPhone,
-                    ReceiverAdditionalPhone = shipment.ReceiverAdditionalPhone,
-                    ReceiverEmail = shipment.ReceiverEmail,
                     ReceiverAddress = new ReceiverAddressDto
                     {
                         Street = shipment.ReceiverAddress.Street,
                         City = shipment.ReceiverAddress.City,
-                        Country = shipment.ReceiverAddress.Country,
-                        Details = shipment.ReceiverAddress.Details
+                        Governorate = shipment.ReceiverAddress.Governorate,
+                        Details = shipment.ReceiverAddress.Details,
+                        GoogleMapAddressLink = shipment.ReceiverAddress.GoogleMapAddressLink
                     },
                     ShipmentDescription = shipment.ShipmentDescription,
-                    ShipmentWeight = shipment.ShipmentWeight,
-                    ShipmentLength = shipment.ShipmentLength,
-                    ShipmentWidth = shipment.ShipmentWidth,
-                    ShipmentHeight = shipment.ShipmentHeight,
-                    ShipmentVolume = shipment.ShipmentLength * shipment.ShipmentWidth * shipment.ShipmentHeight,
-                    Quantity = shipment.Quantity,
-                    ShipmentNotes = shipment.ShipmentNotes,
-                    CashOnDeliveryEnabled = shipment.CashOnDeliveryEnabled,
-                    OpenPackageOnDeliveryEnabled = shipment.OpenPackageOnDeliveryEnabled,
                     ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
                     CollectionAmount = shipment.CollectionAmount,
                     CreatedAt = shipment.CreatedAt,
-                    UpdatedAt = shipment.UpdatedAt,
-                    ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
-                    ShipmentStatuses = shipment.ShipmentStatuses
-                        .Select(ss => new ShipmentStatusDto
+                    LatestShipmentStatus = shipment.ShipmentStatuses
+                        .OrderByDescending(ss => ss.Timestamp)
+                        .Select(ss => new LatestShipmentStatusDto
                         {
-                            Id = ss.Id,
                             Status = ss.Status,
                             Timestamp = ss.Timestamp,
-                            Notes = ss.Notes
-                        }).ToList()
+                        }).FirstOrDefault()
                 })
                 .AsNoTracking()
                 .ToListAsync();
@@ -236,7 +224,7 @@ namespace ShippingSystem.Repositories
                 {
                     Street = shipment.ReceiverAddress.Street,
                     City = shipment.ReceiverAddress.City,
-                    Country = shipment.ReceiverAddress.Country,
+                    Governorate = shipment.ReceiverAddress.Governorate,
                     Details = shipment.ReceiverAddress.Details,
                     GoogleMapAddressLink = shipment.ReceiverAddress.GoogleMapAddressLink
                 },
@@ -258,13 +246,14 @@ namespace ShippingSystem.Repositories
                 CollectionFee = shipment.CollectionFee,
                 AdditionalCost = shipment.AdditionalCost,
                 TotalCost = shipment.TotalCost,
+                NetPayout = shipment.NetPayout,
                 CreatedAt = shipment.CreatedAt,
                 UpdatedAt = shipment.UpdatedAt,
                 ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
                 ShipmentStatuses = shipment.ShipmentStatuses
-                    .Select(ss => new ShipmentStatusDto
+                    .OrderByDescending(ss => ss.Timestamp)
+                    .Select(ss => new ShipmentStatusHistoryDto
                     {
-                        Id = ss.Id,
                         Status = ss.Status,
                         Timestamp = ss.Timestamp,
                         Notes = ss.Notes
@@ -293,8 +282,9 @@ namespace ShippingSystem.Repositories
             shipment.ReceiverEmail = shipmentRequestDTO.ReceiverEmail;
             shipment.ReceiverAddress.Street = shipmentRequestDTO.Street;
             shipment.ReceiverAddress.City = shipmentRequestDTO.City;
-            shipment.ReceiverAddress.Country = shipmentRequestDTO.Country;
+            shipment.ReceiverAddress.Governorate = shipmentRequestDTO.Governorate;
             shipment.ReceiverAddress.Details = shipmentRequestDTO.AddressDetails;
+            shipment.ReceiverAddress.GoogleMapAddressLink = shipmentRequestDTO.GoogleMapAddressLink;
             shipment.ShipmentDescription = shipmentRequestDTO.ShipmentDescription;
             shipment.ShipmentWeight = shipmentRequestDTO.ShipmentWeight;
             shipment.ShipmentLength = shipmentRequestDTO.ShipmentLength;

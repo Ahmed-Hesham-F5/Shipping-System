@@ -55,9 +55,11 @@ namespace ShippingSystem.Models
         public decimal AdditionalCost => AdditionalWeightCost + CollectionFee;
         [NotMapped]
         public decimal TotalCost => ShippingCost + AdditionalCost;
+        [NotMapped]
+        public decimal NetPayout => CollectionAmount - TotalCost;
 
         // Managed when adding the shipment
-        public string ShipmentTrackingNumber { get; set; }
+        public string ShipmentTrackingNumber { get; set; } = null!;
 
         // Timestamps, Managed in Add/Update operations
         public DateTime CreatedAt { get; set; }

@@ -29,14 +29,14 @@ namespace ShippingSystem.Controllers
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<AuthDTO>(false, result.ErrorMessage));
+                    new ApiResponse<string>(false, result.ErrorMessage));
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
             var shipperAddress = await _shipperRepository.GetShipperAddressAsync(shipperRegisterDTO.Email);
 
             result.Value.City = shipperAddress.Value?.City ?? string.Empty;
-            result.Value.Country = shipperAddress.Value?.Country ?? string.Empty;
+            result.Value.Governorate = shipperAddress.Value?.Governorate ?? string.Empty;
 
             ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
                 success: true,
@@ -57,15 +57,15 @@ namespace ShippingSystem.Controllers
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<AuthDTO>(false, result.ErrorMessage));
+                    new ApiResponse<string>(false, result.ErrorMessage));
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
-            if (result.Value.Roles.Contains(RolesEnum.Shipper.ToString()))
+            if (result.Value.Role == (RolesEnum.Shipper.ToString()))
             {
                 var shipperAddress = await _shipperRepository.GetShipperAddressAsync(loginDTO.Email);
                 result.Value.City = shipperAddress.Value?.City ?? string.Empty;
-                result.Value.Country = shipperAddress.Value?.Country ?? string.Empty;
+                result.Value.Governorate = shipperAddress.Value?.Governorate ?? string.Empty;
             }
 
             ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
@@ -84,13 +84,13 @@ namespace ShippingSystem.Controllers
 
             if (string.IsNullOrEmpty(refreshToken))
                 return StatusCode(StatusCodes.Status400BadRequest,
-                    new ApiResponse<AuthDTO>(false, "Token is required!"));
+                    new ApiResponse<string>(false, "Token is required!"));
 
             var result = await _userRepository.RefreshTokenAsync(refreshToken);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<AuthDTO>(success: false, message: result.ErrorMessage));
+                    new ApiResponse<string>(success: false, message: result.ErrorMessage));
 
             SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
@@ -110,13 +110,13 @@ namespace ShippingSystem.Controllers
 
             if (string.IsNullOrEmpty(token))
                 return StatusCode(StatusCodes.Status400BadRequest,
-                    new ApiResponse<AuthDTO>(false, "Token is required!"));
+                    new ApiResponse<string>(false, "Token is required!"));
 
             var result = await _userRepository.RevokeTokenAsync(token);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
-                    new ApiResponse<AuthDTO>(success: false, message: result.ErrorMessage));
+                    new ApiResponse<string>(success: false, message: result.ErrorMessage));
 
             Response.Cookies.Delete("refreshToken");
 

@@ -54,7 +54,7 @@ namespace ShippingSystem.Repositories
                 {
                     City = shipperRegisterDTO.City,
                     Street = shipperRegisterDTO.Street,
-                    Country = shipperRegisterDTO.Country,
+                    Governorate = shipperRegisterDTO.Governorate,
                     Details = shipperRegisterDTO.Details,
                     ShipperId = shipper.ShipperId
                 });
@@ -98,7 +98,7 @@ namespace ShippingSystem.Repositories
                     {
                         City = address.City,
                         Street = address.Street,
-                        Country = address.Country,
+                        Governorate = address.Governorate,
                         Details = address.Details
                     }).ToList()
                 })

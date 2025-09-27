@@ -31,7 +31,7 @@ namespace ShippingSystem.Data.Config
             {
                 address.Property(a => a.Street)
                 .HasColumnType("nvarchar")
-                .HasMaxLength(100)
+                .HasMaxLength(256)
                 .IsRequired();
 
                 address.Property(a => a.City)
@@ -39,7 +39,7 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(50)
                 .IsRequired();
 
-                address.Property(a => a.Country)
+                address.Property(a => a.Governorate)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(50)
                 .IsRequired(false);
@@ -47,6 +47,11 @@ namespace ShippingSystem.Data.Config
                 address.Property(a => a.Details)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(500)
+                .IsRequired(false);
+
+                address.Property(a => a.GoogleMapAddressLink)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(2083)
                 .IsRequired(false);
             });
 
