@@ -92,7 +92,7 @@ namespace ShippingSystem.Repositories
 
                 await _context.SaveChangesAsync();
 
-                await EditShipmentStatus(userId, shipment.Id, ShipmentStatusEnum.Pending, "Shipment created");
+                await UpdateShipmentStatus(userId, shipment.Id, ShipmentStatusEnum.Pending, "Shipment created");
 
                 await transaction.CommitAsync();
             }
@@ -122,7 +122,7 @@ namespace ShippingSystem.Repositories
             return OperationResult.Ok();
         }
 
-        public async Task<OperationResult> EditShipmentStatus(string userId, int shipmentId, ShipmentStatusEnum newStatus, string? notes = null)
+        public async Task<OperationResult> UpdateShipmentStatus(string userId, int shipmentId, ShipmentStatusEnum newStatus, string? notes = null)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
@@ -161,14 +161,34 @@ namespace ShippingSystem.Repositories
             return OperationResult.Ok();
         }
 
-        public async Task<ValueOperationResult<List<ShipmentListDto>>> GetAllShipments(string userId)
+        public async Task<ValueOperationResult<List<ShipmentListDto>>> GetAllShipments(string userId,
+            string? statusFilter = null)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return ValueOperationResult<List<ShipmentListDto>>
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
-            var AllShipments = await _context.Shipments
+            var query = _context.Shipments
                 .Where(s => s.ShipperId == userId)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                if (!Enum.TryParse<ShipmentStatusEnum>(statusFilter, true, out var statusEnum))
+                {
+                    var validStatuses = string.Join(", ", Enum.GetNames(typeof(ShipmentStatusEnum)));
+                    return ValueOperationResult<List<ShipmentListDto>>
+                        .Fail(StatusCodes.Status400BadRequest,
+                              $"Invalid status filter. Allowed values: {validStatuses}");
+                }
+
+                query = query.Where(s => s.ShipmentStatuses
+                    .OrderByDescending(ss => ss.Timestamp)
+                    .Select(ss => ss.Status)
+                    .FirstOrDefault() == statusEnum.ToString());
+            }
+
+            var AllShipments = await query
                 .Select(shipment => new ShipmentListDto
                 {
                     Id = shipment.Id,
@@ -334,6 +354,51 @@ namespace ShippingSystem.Repositories
             if (!result)
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> PickupRequest(string userId, PickupRequestDto pickupRequestDto)
+        {
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
+
+            var validShipmentIds = await _context.Shipments
+                    .Where(s => s.ShipperId == userId && pickupRequestDto.ShipmentIds.Contains(s.Id))
+                    .Select(s => s.Id)
+                    .ToListAsync();
+
+            if (validShipmentIds.Count != pickupRequestDto.ShipmentIds.Count)
+                return OperationResult.Fail(StatusCodes.Status403Forbidden, "Some shipments are invalid or don’t belong to this user");
+
+            var pickupRequest = new PickupRequest
+            {
+                ShipperId = userId,
+                PickupDate = pickupRequestDto.PickupDate,
+                WindowStart = pickupRequestDto.WindowStart,
+                WindowEnd = pickupRequestDto.WindowEnd,
+                Street = pickupRequestDto.Street,
+                City = pickupRequestDto.City,
+                Governorate = pickupRequestDto.Governorate,
+                Details = pickupRequestDto.Details,
+                ContactName = pickupRequestDto.ContactName,
+                ContactPhone = pickupRequestDto.ContactPhone,
+                PickupRequestShipments = validShipmentIds
+                    .Select(id => new PickupRequestShipment
+                    {
+                        ShipmentId = id
+                    }).ToList()
+            };
+
+            await _context.PickupRequests.AddAsync(pickupRequest);
+
+            var result = await _context.SaveChangesAsync() > 0;
+            if (!result)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            foreach (var item in validShipmentIds)
+                await UpdateShipmentStatus(userId, item, ShipmentStatusEnum.WatingForPickup, "Ready For Pickup");
 
             return OperationResult.Ok();
         }

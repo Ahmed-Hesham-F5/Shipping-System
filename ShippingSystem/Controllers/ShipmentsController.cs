@@ -43,7 +43,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpGet("getShipments")]
-        public async Task<IActionResult> GetAllShipments()
+        public async Task<IActionResult> GetAllShipments([FromQuery] string? statusFilter = null)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -51,7 +51,7 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.GetAllShipments(userId);
+            var result = await _shipmentRepository.GetAllShipments(userId, statusFilter);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
@@ -136,6 +136,28 @@ namespace ShippingSystem.Controllers
                     new ApiResponse<string>(false, result.ErrorMessage));
 
             return NoContent();
+        }
+
+        [HttpPost("pickupRequest")]
+        public async Task<IActionResult> pickupRequest([FromBody] PickupRequestDto pickupRequestDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.PickupRequest(userId, pickupRequestDto);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return StatusCode(StatusCodes.Status201Created,
+                new ApiResponse<string>(true, "Pickup request created successfully."));
         }
     }
 }
