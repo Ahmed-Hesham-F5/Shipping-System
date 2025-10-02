@@ -31,7 +31,7 @@ namespace ShippingSystem.Repositories
             _userRepository = userRepository;
         }
 
-        public async Task<OperationResult> AddShipment(string userId, ShipmentFromRequestDto shipmentRequestDTO)
+        public async Task<OperationResult> AddShipment(string userId, CreateShipmentDto shipmentRequestDTO)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
@@ -161,34 +161,14 @@ namespace ShippingSystem.Repositories
             return OperationResult.Ok();
         }
 
-        public async Task<ValueOperationResult<List<ShipmentListDto>>> GetAllShipments(string userId,
-            string? statusFilter = null)
+        public async Task<ValueOperationResult<List<ShipmentListDto>>> GetAllShipments(string userId)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return ValueOperationResult<List<ShipmentListDto>>
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
 
-            var query = _context.Shipments
+            var AllShipments = await _context.Shipments
                 .Where(s => s.ShipperId == userId)
-                .AsQueryable();
-
-            if (!string.IsNullOrEmpty(statusFilter))
-            {
-                if (!Enum.TryParse<ShipmentStatusEnum>(statusFilter, true, out var statusEnum))
-                {
-                    var validStatuses = string.Join(", ", Enum.GetNames(typeof(ShipmentStatusEnum)));
-                    return ValueOperationResult<List<ShipmentListDto>>
-                        .Fail(StatusCodes.Status400BadRequest,
-                              $"Invalid status filter. Allowed values: {validStatuses}");
-                }
-
-                query = query.Where(s => s.ShipmentStatuses
-                    .OrderByDescending(ss => ss.Timestamp)
-                    .Select(ss => ss.Status)
-                    .FirstOrDefault() == statusEnum.ToString());
-            }
-
-            var AllShipments = await query
                 .Select(shipment => new ShipmentListDto
                 {
                     Id = shipment.Id,
@@ -283,7 +263,7 @@ namespace ShippingSystem.Repositories
             return ValueOperationResult<ShipmentDetailsDto?>.Ok(ShipmentDetails);
         }
 
-        public async Task<ValueOperationResult<ShipmentDetailsDto?>> UpdateShipment(string userId, int id, ShipmentFromRequestDto shipmentRequestDTO)
+        public async Task<ValueOperationResult<ShipmentDetailsDto?>> UpdateShipment(string userId, int id, UpdateShipmentDto shipmentRequestDTO)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return ValueOperationResult<ShipmentDetailsDto?>
@@ -358,7 +338,7 @@ namespace ShippingSystem.Repositories
             return OperationResult.Ok();
         }
 
-        public async Task<OperationResult> PickupRequest(string userId, PickupRequestDto pickupRequestDto)
+        public async Task<OperationResult> CreatePickupRequest(string userId, CreatePickupRequestDto pickupRequestDto)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
                 return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
@@ -401,6 +381,57 @@ namespace ShippingSystem.Repositories
                 await UpdateShipmentStatus(userId, item, ShipmentStatusEnum.WatingForPickup, "Ready For Pickup");
 
             return OperationResult.Ok();
+        }
+
+        public async Task<ValueOperationResult<List<PendingShipmentListDto>>> GetAllPendingShipments(string userId)
+        {
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return ValueOperationResult<List<PendingShipmentListDto>>
+                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
+
+            var AllPendingShipments = await _context.Shipments
+                .Include(s => s.ShipmentStatuses)
+                .Where(s => s.ShipperId == userId)
+                .Where(s => s.ShipmentStatuses
+                    .OrderByDescending(ss => ss.Timestamp)
+                    .Select(ss => ss.Status)
+                    .FirstOrDefault() == ShipmentStatusEnum.Pending.ToString())
+                .Select(shipment => new PendingShipmentListDto
+                {
+                    Id = shipment.Id,
+                    ReceiverName = shipment.ReceiverName,
+                    ReceiverPhone = shipment.ReceiverPhone,
+                    ReceiverAddress = new ReceiverAddressDto
+                    {
+                        Street = shipment.ReceiverAddress.Street,
+                        City = shipment.ReceiverAddress.City,
+                        Governorate = shipment.ReceiverAddress.Governorate,
+                        Details = shipment.ReceiverAddress.Details,
+                        GoogleMapAddressLink = shipment.ReceiverAddress.GoogleMapAddressLink
+                    },
+                    ShipmentDescription = shipment.ShipmentDescription,
+                    ShipmentWeight = shipment.ShipmentWeight,
+                    Quantity = shipment.Quantity,
+                    ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
+                    CollectionAmount = shipment.CollectionAmount,
+                    CreatedAt = shipment.CreatedAt,
+                    LatestShipmentStatus = shipment.ShipmentStatuses
+                        .OrderByDescending(ss => ss.Timestamp)
+                        .Select(ss => new LatestShipmentStatusDto
+                        {
+                            Status = ss.Status,
+                            Timestamp = ss.Timestamp,
+                        }).FirstOrDefault()
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return ValueOperationResult<List<PendingShipmentListDto>>.Ok(AllPendingShipments);
+        }
+
+        public Task<ValueOperationResult<List<PickupRequestListDto>>> GetAllPickupRequests(string userId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

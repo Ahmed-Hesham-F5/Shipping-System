@@ -21,7 +21,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPost("addShipment")]
-        public async Task<IActionResult> AddShipment([FromBody] ShipmentFromRequestDto shipmentDTO)
+        public async Task<IActionResult> AddShipment([FromBody] CreateShipmentDto shipmentDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -43,7 +43,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpGet("getShipments")]
-        public async Task<IActionResult> GetAllShipments([FromQuery] string? statusFilter = null)
+        public async Task<IActionResult> GetAllShipments()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -51,7 +51,7 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.GetAllShipments(userId, statusFilter);
+            var result = await _shipmentRepository.GetAllShipments(userId);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
@@ -93,7 +93,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPut("updateShipment/{id}")]
-        public async Task<IActionResult> UpdateShipment(int id, [FromBody] ShipmentFromRequestDto shipmentDTO)
+        public async Task<IActionResult> UpdateShipment(int id, [FromBody] UpdateShipmentDto shipmentDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -139,7 +139,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPost("pickupRequest")]
-        public async Task<IActionResult> pickupRequest([FromBody] PickupRequestDto pickupRequestDto)
+        public async Task<IActionResult> pickupRequest([FromBody] CreatePickupRequestDto pickupRequestDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -150,7 +150,7 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.PickupRequest(userId, pickupRequestDto);
+            var result = await _shipmentRepository.CreatePickupRequest(userId, pickupRequestDto);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,

@@ -2,7 +2,7 @@
 
 namespace ShippingSystem.DTOs
 {
-    public class PickupRequestDto
+    public class CreatePickupRequestDto
     {
         [Required]
         public DateOnly PickupDate { get; set; }

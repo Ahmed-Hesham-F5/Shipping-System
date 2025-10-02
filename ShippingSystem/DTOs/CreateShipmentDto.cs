@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ShippingSystem.DTOs
 {
-    public class ShipmentFromRequestDto
+    public class CreateShipmentDto
     {
         [Required, MaxLength(100)]
         public string ReceiverName { get; set; } = null!;
