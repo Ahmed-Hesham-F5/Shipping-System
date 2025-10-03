@@ -14,6 +14,6 @@ namespace ShippingSystem.Interfaces
         Task<OperationResult> DeleteShipment(string userId, int id);
         Task<OperationResult> UpdateShipmentStatus(string userId, int shipmentId, ShipmentStatusEnum newStatus, string? notes = null);
         Task<OperationResult> CreatePickupRequest(string userId, CreatePickupRequestDto pickupRequestDto);
-        Task<ValueOperationResult<List<PickupRequestListDto>>> GetAllPickupRequests(string userId);
+        Task<ValueOperationResult<List<RequestListDto>>> GetAllRequests(string userId);
     }
 }

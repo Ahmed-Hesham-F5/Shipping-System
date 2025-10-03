@@ -219,6 +219,29 @@ namespace ShippingSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Requests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RequestType = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ShipmentsCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Requests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Requests_Shippers_ShipperId",
+                        column: x => x.ShipperId,
+                        principalTable: "Shippers",
+                        principalColumn: "ShipperId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Shipments",
                 columns: table => new
                 {
@@ -228,11 +251,11 @@ namespace ShippingSystem.Migrations
                     ReceiverName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     ReceiverPhone = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false),
                     ReceiverAdditionalPhone = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: true),
-                    ReceiverAddress_Street = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ReceiverAddress_Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     ReceiverAddress_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    ReceiverAddress_Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ReceiverAddress_Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     ReceiverAddress_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ReceiverAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReceiverAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(2083)", maxLength: 2083, nullable: true),
                     ReceiverEmail = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     ShipmentDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ShipmentWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -245,14 +268,14 @@ namespace ShippingSystem.Migrations
                     OpenPackageOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
                     ExpressDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
                     CollectionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ShippingCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     AdditionalWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    AdditionalWeightCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShippingCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AdditionalWeightCostPrtKg = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CollectionFeePercentage = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CollectionFeeThreshold = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShipmentTrackingNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ShipmentTrackingNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -271,9 +294,9 @@ namespace ShippingSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Street = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false, defaultValue: "Egypt"),
+                    Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -307,6 +330,33 @@ namespace ShippingSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PickupRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    PickupDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    WindowStart = table.Column<TimeOnly>(type: "time", nullable: false),
+                    WindowEnd = table.Column<TimeOnly>(type: "time", nullable: false),
+                    PickupAddress_Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    PickupAddress_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PickupAddress_Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PickupAddress_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    PickupAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(2083)", maxLength: 2083, nullable: true),
+                    ContactName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ContactPhone = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PickupRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PickupRequests_Requests_Id",
+                        column: x => x.Id,
+                        principalTable: "Requests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ShipmentStatuses",
                 columns: table => new
                 {
@@ -326,6 +376,29 @@ namespace ShippingSystem.Migrations
                         principalTable: "Shipments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PickupRequestShipments",
+                columns: table => new
+                {
+                    PickupRequestId = table.Column<int>(type: "int", nullable: false),
+                    ShipmentId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PickupRequestShipments", x => new { x.PickupRequestId, x.ShipmentId });
+                    table.ForeignKey(
+                        name: "FK_PickupRequestShipments_PickupRequests_PickupRequestId",
+                        column: x => x.PickupRequestId,
+                        principalTable: "PickupRequests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PickupRequestShipments_Shipments_ShipmentId",
+                        column: x => x.ShipmentId,
+                        principalTable: "Shipments",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.InsertData(
@@ -348,7 +421,7 @@ namespace ShippingSystem.Migrations
                 columns: new[] { "Id", "Key", "Value" },
                 values: new object[,]
                 {
-                    { 1, "AdditionalWeightCost", "5" },
+                    { 1, "AdditionalWeightCostPrtKg", "5" },
                     { 2, "CollectionFeePercentage", "0.01" },
                     { 3, "CollectionFeeThreshold", "3000" }
                 });
@@ -393,10 +466,20 @@ namespace ShippingSystem.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PickupRequestShipments_ShipmentId",
+                table: "PickupRequestShipments",
+                column: "ShipmentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_Token",
                 table: "RefreshTokens",
                 column: "Token",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Requests_ShipperId",
+                table: "Requests",
+                column: "ShipperId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Shipments_ShipmentTrackingNumber",
@@ -445,6 +528,9 @@ namespace ShippingSystem.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "PickupRequestShipments");
+
+            migrationBuilder.DropTable(
                 name: "RefreshTokens");
 
             migrationBuilder.DropTable(
@@ -463,7 +549,13 @@ namespace ShippingSystem.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "PickupRequests");
+
+            migrationBuilder.DropTable(
                 name: "Shipments");
+
+            migrationBuilder.DropTable(
+                name: "Requests");
 
             migrationBuilder.DropTable(
                 name: "Shippers");

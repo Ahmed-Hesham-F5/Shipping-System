@@ -7,6 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using static ShippingSystem.Helpers.DateTimeExtensions;
 
 namespace ShippingSystem.Helpers
 {
@@ -55,7 +56,7 @@ namespace ShippingSystem.Helpers
             return new RefreshToken
             {
                 Token = _token,
-                ExpiresOn = DateTime.UtcNow.AddMinutes(_jwt.Value.DurationInMinutesForRefreshToken),
+                ExpiresOn = UtcNowTrimmedToSecondsPlusMinutes(_jwt.Value.DurationInMinutesForRefreshToken),
                 CreatedOn = DateTime.UtcNow
             };
         }

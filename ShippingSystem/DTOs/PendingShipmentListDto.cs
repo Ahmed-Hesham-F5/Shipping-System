@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public string ReceiverName { get; set; } = null!;
         public string ReceiverPhone { get; set; } = null!;
-        public ReceiverAddressDto ReceiverAddress { get; set; } = null!;
+        public AddressDto ReceiverAddress { get; set; } = null!;
         public string ShipmentDescription { get; set; } = null!;
         public decimal ShipmentWeight { get; set; }
         public int Quantity { get; set; }

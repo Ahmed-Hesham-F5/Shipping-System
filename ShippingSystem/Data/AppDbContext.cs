@@ -14,6 +14,7 @@ namespace ShippingSystem.Data
         public DbSet<ShipmentStatus> ShipmentStatuses { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<ShippingSetting> ShippingSettings { get; set; }
+        public DbSet<RequestBase> Requests { get; set; }
         public DbSet<PickupRequest> PickupRequests { get; set; }
         public DbSet<PickupRequestShipment> PickupRequestShipments { get; set; }
 

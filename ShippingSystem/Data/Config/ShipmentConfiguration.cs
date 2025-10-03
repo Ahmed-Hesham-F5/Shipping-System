@@ -42,7 +42,7 @@ namespace ShippingSystem.Data.Config
                 address.Property(a => a.Governorate)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(50)
-                .IsRequired(false);
+                .IsRequired();
 
                 address.Property(a => a.Details)
                 .HasColumnType("nvarchar")

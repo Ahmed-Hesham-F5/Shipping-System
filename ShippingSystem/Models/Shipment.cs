@@ -14,7 +14,7 @@ namespace ShippingSystem.Models
         public string ReceiverName { get; set; } = null!;
         public string ReceiverPhone { get; set; } = null!;
         public string? ReceiverAdditionalPhone { get; set; }
-        public ReceiverAddress ReceiverAddress { get; set; } = null!;
+        public Address ReceiverAddress { get; set; } = null!;
         public string ReceiverEmail { get; set; } = null!;
 
         // Shipment details

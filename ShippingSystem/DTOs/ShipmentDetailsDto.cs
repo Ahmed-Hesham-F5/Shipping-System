@@ -7,7 +7,7 @@
         public string ReceiverPhone { get; set; } = null!;
         public string? ReceiverAdditionalPhone { get; set; }
         public string ReceiverEmail { get; set; } = null!;
-        public ReceiverAddressDto ReceiverAddress { get; set; } = null!;
+        public AddressDto ReceiverAddress { get; set; } = null!;
         public string ShipmentDescription { get; set; } = null!;
         public decimal ShipmentWeight { get; set; }
         public decimal ShipmentLength { get; set; }

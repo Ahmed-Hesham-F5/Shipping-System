@@ -1,6 +1,6 @@
 ﻿namespace ShippingSystem.DTOs
 {
-    public class ReceiverAddressDto
+    public class AddressDto
     {
         public string Street { get; set; } = null!;
         public string City { get; set; } = null!;

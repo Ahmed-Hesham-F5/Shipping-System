@@ -34,7 +34,7 @@ namespace ShippingSystem.DTOs
         public string Governorate { get; set; } = null!;
 
         [MaxLength(500)]
-        public string? Details { get; set; }
+        public string? AddressDetails { get; set; }
 
         [MaxLength(255)]
         public string? TypeOfProduction { get; set; }

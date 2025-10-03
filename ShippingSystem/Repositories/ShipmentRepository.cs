@@ -56,7 +56,7 @@ namespace ShippingSystem.Repositories
                     ReceiverName = shipmentRequestDTO.ReceiverName,
                     ReceiverPhone = shipmentRequestDTO.ReceiverPhone,
                     ReceiverEmail = shipmentRequestDTO.ReceiverEmail,
-                    ReceiverAddress = new ReceiverAddress
+                    ReceiverAddress = new Address
                     {
                         Street = shipmentRequestDTO.Street,
                         City = shipmentRequestDTO.City,
@@ -174,7 +174,7 @@ namespace ShippingSystem.Repositories
                     Id = shipment.Id,
                     ReceiverName = shipment.ReceiverName,
                     ReceiverPhone = shipment.ReceiverPhone,
-                    ReceiverAddress = new ReceiverAddressDto
+                    ReceiverAddress = new AddressDto
                     {
                         Street = shipment.ReceiverAddress.Street,
                         City = shipment.ReceiverAddress.City,
@@ -220,7 +220,7 @@ namespace ShippingSystem.Repositories
                 ReceiverPhone = shipment.ReceiverPhone,
                 ReceiverAdditionalPhone = shipment.ReceiverAdditionalPhone,
                 ReceiverEmail = shipment.ReceiverEmail,
-                ReceiverAddress = new ReceiverAddressDto
+                ReceiverAddress = new AddressDto
                 {
                     Street = shipment.ReceiverAddress.Street,
                     City = shipment.ReceiverAddress.City,
@@ -338,51 +338,6 @@ namespace ShippingSystem.Repositories
             return OperationResult.Ok();
         }
 
-        public async Task<OperationResult> CreatePickupRequest(string userId, CreatePickupRequestDto pickupRequestDto)
-        {
-            if (await _userManager.FindByIdAsync(userId) == null)
-                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
-
-            var validShipmentIds = await _context.Shipments
-                    .Where(s => s.ShipperId == userId && pickupRequestDto.ShipmentIds.Contains(s.Id))
-                    .Select(s => s.Id)
-                    .ToListAsync();
-
-            if (validShipmentIds.Count != pickupRequestDto.ShipmentIds.Count)
-                return OperationResult.Fail(StatusCodes.Status403Forbidden, "Some shipments are invalid or don’t belong to this user");
-
-            var pickupRequest = new PickupRequest
-            {
-                ShipperId = userId,
-                PickupDate = pickupRequestDto.PickupDate,
-                WindowStart = pickupRequestDto.WindowStart,
-                WindowEnd = pickupRequestDto.WindowEnd,
-                Street = pickupRequestDto.Street,
-                City = pickupRequestDto.City,
-                Governorate = pickupRequestDto.Governorate,
-                Details = pickupRequestDto.Details,
-                ContactName = pickupRequestDto.ContactName,
-                ContactPhone = pickupRequestDto.ContactPhone,
-                PickupRequestShipments = validShipmentIds
-                    .Select(id => new PickupRequestShipment
-                    {
-                        ShipmentId = id
-                    }).ToList()
-            };
-
-            await _context.PickupRequests.AddAsync(pickupRequest);
-
-            var result = await _context.SaveChangesAsync() > 0;
-            if (!result)
-                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
-                    "An unexpected error occurred. Please try again later.");
-
-            foreach (var item in validShipmentIds)
-                await UpdateShipmentStatus(userId, item, ShipmentStatusEnum.WatingForPickup, "Ready For Pickup");
-
-            return OperationResult.Ok();
-        }
-
         public async Task<ValueOperationResult<List<PendingShipmentListDto>>> GetAllPendingShipments(string userId)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
@@ -401,7 +356,7 @@ namespace ShippingSystem.Repositories
                     Id = shipment.Id,
                     ReceiverName = shipment.ReceiverName,
                     ReceiverPhone = shipment.ReceiverPhone,
-                    ReceiverAddress = new ReceiverAddressDto
+                    ReceiverAddress = new AddressDto
                     {
                         Street = shipment.ReceiverAddress.Street,
                         City = shipment.ReceiverAddress.City,
@@ -429,9 +384,80 @@ namespace ShippingSystem.Repositories
             return ValueOperationResult<List<PendingShipmentListDto>>.Ok(AllPendingShipments);
         }
 
-        public Task<ValueOperationResult<List<PickupRequestListDto>>> GetAllPickupRequests(string userId)
+        public async Task<OperationResult> CreatePickupRequest(string userId, CreatePickupRequestDto pickupRequestDto)
         {
-            throw new NotImplementedException();
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
+
+            var validShipmentIds = await _context.Shipments
+                    .Where(s => s.ShipperId == userId && pickupRequestDto.ShipmentIds.Contains(s.Id))
+                    .Select(s => s.Id)
+                    .ToListAsync();
+
+            if (validShipmentIds.Count != pickupRequestDto.ShipmentIds.Count)
+                return OperationResult.Fail(StatusCodes.Status403Forbidden, "Some shipments are invalid or don’t belong to this user");
+
+            var pickupRequest = new PickupRequest
+            {
+                ShipperId = userId,
+                RequestType = ShipperRequestTypeEnum.PickupRequest,
+                ShipmentsCount = validShipmentIds.Count,
+                PickupDate = pickupRequestDto.PickupDate,
+                WindowStart = pickupRequestDto.WindowStart,
+                WindowEnd = pickupRequestDto.WindowEnd,
+                PickupAddress = new Address
+                {
+                    Street = pickupRequestDto.Street,
+                    City = pickupRequestDto.City,
+                    Governorate = pickupRequestDto.Governorate,
+                    Details = pickupRequestDto.AddressDetails,
+                    GoogleMapAddressLink = pickupRequestDto.GoogleMapAddressLink
+                },
+                ContactName = pickupRequestDto.ContactName,
+                ContactPhone = pickupRequestDto.ContactPhone,
+                PickupRequestShipments = validShipmentIds
+                    .Select(id => new PickupRequestShipment
+                    {
+                        ShipmentId = id
+                    }).ToList()
+            };
+
+            pickupRequest.CreatedAt = pickupRequest.UpdatedAt = UtcNowTrimmedToSeconds();
+
+            await _context.PickupRequests.AddAsync(pickupRequest);
+
+            var result = await _context.SaveChangesAsync() > 0;
+
+            if (!result)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            foreach (var item in validShipmentIds)
+                await UpdateShipmentStatus(userId, item, ShipmentStatusEnum.WatingForPickup, "Ready For Pickup");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<ValueOperationResult<List<RequestListDto>>> GetAllRequests(string userId)
+        {
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return ValueOperationResult<List<RequestListDto>>
+                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized user");
+
+            var allRequests = await _context.Requests
+                .Where(r => r.ShipperId == userId)
+                .Select(r => new RequestListDto
+                {
+                    Id = r.Id,
+                    RequestType = r.RequestType.ToString(),
+                    CreatedAt = r.CreatedAt,
+                    UpdatedAt = r.UpdatedAt,
+                    ShipmentsCount = r.ShipmentsCount
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return ValueOperationResult<List<RequestListDto>>.Ok(allRequests);
         }
     }
 }

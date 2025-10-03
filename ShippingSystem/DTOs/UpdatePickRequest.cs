@@ -17,7 +17,7 @@ namespace ShippingSystem.DTOs
         [Required, MaxLength(50)]
         public string Governorate { get; set; } = null!;
         [MaxLength(500)]
-        public string? Details { get; set; }
+        public string? AddressDetails { get; set; }
         [Required, MaxLength(100)]
         public string ContactName { get; set; } = null!;
         [Required]

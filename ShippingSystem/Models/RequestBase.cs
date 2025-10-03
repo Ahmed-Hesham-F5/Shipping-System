@@ -1,13 +1,17 @@
 ﻿using ShippingSystem.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShippingSystem.Models
 {
-    public class ShipperRequestBase
+    public class RequestBase
     {
         public int Id { get; set; }
-        public int ShipperId { get; set; }
-        public ShipperRequestTypeEnum requestType { get; set; }
+        [ForeignKey("Shipper")]
+        public string ShipperId { get; set; } = null!;
+        public Shipper Shipper { get; set; } = null!;
+        public ShipperRequestTypeEnum RequestType { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public int ShipmentsCount { get; set; }
     }
 }

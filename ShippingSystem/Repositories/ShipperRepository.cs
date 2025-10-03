@@ -55,7 +55,7 @@ namespace ShippingSystem.Repositories
                     City = shipperRegisterDTO.City,
                     Street = shipperRegisterDTO.Street,
                     Governorate = shipperRegisterDTO.Governorate,
-                    Details = shipperRegisterDTO.Details,
+                    Details = shipperRegisterDTO.AddressDetails,
                     ShipperId = shipper.ShipperId
                 });
 

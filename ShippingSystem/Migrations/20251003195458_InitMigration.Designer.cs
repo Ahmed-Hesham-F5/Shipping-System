@@ -12,8 +12,8 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250912120301_AddDbSetForShippingSettings")]
-    partial class AddDbSetForShippingSettings
+    [Migration("20251003195458_InitMigration")]
+    partial class InitMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -286,6 +286,21 @@ namespace ShippingSystem.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.PickupRequestShipment", b =>
+                {
+                    b.Property<int>("PickupRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShipmentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PickupRequestId", "ShipmentId");
+
+                    b.HasIndex("ShipmentId");
+
+                    b.ToTable("PickupRequestShipments", (string)null);
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.RefreshToken", b =>
                 {
                     b.Property<string>("UserId")
@@ -318,6 +333,41 @@ namespace ShippingSystem.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.RequestBase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RequestType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar");
+
+                    b.Property<int>("ShipmentsCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ShipperId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShipperId");
+
+                    b.ToTable("Requests", (string)null);
+
+                    b.UseTptMappingStrategy();
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
                 {
                     b.Property<int>("Id")
@@ -329,7 +379,7 @@ namespace ShippingSystem.Migrations
                     b.Property<decimal>("AdditionalWeight")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("AdditionalWeightCost")
+                    b.Property<decimal>("AdditionalWeightCostPrtKg")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("CashOnDeliveryEnabled")
@@ -487,15 +537,13 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar");
 
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar")
-                        .HasDefaultValue("Egypt");
-
                     b.Property<string>("Details")
                         .HasMaxLength(500)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("Governorate")
+                        .IsRequired()
+                        .HasMaxLength(50)
                         .HasColumnType("nvarchar");
 
                     b.Property<string>("ShipperId")
@@ -504,7 +552,7 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("Street")
                         .IsRequired()
-                        .HasMaxLength(100)
+                        .HasMaxLength(256)
                         .HasColumnType("nvarchar");
 
                     b.HasKey("Id");
@@ -557,7 +605,7 @@ namespace ShippingSystem.Migrations
                         new
                         {
                             Id = 1,
-                            Key = "AdditionalWeightCost",
+                            Key = "AdditionalWeightCostPrtKg",
                             Value = "5"
                         },
                         new
@@ -572,6 +620,32 @@ namespace ShippingSystem.Migrations
                             Key = "CollectionFeeThreshold",
                             Value = "3000"
                         });
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.PickupRequest", b =>
+                {
+                    b.HasBaseType("ShippingSystem.Models.RequestBase");
+
+                    b.Property<string>("ContactName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("ContactPhone")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("varchar");
+
+                    b.Property<DateOnly>("PickupDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("WindowEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("WindowStart")
+                        .HasColumnType("time");
+
+                    b.ToTable("PickupRequests", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -625,6 +699,25 @@ namespace ShippingSystem.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.PickupRequestShipment", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.PickupRequest", "PickupRequest")
+                        .WithMany("PickupRequestShipments")
+                        .HasForeignKey("PickupRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ShippingSystem.Models.Shipment", "Shipment")
+                        .WithMany()
+                        .HasForeignKey("ShipmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("PickupRequest");
+
+                    b.Navigation("Shipment");
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.RefreshToken", b =>
                 {
                     b.HasOne("ShippingSystem.Models.ApplicationUser", "User")
@@ -636,6 +729,17 @@ namespace ShippingSystem.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.RequestBase", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
+                        .WithMany()
+                        .HasForeignKey("ShipperId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shipper");
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
                 {
                     b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
@@ -644,7 +748,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.ReceiverAddress", "ReceiverAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Address", "ReceiverAddress", b1 =>
                         {
                             b1.Property<int>("ShipmentId")
                                 .HasColumnType("int");
@@ -654,20 +758,22 @@ namespace ShippingSystem.Migrations
                                 .HasMaxLength(50)
                                 .HasColumnType("nvarchar");
 
-                            b1.Property<string>("Country")
-                                .HasMaxLength(50)
-                                .HasColumnType("nvarchar");
-
                             b1.Property<string>("Details")
                                 .HasMaxLength(500)
                                 .HasColumnType("nvarchar");
 
                             b1.Property<string>("GoogleMapAddressLink")
-                                .HasColumnType("nvarchar(max)");
+                                .HasMaxLength(2083)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Governorate")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
 
                             b1.Property<string>("Street")
                                 .IsRequired()
-                                .HasMaxLength(100)
+                                .HasMaxLength(256)
                                 .HasColumnType("nvarchar");
 
                             b1.HasKey("ShipmentId");
@@ -728,6 +834,54 @@ namespace ShippingSystem.Migrations
                     b.Navigation("Shipper");
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.PickupRequest", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.RequestBase", null)
+                        .WithOne()
+                        .HasForeignKey("ShippingSystem.Models.PickupRequest", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("ShippingSystem.Models.Address", "PickupAddress", b1 =>
+                        {
+                            b1.Property<int>("PickupRequestId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Details")
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("GoogleMapAddressLink")
+                                .HasMaxLength(2083)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Governorate")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar");
+
+                            b1.HasKey("PickupRequestId");
+
+                            b1.ToTable("PickupRequests");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PickupRequestId");
+                        });
+
+                    b.Navigation("PickupAddress")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.ApplicationUser", b =>
                 {
                     b.Navigation("RefreshTokens");
@@ -745,6 +899,11 @@ namespace ShippingSystem.Migrations
                     b.Navigation("Phones");
 
                     b.Navigation("Shipments");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.PickupRequest", b =>
+                {
+                    b.Navigation("PickupRequestShipments");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,33 +7,33 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PickupRequest> builder)
         {
-            builder.HasKey(pr => pr.Id);
-            builder.Property(pr => pr.Id).ValueGeneratedOnAdd();
+            builder.OwnsOne(pr => pr.PickupAddress, address =>
+            {
+                address.Property(a => a.Street)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(256)
+                .IsRequired();
 
-            builder.HasOne(pr => pr.Shipper)
-               .WithMany()
-               .HasForeignKey(pr => pr.ShipperId)
-               .OnDelete(DeleteBehavior.Cascade);
-
-            builder.Property(pr => pr.Street)
-                  .HasColumnType("nvarchar")
-                  .HasMaxLength(256)
-                  .IsRequired();
-
-            builder.Property(pr => pr.City)
+                address.Property(a => a.City)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(50)
                 .IsRequired();
 
-            builder.Property(pr => pr.Governorate)
+                address.Property(a => a.Governorate)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(50)
                 .IsRequired();
 
-            builder.Property(pr => pr.Details)
+                address.Property(a => a.Details)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(500)
                 .IsRequired(false);
+
+                address.Property(a => a.GoogleMapAddressLink)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(2083)
+                .IsRequired(false);
+            });
 
             builder.Property(pr => pr.ContactName)
                 .HasColumnType("nvarchar")

@@ -3,7 +3,7 @@
 namespace ShippingSystem.Models
 {
     [Owned]
-    public class ReceiverAddress
+    public class Address
     {
         public string Street { get; set; } = null!;
         public string City { get; set; } = null!;

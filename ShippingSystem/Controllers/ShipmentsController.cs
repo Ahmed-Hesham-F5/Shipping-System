@@ -138,6 +138,31 @@ namespace ShippingSystem.Controllers
             return NoContent();
         }
 
+        [HttpGet("getPendingShipments")]
+        public async Task<IActionResult> GetPendingShipments()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.GetAllPendingShipments(userId);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<List<PendingShipmentListDto>> response = new ApiResponse<List<PendingShipmentListDto>>
+            (
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
+        }
+
         [HttpPost("pickupRequest")]
         public async Task<IActionResult> pickupRequest([FromBody] CreatePickupRequestDto pickupRequestDto)
         {
@@ -158,6 +183,31 @@ namespace ShippingSystem.Controllers
 
             return StatusCode(StatusCodes.Status201Created,
                 new ApiResponse<string>(true, "Pickup request created successfully."));
+        }
+
+        [HttpGet("getAllRequests")]
+        public async Task<IActionResult> GetAllRequests()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.GetAllRequests(userId);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<List<RequestListDto>> response = new ApiResponse<List<RequestListDto>>
+            (
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
         }
     }
 }
