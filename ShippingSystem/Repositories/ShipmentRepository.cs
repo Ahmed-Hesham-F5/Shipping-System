@@ -138,7 +138,7 @@ namespace ShippingSystem.Repositories
                 return OperationResult.Fail(getUserRoleResult.StatusCode, getUserRoleResult.ErrorMessage);
 
             if (getUserRoleResult.Value == RolesEnum.Shipper.ToString() && shipment.ShipperId != userId)
-                return OperationResult.Fail(StatusCodes.Status403Forbidden, "Forbidden");
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Shipment not found");
 
             var latestStatus = shipment.ShipmentStatuses
                 .OrderByDescending(ss => ss.Timestamp)

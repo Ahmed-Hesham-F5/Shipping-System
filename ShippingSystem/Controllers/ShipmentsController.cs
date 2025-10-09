@@ -273,5 +273,25 @@ namespace ShippingSystem.Controllers
 
             return Ok(response);
         }
+
+        [HttpPut("makeShipmentDelivered/{id}")]
+        public async Task<IActionResult> MakeShipmentDelivered(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.UpdateShipmentStatus(userId, id,
+                Enums.ShipmentStatusEnum.Delivered,
+                "Changed manually until we build the courier entity");
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return NoContent();
+        }
     }
 }
