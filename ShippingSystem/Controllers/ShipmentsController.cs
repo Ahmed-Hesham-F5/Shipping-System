@@ -57,8 +57,7 @@ namespace ShippingSystem.Controllers
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<List<ShipmentListDto>> response = new ApiResponse<List<ShipmentListDto>>
-            (
+            ApiResponse<List<ShipmentListDto>> response = new(
                 success: true,
                 message: null!,
                 data: result.Value!
@@ -82,8 +81,7 @@ namespace ShippingSystem.Controllers
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<ShipmentDetailsDto?> response = new ApiResponse<ShipmentDetailsDto?>
-            (
+            ApiResponse<ShipmentDetailsDto?> response = new(
                 data: result.Value!,
                 message: null!,
                 success: true
@@ -110,8 +108,7 @@ namespace ShippingSystem.Controllers
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<ShipmentDetailsDto?> response = new ApiResponse<ShipmentDetailsDto?>
-            (
+            ApiResponse<ShipmentDetailsDto?> response = new(
                 data: result.Value!,
                 message: null!,
                 success: true
@@ -138,8 +135,8 @@ namespace ShippingSystem.Controllers
             return NoContent();
         }
 
-        [HttpGet("getPendingShipments")]
-        public async Task<IActionResult> GetPendingShipments()
+        [HttpGet("getShipmentsToPickup")]
+        public async Task<IActionResult> GetShipmentsToPickup()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -147,14 +144,13 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.GetAllPendingShipments(userId);
+            var result = await _shipmentRepository.GetShipmentsToPickup(userId);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<List<PendingShipmentListDto>> response = new ApiResponse<List<PendingShipmentListDto>>
-            (
+            ApiResponse<List<ToPickupShipmentListDto>> response = new(
                 success: true,
                 message: null!,
                 data: result.Value!
@@ -164,7 +160,7 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPost("pickupRequest")]
-        public async Task<IActionResult> pickupRequest([FromBody] CreatePickupRequestDto pickupRequestDto)
+        public async Task<IActionResult> PickupRequest([FromBody] CreatePickupRequestDto pickupRequestDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -200,8 +196,76 @@ namespace ShippingSystem.Controllers
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<List<RequestListDto>> response = new ApiResponse<List<RequestListDto>>
-            (
+            ApiResponse<List<RequestListDto>> response = new(
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
+        }
+
+        [HttpPost("getShipmentsToReturn")]
+        public async Task<IActionResult> GetShipmentsToReturn()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.GetShipmentsToReturn(userId);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<List<ToReturnShipmentListDto>> response = new(
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
+        }
+
+        [HttpPost("returnRequest")]
+        public async Task<IActionResult> ReturnRequest([FromBody] CreateReturnRequestDto returnRequestDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.CreateReturnRequest(userId, returnRequestDto);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return StatusCode(StatusCodes.Status201Created,
+                new ApiResponse<string>(true, "Return request created successfully."));
+        }
+
+        [HttpGet("getShipmentStatusStatistics")]
+        public async Task<IActionResult> GetShipmentStatusStatistics()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.GetShipmentStatusStatistics(userId);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<ShipmentStatusStatisticsDto> response = new(
                 success: true,
                 message: null!,
                 data: result.Value!

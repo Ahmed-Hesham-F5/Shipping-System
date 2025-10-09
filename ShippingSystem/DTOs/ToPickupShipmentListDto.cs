@@ -1,11 +1,11 @@
 ﻿namespace ShippingSystem.DTOs
 {
-    public class PendingShipmentListDto
+    public class ToPickupShipmentListDto
     {
         public int Id { get; set; }
-        public string ReceiverName { get; set; } = null!;
-        public string ReceiverPhone { get; set; } = null!;
-        public AddressDto ReceiverAddress { get; set; } = null!;
+        public string CustomerName { get; set; } = null!;
+        public string CustomerPhone { get; set; } = null!;
+        public AddressDto CustomerAddress { get; set; } = null!;
         public string ShipmentDescription { get; set; } = null!;
         public decimal ShipmentWeight { get; set; }
         public int Quantity { get; set; }

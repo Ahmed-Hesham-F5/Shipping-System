@@ -10,12 +10,12 @@ namespace ShippingSystem.Models
         [ForeignKey("ShipperId")]
         public Shipper Shipper { get; set; } = null!;
 
-        // Receiver details
-        public string ReceiverName { get; set; } = null!;
-        public string ReceiverPhone { get; set; } = null!;
-        public string? ReceiverAdditionalPhone { get; set; }
-        public Address ReceiverAddress { get; set; } = null!;
-        public string ReceiverEmail { get; set; } = null!;
+        // Customer details
+        public string CustomerName { get; set; } = null!;
+        public string CustomerPhone { get; set; } = null!;
+        public string? CustomerAdditionalPhone { get; set; }
+        public Address CustomerAddress { get; set; } = null!;
+        public string CustomerEmail { get; set; } = null!;
 
         // Shipment details
         public string ShipmentDescription { get; set; } = null!;

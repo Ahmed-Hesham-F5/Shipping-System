@@ -18,6 +18,12 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(50)
                 .IsRequired();
 
+            builder.Property(srb => srb.RequestStatus)
+                .HasConversion<string>()
+                .HasColumnType("varchar")
+                .HasMaxLength(50)
+                .IsRequired();
+
             builder.HasOne(srb => srb.Shipper)
                .WithMany()
                .HasForeignKey(srb => srb.ShipperId)

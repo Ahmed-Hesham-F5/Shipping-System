@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
 
 namespace ShippingSystem.Data
@@ -17,6 +16,8 @@ namespace ShippingSystem.Data
         public DbSet<RequestBase> Requests { get; set; }
         public DbSet<PickupRequest> PickupRequests { get; set; }
         public DbSet<PickupRequestShipment> PickupRequestShipments { get; set; }
+        public DbSet<ReturnRequest> ReturnRequests { get; set; }
+        public DbSet<ReturnRequestShipment> ReturnRequestShipments { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

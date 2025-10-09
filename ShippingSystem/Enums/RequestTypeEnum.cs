@@ -1,6 +1,6 @@
 ﻿namespace ShippingSystem.Enums
 {
-    public enum ShipperRequestTypeEnum
+    public enum RequestTypeEnum
     {
         PickupRequest,
         DeliveryRequest,

@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ShippingSystem.Models;
 
 namespace ShippingSystem.Data.Config
 {
     public class PickupRequestConfiguration : IEntityTypeConfiguration<PickupRequest>
     {
-        public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<PickupRequest> builder)
+        public void Configure(EntityTypeBuilder<PickupRequest> builder)
         {
             builder.OwnsOne(pr => pr.PickupAddress, address =>
             {

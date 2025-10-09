@@ -406,21 +406,21 @@ namespace ShippingSystem.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<string>("ReceiverAdditionalPhone")
+                    b.Property<string>("CustomerAdditionalPhone")
                         .HasMaxLength(11)
                         .HasColumnType("varchar");
 
-                    b.Property<string>("ReceiverEmail")
+                    b.Property<string>("CustomerEmail")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar");
 
-                    b.Property<string>("ReceiverName")
+                    b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar");
 
-                    b.Property<string>("ReceiverPhone")
+                    b.Property<string>("CustomerPhone")
                         .IsRequired()
                         .HasMaxLength(11)
                         .HasColumnType("varchar");
@@ -748,7 +748,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "ReceiverAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Address", "CustomerAddress", b1 =>
                         {
                             b1.Property<int>("ShipmentId")
                                 .HasColumnType("int");
@@ -784,7 +784,7 @@ namespace ShippingSystem.Migrations
                                 .HasForeignKey("ShipmentId");
                         });
 
-                    b.Navigation("ReceiverAddress")
+                    b.Navigation("CustomerAddress")
                         .IsRequired();
 
                     b.Navigation("Shipper");

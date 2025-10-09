@@ -12,22 +12,22 @@ namespace ShippingSystem.Data.Config
             builder.Property(shipment => shipment.Id)
                 .ValueGeneratedOnAdd();
 
-            builder.Property(shipment => shipment.ReceiverName)
+            builder.Property(shipment => shipment.CustomerName)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(100)
                 .IsRequired();
 
-            builder.Property(shipment => shipment.ReceiverPhone)
+            builder.Property(shipment => shipment.CustomerPhone)
                 .HasColumnType("varchar")
                 .HasMaxLength(11)
                 .IsRequired();
 
-            builder.Property(shipment => shipment.ReceiverAdditionalPhone)
+            builder.Property(shipment => shipment.CustomerAdditionalPhone)
                 .HasColumnType("varchar")
                 .HasMaxLength(11)
                 .IsRequired(false);
 
-            builder.OwnsOne(shipment => shipment.ReceiverAddress, address =>
+            builder.OwnsOne(shipment => shipment.CustomerAddress, address =>
             {
                 address.Property(a => a.Street)
                 .HasColumnType("nvarchar")
@@ -55,7 +55,7 @@ namespace ShippingSystem.Data.Config
                 .IsRequired(false);
             });
 
-            builder.Property(shipment => shipment.ReceiverEmail)
+            builder.Property(shipment => shipment.CustomerEmail)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(255)
                 .IsRequired();

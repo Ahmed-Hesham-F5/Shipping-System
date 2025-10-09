@@ -4,7 +4,7 @@
     {
         Pending,
         Canceled,
-        WatingForPickup,
+        WaitingForPickup,
         PickedUp,
         InWarehouse,
         OnHold,

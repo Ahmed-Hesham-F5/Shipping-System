@@ -6,16 +6,16 @@ namespace ShippingSystem.DTOs
     public class UpdateShipmentDto
     {
         [Required, MaxLength(100)]
-        public string ReceiverName { get; set; } = null!;
+        public string CustomerName { get; set; } = null!;
         [Required]
         [MaxLength(11, ErrorMessage = "Phone number must be 11 digits.")]
         [RegularExpression(@"^(010|011|012|015)\d{8}$", ErrorMessage = "Phone number must start with 010, 011, 012 or 015.")]
-        public string ReceiverPhone { get; set; } = null!;
+        public string CustomerPhone { get; set; } = null!;
         [MaxLength(11, ErrorMessage = "Phone number must be 11 digits.")]
         [RegularExpression(@"^(010|011|012|015)\d{8}$", ErrorMessage = "Phone number must start with 010, 011, 012 or 015.")]
-        public string? ReceiverAdditionalPhone { get; set; } = null;
+        public string? CustomerAdditionalPhone { get; set; } = null;
         [Required, MaxLength(255), EmailAddress]
-        public string ReceiverEmail { get; set; } = null!;
+        public string CustomerEmail { get; set; } = null!;
         [Required, MaxLength(256)]
         public string Street { get; set; } = null!;
         [Required, MaxLength(50)]

@@ -3,11 +3,11 @@
     public class ShipmentDetailsDto
     {
         public int Id { get; set; }
-        public string ReceiverName { get; set; } = null!;
-        public string ReceiverPhone { get; set; } = null!;
-        public string? ReceiverAdditionalPhone { get; set; }
-        public string ReceiverEmail { get; set; } = null!;
-        public AddressDto ReceiverAddress { get; set; } = null!;
+        public string CustomerName { get; set; } = null!;
+        public string CustomerPhone { get; set; } = null!;
+        public string? CustomerAdditionalPhone { get; set; }
+        public string CustomerEmail { get; set; } = null!;
+        public AddressDto CustomerAddress { get; set; } = null!;
         public string ShipmentDescription { get; set; } = null!;
         public decimal ShipmentWeight { get; set; }
         public decimal ShipmentLength { get; set; }

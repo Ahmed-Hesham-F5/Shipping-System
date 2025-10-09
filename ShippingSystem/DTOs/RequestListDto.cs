@@ -9,5 +9,6 @@ namespace ShippingSystem.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public int ShipmentsCount { get; set; }
+        public string Status { get; set; } = null!;
     }
 }
