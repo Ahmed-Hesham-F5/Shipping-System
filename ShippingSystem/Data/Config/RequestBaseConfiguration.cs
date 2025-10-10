@@ -24,9 +24,9 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(50)
                 .IsRequired();
 
-            builder.HasOne(srb => srb.Shipper)
+            builder.HasOne(srb => srb.User)
                .WithMany()
-               .HasForeignKey(srb => srb.ShipperId)
+               .HasForeignKey(srb => srb.UserId)
                .OnDelete(DeleteBehavior.Cascade);
 
             builder.ToTable("Requests");

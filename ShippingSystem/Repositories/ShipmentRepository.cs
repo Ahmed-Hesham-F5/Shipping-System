@@ -422,7 +422,7 @@ namespace ShippingSystem.Repositories
 
             var pickupRequest = new PickupRequest
             {
-                ShipperId = userId,
+                UserId = userId,
                 RequestType = RequestTypeEnum.PickupRequest,
                 PickupDate = pickupRequestDto.PickupDate,
                 WindowStart = pickupRequestDto.WindowStart,
@@ -529,7 +529,7 @@ namespace ShippingSystem.Repositories
 
             var returnRequest = new ReturnRequest
             {
-                ShipperId = userId,
+                UserId = userId,
                 RequestType = RequestTypeEnum.ReturnRequest,
 
                 ReturnPickupDate = returnRequestDto.ReturnPickupDate,
@@ -594,7 +594,7 @@ namespace ShippingSystem.Repositories
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
 
             var allRequests = await _context.Requests
-                .Where(r => r.ShipperId == userId)
+                .Where(r => r.UserId == userId)
                 .Select(r => new RequestListDto
                 {
                     Id = r.Id,

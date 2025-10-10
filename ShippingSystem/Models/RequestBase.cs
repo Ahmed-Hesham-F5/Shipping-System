@@ -6,9 +6,9 @@ namespace ShippingSystem.Models
     public class RequestBase
     {
         public int Id { get; set; }
-        [ForeignKey("Shipper")]
-        public string ShipperId { get; set; } = null!;
-        public Shipper Shipper { get; set; } = null!;
+        [ForeignKey("User")]
+        public string UserId { get; set; } = null!;
+        public ApplicationUser User { get; set; } = null!;
         public RequestTypeEnum RequestType { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

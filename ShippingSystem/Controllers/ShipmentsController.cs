@@ -205,7 +205,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpPost("getShipmentsToReturn")]
+        [HttpGet("getShipmentsToReturn")]
         public async Task<IActionResult> GetShipmentsToReturn()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
