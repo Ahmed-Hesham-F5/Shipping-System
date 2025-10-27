@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ShippingSystem.DTOs;
+using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;

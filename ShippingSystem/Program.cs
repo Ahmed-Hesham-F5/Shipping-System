@@ -12,6 +12,7 @@ using ShippingSystem.Helpers;
 using ShippingSystem.Settings;
 using System.Text;
 
+
 namespace ShippingSystem
 {
     public class Program
@@ -77,6 +78,9 @@ namespace ShippingSystem
                 };
             });
 
+            // Register AutoMapper
+            builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
             // Register ShippingSettingsService
             builder.Services.AddSingleton<IShippingSettingsService, ShippingSettingsService>();
 
@@ -85,6 +89,7 @@ namespace ShippingSystem
             builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IRequestRepository, RequestRepository>();
 
             builder.Services.AddSwaggerGen(c =>
             {

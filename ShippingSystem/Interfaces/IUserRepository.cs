@@ -1,4 +1,4 @@
-﻿using ShippingSystem.DTOs;
+﻿using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Models;
 using ShippingSystem.Results;

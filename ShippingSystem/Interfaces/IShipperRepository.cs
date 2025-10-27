@@ -1,4 +1,5 @@
-﻿using ShippingSystem.DTOs;
+﻿using ShippingSystem.DTOs.AddressDTOs;
+using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.Results;
 
 namespace ShippingSystem.Interfaces

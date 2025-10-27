@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ShippingSystem.DTOs
+namespace ShippingSystem.DTOs.AuthenticationDTOs
 {
     public class LoginDTO
     {

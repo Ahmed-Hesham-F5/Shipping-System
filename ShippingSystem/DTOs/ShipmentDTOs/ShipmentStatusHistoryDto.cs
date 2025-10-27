@@ -1,4 +1,4 @@
-﻿namespace ShippingSystem.DTOs
+﻿namespace ShippingSystem.DTOs.ShipmentDTOs
 {
     public class ShipmentStatusHistoryDto
     {

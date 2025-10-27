@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace ShippingSystem.DTOs
+namespace ShippingSystem.DTOs.AuthenticationDTOs
 {
     public class AuthDTO
     {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
-using ShippingSystem.DTOs;
+using ShippingSystem.DTOs.AddressDTOs;
+using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;

@@ -1,29 +1,23 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs.RequestDTOs;
-using ShippingSystem.DTOs.RequestDTOs;
-using ShippingSystem.DTOs.ShipmentDTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
 using System.Security.Claims;
 
 namespace ShippingSystem.Controllers
 {
-    [Authorize(Roles = "Shipper")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ShipmentsController : ControllerBase
+    public class RequestsController : ControllerBase
     {
-
-        private readonly IShipmentRepository _shipmentRepository;
-
-        public ShipmentsController(IShipmentRepository shipmentRepository)
+        private readonly IRequestRepository _requestRepository;
+        public RequestsController(IRequestRepository requestRepository)
         {
-            _shipmentRepository = shipmentRepository;
+            _requestRepository = requestRepository;
         }
 
-        [HttpPost("addShipment")]
-        public async Task<IActionResult> AddShipment([FromBody] CreateShipmentDto shipmentDTO)
+        [HttpPost("pickup-requests")]
+        public async Task<IActionResult> PickupRequest([FromBody] CreatePickupRequestDto pickupRequestDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -34,18 +28,18 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.AddShipment(userId, shipmentDTO);
+            var result = await _requestRepository.CreatePickupRequest(userId, pickupRequestDto);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
             return StatusCode(StatusCodes.Status201Created,
-                new ApiResponse<string>(true, "Shipment added successfully"));
+                new ApiResponse<string>(true, "Pickup request created successfully."));
         }
 
-        [HttpGet("getShipments")]
-        public async Task<IActionResult> GetAllShipments()
+        [HttpGet("getAllRequests")]
+        public async Task<IActionResult> GetAllRequests()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -53,13 +47,13 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.GetAllShipments(userId);
+            var result = await _requestRepository.GetAllRequests(userId);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<List<ShipmentListDto>> response = new(
+            ApiResponse<List<RequestListDto>> response = new(
                 success: true,
                 message: null!,
                 data: result.Value!
@@ -68,32 +62,8 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpGet("getShipmentById/{id}")]
-        public async Task<IActionResult> GetShipmentById(int id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return StatusCode(StatusCodes.Status401Unauthorized,
-                    new ApiResponse<string>(false, "User not authenticated."));
-
-            var result = await _shipmentRepository.GetShipmentById(userId, id);
-
-            if (!result.Success)
-                return StatusCode(result.StatusCode,
-                    new ApiResponse<string>(false, result.ErrorMessage));
-
-            ApiResponse<ShipmentDetailsDto?> response = new(
-                data: result.Value!,
-                message: null!,
-                success: true
-            );
-
-            return Ok(response);
-        }
-
-        [HttpPut("updateShipment/{id}")]
-        public async Task<IActionResult> UpdateShipment(int id, [FromBody] UpdateShipmentDto shipmentDTO)
+        [HttpPost("return-request")]
+        public async Task<IActionResult> ReturnRequest([FromBody] CreateReturnRequestDto returnRequestDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -104,23 +74,38 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.UpdateShipment(userId, id, shipmentDTO);
+            var result = await _requestRepository.CreateReturnRequest(userId, returnRequestDto);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<ShipmentDetailsDto?> response = new(
-                data: result.Value!,
-                message: null!,
-                success: true
-            );
-
-            return Ok(response);
+            return StatusCode(StatusCodes.Status201Created,
+                new ApiResponse<string>(true, "Return request created successfully."));
         }
 
-        [HttpDelete("deleteShipment/{id}")]
-        public async Task<IActionResult> DeleteShipment(int id)
+        [HttpPost("cancellation-request/{requestId}")]
+        public async Task<IActionResult> CancellationRequest(int requestId, [FromBody] CreateCancellationRequestDto cancellationRequestDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _requestRepository.CreateCancellationRequest(userId, requestId, cancellationRequestDto);
+
+            return StatusCode(result.StatusCode,
+                new ApiResponse<string>(result.Success, result.Success
+                    ? "Cancellation request created successfully."
+                    : result.ErrorMessage));
+        }
+
+        [HttpGet("pickup-requests/{pickupRequestId}")]
+        public async Task<IActionResult> GetPickupRequest(int pickupRequestId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -128,17 +113,17 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.DeleteShipment(userId, id);
+            var result = await _requestRepository.GetPickupRequestById(userId, pickupRequestId);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            return NoContent();
+            return Ok(new ApiResponse<PickupRequestDetailsDto>(true, null!, result.Value!));
         }
 
-        [HttpGet("to-pickup")]
-        public async Task<IActionResult> GetShipmentsReadyForPickup()
+        [HttpGet("return-requests/{returnRequestId}")]
+        public async Task<IActionResult> GetReturnRequest(int returnRequestId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -146,23 +131,17 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.GetShipmentsToPickup(userId);
+            var result = await _requestRepository.GetReturnRequestById(userId, returnRequestId);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<List<ToPickupShipmentListDto>> response = new(
-                success: true,
-                message: null!,
-                data: result.Value!
-            );
-
-            return Ok(response);
+            return Ok(new ApiResponse<ReturnRequestDetailsDto>(true, null!, result.Value!));
         }
 
-        [HttpGet("getShipmentsToReturn")]
-        public async Task<IActionResult> GetShipmentsToReturn()
+        [HttpGet("cancellation-requests/{cancellationRequestId}")]
+        public async Task<IActionResult> GetCancellationRequest(int cancellationRequestId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -170,62 +149,52 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.GetShipmentsToReturn(userId);
+            var result = await _requestRepository.GetCancellationRequestById(userId, cancellationRequestId);
+
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<List<ToReturnShipmentListDto>> response = new(
-                success: true,
-                message: null!,
-                data: result.Value!
-            );
-
-            return Ok(response);
+            return Ok(new ApiResponse<CancellationRequestDetailsDto>(true, null!, result.Value!));
         }
 
-        [HttpGet("get-shipment-status-statistics")]
-        public async Task<IActionResult> GetShipmentStatusStatistics()
+        [HttpPost("reschedule-requests")]
+        public async Task<IActionResult> RescheduleRequest([FromBody] CreateRescheduleRequestDto rescheduleRequestDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userId))
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.GetShipmentStatusStatistics(userId);
+            var result = await _requestRepository.CreateRescheduleRequest(userId, rescheduleRequestDto);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<ShipmentStatusStatisticsDto> response = new(
-                success: true,
-                message: null!,
-                data: result.Value!
-            );
-
-            return Ok(response);
+            return StatusCode(StatusCodes.Status201Created,
+                   new ApiResponse<string>(true, "Reschedule request created successfully."));
         }
 
-        [HttpPut("make-shipment-delivered/{shipmentId}")]
-        public async Task<IActionResult> MakeShipmentDelivered(int shipmentId)
+        [HttpGet("reschedule-requests/{rescheduleRequestId}")]
+        public async Task<IActionResult> GetRescheduleRequest(int rescheduleRequestId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (string.IsNullOrEmpty(userId))
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId,
-                Enums.ShipmentStatusEnum.Delivered,
-                "Changed manually until we build the courier entity");
+            var result = await _requestRepository.GetRescheduleRequestById(userId, rescheduleRequestId);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            return NoContent();
+            return Ok(new ApiResponse<RescheduleRequestDetailsDto>(true, null!, result.Value!));
         }
     }
 }

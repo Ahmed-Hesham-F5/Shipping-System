@@ -18,6 +18,9 @@ namespace ShippingSystem.Data
         public DbSet<PickupRequestShipment> PickupRequestShipments { get; set; }
         public DbSet<ReturnRequest> ReturnRequests { get; set; }
         public DbSet<ReturnRequestShipment> ReturnRequestShipments { get; set; }
+        public DbSet<CancellationRequest> CancellationRequests { get; set; }
+        public DbSet<CancellationRequestShipment> CancellationRequestShipments { get; set; }
+        public DbSet<RescheduleRequest> RescheduleRequests { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

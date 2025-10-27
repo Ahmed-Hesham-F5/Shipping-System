@@ -3,6 +3,9 @@
     public enum RequestStatusEnum
     {
         Pending,
+        InReview,
+        Approved,
+        Rejected,
         InProgress,
         Completed,
         Failed,

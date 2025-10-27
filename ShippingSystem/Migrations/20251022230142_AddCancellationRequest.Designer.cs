@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShippingSystem.Data;
 
@@ -11,9 +12,11 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251022230142_AddCancellationRequest")]
+    partial class AddCancellationRequest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -687,41 +690,6 @@ namespace ShippingSystem.Migrations
                     b.ToTable("PickupRequests", (string)null);
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.RescheduleRequest", b =>
-                {
-                    b.HasBaseType("ShippingSystem.Models.RequestBase");
-
-                    b.Property<DateOnly>("NewRequestDate")
-                        .HasColumnType("date");
-
-                    b.Property<TimeOnly>("NewTimeWindowEnd")
-                        .HasColumnType("time");
-
-                    b.Property<TimeOnly>("NewTimeWindowStart")
-                        .HasColumnType("time");
-
-                    b.Property<DateOnly>("OldRequestDate")
-                        .HasColumnType("date");
-
-                    b.Property<TimeOnly>("OldTimeWindowEnd")
-                        .HasColumnType("time");
-
-                    b.Property<TimeOnly>("OldTimeWindowStart")
-                        .HasColumnType("time");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int>("ScheduledRequestId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ScheduledRequestType")
-                        .HasColumnType("int");
-
-                    b.ToTable("RescheduleRequests", (string)null);
-                });
-
             modelBuilder.Entity("ShippingSystem.Models.ReturnRequest", b =>
                 {
                     b.HasBaseType("ShippingSystem.Models.RequestBase");
@@ -734,6 +702,9 @@ namespace ShippingSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateOnly>("ReturnDate")
+                        .HasColumnType("date");
+
                     b.Property<DateOnly>("ReturnPickupDate")
                         .HasColumnType("date");
 
@@ -742,6 +713,20 @@ namespace ShippingSystem.Migrations
 
                     b.Property<TimeOnly>("ReturnPickupWindowStart")
                         .HasColumnType("time");
+
+                    b.Property<TimeOnly>("ReturnWindowEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("ReturnWindowStart")
+                        .HasColumnType("time");
+
+                    b.Property<string>("ShipperContactName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShipperContactPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.ToTable("ReturnRequests");
                 });
@@ -1027,15 +1012,6 @@ namespace ShippingSystem.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.RescheduleRequest", b =>
-                {
-                    b.HasOne("ShippingSystem.Models.RequestBase", null)
-                        .WithOne()
-                        .HasForeignKey("ShippingSystem.Models.RescheduleRequest", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ShippingSystem.Models.ReturnRequest", b =>
                 {
                     b.HasOne("ShippingSystem.Models.RequestBase", null)
@@ -1043,6 +1019,37 @@ namespace ShippingSystem.Migrations
                         .HasForeignKey("ShippingSystem.Models.ReturnRequest", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsOne("ShippingSystem.Models.Address", "ReturnAddress", b1 =>
+                        {
+                            b1.Property<int>("ReturnRequestId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Details")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("GoogleMapAddressLink")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Governorate")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("ReturnRequestId");
+
+                            b1.ToTable("ReturnRequests");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ReturnRequestId");
+                        });
 
                     b.OwnsOne("ShippingSystem.Models.Address", "ReturnPickupAddress", b1 =>
                         {
@@ -1074,6 +1081,9 @@ namespace ShippingSystem.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("ReturnRequestId");
                         });
+
+                    b.Navigation("ReturnAddress")
+                        .IsRequired();
 
                     b.Navigation("ReturnPickupAddress")
                         .IsRequired();

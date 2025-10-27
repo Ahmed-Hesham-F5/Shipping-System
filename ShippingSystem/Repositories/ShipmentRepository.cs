@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
-using ShippingSystem.DTOs;
+using ShippingSystem.DTOs.ShipmentDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
@@ -10,26 +12,19 @@ using static ShippingSystem.Helpers.DateTimeExtensions;
 
 namespace ShippingSystem.Repositories
 {
-    public class ShipmentRepository : IShipmentRepository
+    public class ShipmentRepository(AppDbContext context,
+        UserManager<ApplicationUser> userManager,
+        IShippingSettingsService shippingSettings,
+        ILogger<ShippingSettingsService> logger,
+        IUserRepository userRepository,
+        IMapper mapper) : IShipmentRepository
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IShippingSettingsService _shippingSettings;
-        private readonly ILogger<ShippingSettingsService> _logger;
-        private readonly IUserRepository _userRepository;
-
-        public ShipmentRepository(AppDbContext context,
-            UserManager<ApplicationUser> userManager,
-            IShippingSettingsService shippingSettings,
-            ILogger<ShippingSettingsService> logger,
-            IUserRepository userRepository)
-        {
-            _context = context;
-            _userManager = userManager;
-            _shippingSettings = shippingSettings;
-            _logger = logger;
-            _userRepository = userRepository;
-        }
+        private readonly AppDbContext _context = context;
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly IShippingSettingsService _shippingSettings = shippingSettings;
+        private readonly ILogger<ShippingSettingsService> _logger = logger;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<OperationResult> AddShipment(string userId, CreateShipmentDto shipmentRequestDTO)
         {
@@ -50,36 +45,8 @@ namespace ShippingSystem.Repositories
 
             try
             {
-                var shipment = new Shipment
-                {
-                    ShipperId = userId,
-                    CustomerName = shipmentRequestDTO.CustomerName,
-                    CustomerPhone = shipmentRequestDTO.CustomerPhone,
-                    CustomerEmail = shipmentRequestDTO.CustomerEmail,
-                    CustomerAddress = new Address
-                    {
-                        Street = shipmentRequestDTO.Street,
-                        City = shipmentRequestDTO.City,
-                        Governorate = shipmentRequestDTO.Governorate,
-                        Details = shipmentRequestDTO.AddressDetails,
-                        GoogleMapAddressLink = shipmentRequestDTO.GoogleMapAddressLink
-                    },
-                    ShipmentDescription = shipmentRequestDTO.ShipmentDescription,
-                    ShipmentWeight = shipmentRequestDTO.ShipmentWeight,
-                    ShipmentLength = shipmentRequestDTO.ShipmentLength,
-                    ShipmentWidth = shipmentRequestDTO.ShipmentWidth,
-                    ShipmentHeight = shipmentRequestDTO.ShipmentHeight,
-                    Quantity = shipmentRequestDTO.Quantity,
-                    ShipmentNotes = shipmentRequestDTO.ShipmentNotes,
-                    CashOnDeliveryEnabled = shipmentRequestDTO.CashOnDeliveryEnabled,
-                    OpenPackageOnDeliveryEnabled = shipmentRequestDTO.OpenPackageOnDeliveryEnabled,
-                    ExpressDeliveryEnabled = shipmentRequestDTO.ExpressDeliveryEnabled,
-                    CollectionAmount = shipmentRequestDTO.CollectionAmount,
-                    AdditionalWeightCostPrtKg = SettingsConfig.AdditionalWeightCostPrtKg,
-                    CollectionFeePercentage = SettingsConfig.CollectionFeePercentage,
-                    CollectionFeeThreshold = SettingsConfig.CollectionFeeThreshold
-                };
-
+                var shipment = _mapper.Map<Shipment>(shipmentRequestDTO);
+                shipment.ShipperId = userId;
                 shipment.CreatedAt = shipment.UpdatedAt = UtcNowTrimmedToSeconds();
 
                 do
@@ -167,37 +134,13 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<List<ShipmentListDto>>
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
 
-            var AllShipments = await _context.Shipments
+            var allShipments = await _context.Shipments
                 .Where(s => s.ShipperId == userId)
-                .Select(shipment => new ShipmentListDto
-                {
-                    Id = shipment.Id,
-                    CustomerName = shipment.CustomerName,
-                    CustomerPhone = shipment.CustomerPhone,
-                    CustomerAddress = new AddressDto
-                    {
-                        Street = shipment.CustomerAddress.Street,
-                        City = shipment.CustomerAddress.City,
-                        Governorate = shipment.CustomerAddress.Governorate,
-                        Details = shipment.CustomerAddress.Details,
-                        GoogleMapAddressLink = shipment.CustomerAddress.GoogleMapAddressLink
-                    },
-                    ShipmentDescription = shipment.ShipmentDescription,
-                    ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
-                    CollectionAmount = shipment.CollectionAmount,
-                    CreatedAt = shipment.CreatedAt,
-                    LatestShipmentStatus = shipment.ShipmentStatuses
-                        .OrderByDescending(ss => ss.Timestamp)
-                        .Select(ss => new LatestShipmentStatusDto
-                        {
-                            Status = ss.Status,
-                            Timestamp = ss.Timestamp,
-                        }).FirstOrDefault()
-                })
+                .ProjectTo<ShipmentListDto>(_mapper.ConfigurationProvider)
                 .AsNoTracking()
                 .ToListAsync();
 
-            return ValueOperationResult<List<ShipmentListDto>>.Ok(AllShipments);
+            return ValueOperationResult<List<ShipmentListDto>>.Ok(allShipments);
         }
 
         public async Task<ValueOperationResult<ShipmentDetailsDto?>> GetShipmentById(string userId, int id)
@@ -213,52 +156,7 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<ShipmentDetailsDto?>
                     .Fail(StatusCodes.Status404NotFound, "Shipment not found");
 
-            ShipmentDetailsDto ShipmentDetails = new()
-            {
-                Id = shipment.Id,
-                CustomerName = shipment.CustomerName,
-                CustomerPhone = shipment.CustomerPhone,
-                CustomerAdditionalPhone = shipment.CustomerAdditionalPhone,
-                CustomerEmail = shipment.CustomerEmail,
-                CustomerAddress = new AddressDto
-                {
-                    Street = shipment.CustomerAddress.Street,
-                    City = shipment.CustomerAddress.City,
-                    Governorate = shipment.CustomerAddress.Governorate,
-                    Details = shipment.CustomerAddress.Details,
-                    GoogleMapAddressLink = shipment.CustomerAddress.GoogleMapAddressLink
-                },
-                ShipmentDescription = shipment.ShipmentDescription,
-                ShipmentWeight = shipment.ShipmentWeight,
-                ShipmentLength = shipment.ShipmentLength,
-                ShipmentWidth = shipment.ShipmentWidth,
-                ShipmentHeight = shipment.ShipmentHeight,
-                ShipmentVolume = shipment.ShipmentVolume,
-                Quantity = shipment.Quantity,
-                ShipmentNotes = shipment.ShipmentNotes,
-                CashOnDeliveryEnabled = shipment.CashOnDeliveryEnabled,
-                OpenPackageOnDeliveryEnabled = shipment.OpenPackageOnDeliveryEnabled,
-                ExpressDeliveryEnabled = shipment.ExpressDeliveryEnabled,
-                CollectionAmount = shipment.CollectionAmount,
-                ShippingCost = shipment.ShippingCost,
-                AdditionalWeight = shipment.AdditionalWeight,
-                AdditionalWeightCost = shipment.AdditionalWeightCost,
-                CollectionFee = shipment.CollectionFee,
-                AdditionalCost = shipment.AdditionalCost,
-                TotalCost = shipment.TotalCost,
-                NetPayout = shipment.NetPayout,
-                CreatedAt = shipment.CreatedAt,
-                UpdatedAt = shipment.UpdatedAt,
-                ShipmentTrackingNumber = shipment.ShipmentTrackingNumber,
-                ShipmentStatuses = [.. shipment.ShipmentStatuses
-                    .OrderByDescending(ss => ss.Timestamp)
-                    .Select(ss => new ShipmentStatusHistoryDto
-                    {
-                        Status = ss.Status,
-                        Timestamp = ss.Timestamp,
-                        Notes = ss.Notes
-                    })]
-            };
+            ShipmentDetailsDto ShipmentDetails = _mapper.Map<ShipmentDetailsDto>(shipment);
 
             return ValueOperationResult<ShipmentDetailsDto?>.Ok(ShipmentDetails);
         }
@@ -276,33 +174,19 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<ShipmentDetailsDto?>
                     .Fail(StatusCodes.Status404NotFound, "Shipment not found");
 
-            shipment.CustomerName = shipmentRequestDTO.CustomerName;
-            shipment.CustomerPhone = shipmentRequestDTO.CustomerPhone;
-            shipment.CustomerAdditionalPhone = shipmentRequestDTO.CustomerAdditionalPhone;
-            shipment.CustomerEmail = shipmentRequestDTO.CustomerEmail;
-            shipment.CustomerAddress.Street = shipmentRequestDTO.Street;
-            shipment.CustomerAddress.City = shipmentRequestDTO.City;
-            shipment.CustomerAddress.Governorate = shipmentRequestDTO.Governorate;
-            shipment.CustomerAddress.Details = shipmentRequestDTO.AddressDetails;
-            shipment.CustomerAddress.GoogleMapAddressLink = shipmentRequestDTO.GoogleMapAddressLink;
-            shipment.ShipmentDescription = shipmentRequestDTO.ShipmentDescription;
-            shipment.ShipmentWeight = shipmentRequestDTO.ShipmentWeight;
-            shipment.ShipmentLength = shipmentRequestDTO.ShipmentLength;
-            shipment.ShipmentWidth = shipmentRequestDTO.ShipmentWidth;
-            shipment.ShipmentHeight = shipmentRequestDTO.ShipmentHeight;
-            shipment.Quantity = shipmentRequestDTO.Quantity;
-            shipment.ShipmentNotes = shipmentRequestDTO.ShipmentNotes;
-            shipment.CashOnDeliveryEnabled = shipmentRequestDTO.CashOnDeliveryEnabled;
-            shipment.OpenPackageOnDeliveryEnabled = shipmentRequestDTO.OpenPackageOnDeliveryEnabled;
-            shipment.ExpressDeliveryEnabled = shipmentRequestDTO.ExpressDeliveryEnabled;
-            shipment.CollectionAmount = shipmentRequestDTO.CollectionAmount;
-
-            var hasChanges = _context.Entry(shipment).State == EntityState.Modified
-                     || _context.Entry(shipment.CustomerAddress).State == EntityState.Modified;
-
-            if (!hasChanges)
+            if (shipment.ShipmentStatuses
+                .OrderByDescending(ss => ss.Timestamp)
+                .FirstOrDefault()?.Status != ShipmentStatusEnum.Pending.ToString())
+            {
                 return ValueOperationResult<ShipmentDetailsDto?>
-                    .Fail(StatusCodes.Status304NotModified, "No changes detected.");
+                    .Fail(StatusCodes.Status409Conflict,
+                        "Update is only allowed for pending shipments.");
+            }
+
+            _mapper.Map(shipmentRequestDTO, shipment);
+
+            if (!_context.ChangeTracker.HasChanges())
+                return ValueOperationResult<ShipmentDetailsDto?>.Ok(null);
 
             shipment.UpdatedAt = UtcNowTrimmedToSeconds();
 
@@ -358,109 +242,14 @@ namespace ShippingSystem.Repositories
                 ShipmentStatusEnum.Returned.ToString(),
             };
 
-            var ToPickupShipments = await _context.Shipments
+            var toPickupShipments = await _context.Shipments
                 .Where(s => s.ShipperId == userId)
-                .Select(s => new
-                {
-                    Shipment = s,
-                    LatestStatus = s.ShipmentStatuses
-                        .OrderByDescending(ss => ss.Timestamp)
-                        .Select(ss => new
-                        {
-                            ss.Status,
-                            ss.Timestamp
-                        })
-                        .FirstOrDefault()
-                })
-                .Where(ls => validPickupStatuses.Contains(ls.LatestStatus!.Status))
-                .Select(s => new ToPickupShipmentListDto
-                {
-                    Id = s.Shipment.Id,
-                    CustomerName = s.Shipment.CustomerName,
-                    CustomerPhone = s.Shipment.CustomerPhone,
-                    CustomerAddress = new AddressDto
-                    {
-                        Street = s.Shipment.CustomerAddress.Street,
-                        City = s.Shipment.CustomerAddress.City,
-                        Governorate = s.Shipment.CustomerAddress.Governorate,
-                        Details = s.Shipment.CustomerAddress.Details,
-                        GoogleMapAddressLink = s.Shipment.CustomerAddress.GoogleMapAddressLink
-                    },
-                    ShipmentDescription = s.Shipment.ShipmentDescription,
-                    ShipmentWeight = s.Shipment.ShipmentWeight,
-                    Quantity = s.Shipment.Quantity,
-                    ExpressDeliveryEnabled = s.Shipment.ExpressDeliveryEnabled,
-                    CollectionAmount = s.Shipment.CollectionAmount,
-                    CreatedAt = s.Shipment.CreatedAt,
-                    LatestShipmentStatus = new LatestShipmentStatusDto
-                    {
-                        Status = s.LatestStatus!.Status,
-                        Timestamp = s.LatestStatus.Timestamp
-                    }
-                })
+                .ProjectTo<ToPickupShipmentListDto>(_mapper.ConfigurationProvider)
+                .Where(s => validPickupStatuses.Contains(s.LatestShipmentStatus!.Status))
                 .AsNoTracking()
                 .ToListAsync();
 
-            return ValueOperationResult<List<ToPickupShipmentListDto>>.Ok(ToPickupShipments);
-        }
-
-        public async Task<OperationResult> CreatePickupRequest(string userId, CreatePickupRequestDto pickupRequestDto)
-        {
-            if (await _userManager.FindByIdAsync(userId) == null)
-                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
-
-            if (pickupRequestDto.ShipmentIds.Count == 0)
-                return OperationResult.Fail(StatusCodes.Status400BadRequest, "No shipments selected for pickup");
-
-            var validShipmentIds = await _context.Shipments
-                    .Where(s => s.ShipperId == userId && pickupRequestDto.ShipmentIds.Contains(s.Id))
-                    .Select(s => s.Id)
-                    .ToListAsync();
-
-            if (validShipmentIds.Count != pickupRequestDto.ShipmentIds.Count)
-                return OperationResult.Fail(StatusCodes.Status404NotFound, "Some shipments are invalid or not found");
-
-            var pickupRequest = new PickupRequest
-            {
-                UserId = userId,
-                RequestType = RequestTypeEnum.PickupRequest,
-                PickupDate = pickupRequestDto.PickupDate,
-                WindowStart = pickupRequestDto.WindowStart,
-                WindowEnd = pickupRequestDto.WindowEnd,
-                PickupAddress = new Address
-                {
-                    Street = pickupRequestDto.Street,
-                    City = pickupRequestDto.City,
-                    Governorate = pickupRequestDto.Governorate,
-                    Details = pickupRequestDto.AddressDetails,
-                    GoogleMapAddressLink = pickupRequestDto.GoogleMapAddressLink
-                },
-                ContactName = pickupRequestDto.ContactName,
-                ContactPhone = pickupRequestDto.ContactPhone,
-                ShipmentsCount = validShipmentIds.Count,
-
-                RequestStatus = RequestStatusEnum.Pending,
-                PickupRequestShipments = [.. validShipmentIds
-                    .Select(id => new PickupRequestShipment
-                    {
-                        ShipmentId = id
-                    })]
-            };
-
-            pickupRequest.CreatedAt = pickupRequest.UpdatedAt = UtcNowTrimmedToSeconds();
-
-            await _context.PickupRequests.AddAsync(pickupRequest);
-
-            var result = await _context.SaveChangesAsync() > 0;
-
-            if (!result)
-                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
-                    "An unexpected error occurred. Please try again later.");
-
-            foreach (var item in validShipmentIds)
-                await UpdateShipmentStatus(userId, item, ShipmentStatusEnum.WaitingForPickup, "Ready For Pickup");
-
-            return OperationResult.Ok();
+            return ValueOperationResult<List<ToPickupShipmentListDto>>.Ok(toPickupShipments);
         }
 
         public async Task<ValueOperationResult<List<ToReturnShipmentListDto>>> GetShipmentsToReturn(string userId)
@@ -471,143 +260,12 @@ namespace ShippingSystem.Repositories
 
             var toReturnShipments = await _context.Shipments
                 .Where(s => s.ShipperId == userId)
-                .Select(s => new
-                {
-                    Shipment = s,
-                    LatestStatus = s.ShipmentStatuses
-                        .OrderByDescending(ss => ss.Timestamp)
-                        .FirstOrDefault()
-                })
-                .Where(ls => ls.LatestStatus!.Status == ShipmentStatusEnum.Delivered.ToString())
-                .Select(s => new ToReturnShipmentListDto
-                {
-                    Id = s.Shipment.Id,
-                    CustomerName = s.Shipment.CustomerName,
-                    CustomerPhone = s.Shipment.CustomerPhone,
-                    CustomerAddress = new AddressDto
-                    {
-                        Street = s.Shipment.CustomerAddress.Street,
-                        City = s.Shipment.CustomerAddress.City,
-                        Governorate = s.Shipment.CustomerAddress.Governorate,
-                        Details = s.Shipment.CustomerAddress.Details,
-                        GoogleMapAddressLink = s.Shipment.CustomerAddress.GoogleMapAddressLink
-                    },
-                    ShipmentDescription = s.Shipment.ShipmentDescription,
-                    ShipmentWeight = s.Shipment.ShipmentWeight,
-                    Quantity = s.Shipment.Quantity,
-                    ExpressDeliveryEnabled = s.Shipment.ExpressDeliveryEnabled,
-                    CollectionAmount = s.Shipment.CollectionAmount,
-                    CreatedAt = s.Shipment.CreatedAt,
-                    LatestShipmentStatus = new LatestShipmentStatusDto
-                    {
-                        Status = s.LatestStatus!.Status,
-                        Timestamp = s.LatestStatus.Timestamp
-                    }
-                })
+                .ProjectTo<ToReturnShipmentListDto>(_mapper.ConfigurationProvider)
+                .Where(s => s.LatestShipmentStatus!.Status == ShipmentStatusEnum.Delivered.ToString())
                 .AsNoTracking()
                 .ToListAsync();
 
             return ValueOperationResult<List<ToReturnShipmentListDto>>.Ok(toReturnShipments);
-        }
-
-        public async Task<OperationResult> CreateReturnRequest(string userId, CreateReturnRequestDto returnRequestDto)
-        {
-            if (await _userManager.FindByIdAsync(userId) == null)
-                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
-
-            if (returnRequestDto.ShipmentIds.Count == 0)
-                return OperationResult.Fail(StatusCodes.Status400BadRequest, "No shipments selected for return");
-
-            var validShipmentIds = await _context.Shipments
-                    .Where(s => s.ShipperId == userId && returnRequestDto.ShipmentIds.Contains(s.Id))
-                    .Select(s => s.Id)
-                    .ToListAsync();
-
-            if (validShipmentIds.Count != returnRequestDto.ShipmentIds.Count)
-                return OperationResult.Fail(StatusCodes.Status404NotFound,
-                    "Some shipments are invalid or not found");
-
-            var returnRequest = new ReturnRequest
-            {
-                UserId = userId,
-                RequestType = RequestTypeEnum.ReturnRequest,
-
-                ReturnPickupDate = returnRequestDto.ReturnPickupDate,
-                ReturnPickupWindowStart = returnRequestDto.ReturnPickupWindowStart,
-                ReturnPickupWindowEnd = returnRequestDto.ReturnPickupWindowEnd,
-                ReturnPickupAddress = new Address
-                {
-                    Street = returnRequestDto.CustomerStreet,
-                    City = returnRequestDto.CustomerCity,
-                    Governorate = returnRequestDto.CustomerGovernorate,
-                    Details = returnRequestDto.CustomerAddressDetails,
-                    GoogleMapAddressLink = returnRequestDto.CustomerGoogleMapAddressLink
-                },
-                CustomerContactName = returnRequestDto.CustomerContactName,
-                CustomerContactPhone = returnRequestDto.CustomerContactPhone,
-
-                ReturnDate = returnRequestDto.ReturnDate,
-                ReturnWindowStart = returnRequestDto.ReturnWindowStart,
-                ReturnWindowEnd = returnRequestDto.ReturnWindowEnd,
-                ReturnAddress = new Address
-                {
-                    Street = returnRequestDto.ShipperStreet,
-                    City = returnRequestDto.ShipperCity,
-                    Governorate = returnRequestDto.ShipperGovernorate,
-                    Details = returnRequestDto.ShipperAddressDetails,
-                    GoogleMapAddressLink = returnRequestDto.ShipperGoogleMapAddressLink
-                },
-                ShipperContactName = returnRequestDto.ShipperContactName,
-                ShipperContactPhone = returnRequestDto.ShipperContactPhone,
-
-
-                ShipmentsCount = validShipmentIds.Count,
-                RequestStatus = RequestStatusEnum.Pending,
-
-                ReturnRequestShipments = [.. validShipmentIds
-                    .Select(id => new ReturnRequestShipment
-                    {
-                        ShipmentId = id
-                    })]
-            };
-
-            returnRequest.CreatedAt = returnRequest.UpdatedAt = UtcNowTrimmedToSeconds();
-
-            await _context.ReturnRequests.AddAsync(returnRequest);
-
-            var result = await _context.SaveChangesAsync() > 0;
-
-            if (!result)
-                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
-                    "An unexpected error occurred. Please try again later.");
-
-            foreach (var item in validShipmentIds)
-                await UpdateShipmentStatus(userId, item, ShipmentStatusEnum.WaitingForPickup, "Waiting for pickup to be returned");
-
-            return OperationResult.Ok();
-        }
-
-        public async Task<ValueOperationResult<List<RequestListDto>>> GetAllRequests(string userId)
-        {
-            if (await _userManager.FindByIdAsync(userId) == null)
-                return ValueOperationResult<List<RequestListDto>>
-                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
-
-            var allRequests = await _context.Requests
-                .Where(r => r.UserId == userId)
-                .Select(r => new RequestListDto
-                {
-                    Id = r.Id,
-                    RequestType = r.RequestType.ToString(),
-                    CreatedAt = r.CreatedAt,
-                    UpdatedAt = r.UpdatedAt,
-                    ShipmentsCount = r.ShipmentsCount,
-                    Status = r.RequestStatus.ToString()
-                })
-                .AsNoTracking()
-                .ToListAsync();
-
-            return ValueOperationResult<List<RequestListDto>>.Ok(allRequests);
         }
 
         public async Task<ValueOperationResult<ShipmentStatusStatisticsDto>> GetShipmentStatusStatistics(string userId)
@@ -646,6 +304,7 @@ namespace ShippingSystem.Repositories
                 LostShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.Lost.ToString())?.Count ?? 0,
                 DamagedShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.Damaged.ToString())?.Count ?? 0,
             };
+
             return ValueOperationResult<ShipmentStatusStatisticsDto>.Ok(result);
         }
     }

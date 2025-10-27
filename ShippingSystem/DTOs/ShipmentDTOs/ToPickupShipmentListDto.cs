@@ -1,6 +1,8 @@
-﻿namespace ShippingSystem.DTOs
+﻿using ShippingSystem.DTOs.AddressDTOs;
+
+namespace ShippingSystem.DTOs.ShipmentDTOs
 {
-    public class ToReturnShipmentListDto
+    public class ToPickupShipmentListDto
     {
         public int Id { get; set; }
         public string CustomerName { get; set; } = null!;

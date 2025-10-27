@@ -1,4 +1,6 @@
-﻿namespace ShippingSystem.DTOs
+﻿using ShippingSystem.DTOs.AddressDTOs;
+
+namespace ShippingSystem.DTOs.ShipmentDTOs
 {
     public class ShipmentDetailsDto
     {

@@ -34,62 +34,9 @@ namespace ShippingSystem.Data.Config
                 .HasColumnType("nvarchar")
                 .HasMaxLength(2083)
                 .IsRequired(false);
-            });
-
-            builder.OwnsOne(rr => rr.ReturnAddress, address =>
-            {
-                address.Property(a => a.Street)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(256)
-                .IsRequired();
-
-                address.Property(a => a.City)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(50)
-                .IsRequired();
-
-                address.Property(a => a.Governorate)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(50)
-                .IsRequired();
-
-                address.Property(a => a.Details)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(500)
-                .IsRequired(false);
-
-                address.Property(a => a.GoogleMapAddressLink)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(2083)
-                .IsRequired(false);
-            });
-
-            builder.Property(rr => rr.CustomerContactName)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(100)
-                .IsRequired();
-
-            builder.Property(rr => rr.CustomerContactPhone)
-                .HasColumnType("varchar")
-                .HasMaxLength(11)
-                .IsRequired();
-
-            builder.Property(rr => rr.ShipperContactName)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(100)
-                .IsRequired();
-
-            builder.Property(rr => rr.ShipperContactPhone)
-                .HasColumnType("varchar")
-                .HasMaxLength(11)
-                .IsRequired();
-
+            }); 
 
             builder.Property(rr => rr.ReturnPickupDate)
-                .HasColumnType("date")
-                .IsRequired();
-
-            builder.Property(rr => rr.ReturnDate)
                 .HasColumnType("date")
                 .IsRequired();
 
@@ -97,15 +44,7 @@ namespace ShippingSystem.Data.Config
                 .HasColumnType("time")
                 .IsRequired();
 
-            builder.Property(rr => rr.ReturnWindowStart)
-                .HasColumnType("time")
-                .IsRequired();
-
             builder.Property(rr => rr.ReturnPickupWindowEnd)
-                .HasColumnType("time")
-                .IsRequired();
-
-            builder.Property(rr => rr.ReturnWindowEnd)
                 .HasColumnType("time")
                 .IsRequired();
 

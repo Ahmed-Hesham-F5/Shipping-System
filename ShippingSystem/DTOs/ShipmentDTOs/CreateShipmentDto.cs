@@ -1,9 +1,10 @@
-﻿using ShippingSystem.Validators;
+﻿using ShippingSystem.DTOs.AddressDTOs;
+using ShippingSystem.Validators;
 using System.ComponentModel.DataAnnotations;
 
-namespace ShippingSystem.DTOs
+namespace ShippingSystem.DTOs.ShipmentDTOs
 {
-    public class UpdateShipmentDto
+    public class CreateShipmentDto
     {
         [Required, MaxLength(100)]
         public string CustomerName { get; set; } = null!;
@@ -16,16 +17,8 @@ namespace ShippingSystem.DTOs
         public string? CustomerAdditionalPhone { get; set; } = null;
         [Required, MaxLength(255), EmailAddress]
         public string CustomerEmail { get; set; } = null!;
-        [Required, MaxLength(256)]
-        public string Street { get; set; } = null!;
-        [Required, MaxLength(50)]
-        public string City { get; set; } = null!;
-        [Required, MaxLength(50)]
-        public string Governorate { get; set; } = null!;
-        [MaxLength(500)]
-        public string? AddressDetails { get; set; }
-        [MaxLength(2083), Url]
-        public string? GoogleMapAddressLink { get; set; }
+        [Required]
+        public AddressDto CustomerAddress { get; set; } = null!;
 
         [Required, MaxLength(500)]
         public string ShipmentDescription { get; set; } = null!;
@@ -47,6 +40,7 @@ namespace ShippingSystem.DTOs
 
         [MaxLength(500)]
         public string? ShipmentNotes { get; set; }
+
         public bool CashOnDeliveryEnabled { get; set; }
         public bool OpenPackageOnDeliveryEnabled { get; set; }
         public bool ExpressDeliveryEnabled { get; set; }

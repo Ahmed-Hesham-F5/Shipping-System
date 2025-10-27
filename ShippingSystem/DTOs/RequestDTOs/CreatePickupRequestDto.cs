@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShippingSystem.DTOs.AddressDTOs;
+using System.ComponentModel.DataAnnotations;
 
-namespace ShippingSystem.DTOs
+namespace ShippingSystem.DTOs.RequestDTOs
 {
-    public class UpdatePickRequest
+    public class CreatePickupRequestDto
     {
         [Required]
         public DateOnly PickupDate { get; set; }
@@ -10,14 +11,8 @@ namespace ShippingSystem.DTOs
         public TimeOnly WindowStart { get; set; }
         [Required]
         public TimeOnly WindowEnd { get; set; }
-        [Required, MaxLength(256)]
-        public string Street { get; set; } = null!;
-        [Required, MaxLength(50)]
-        public string City { get; set; } = null!;
-        [Required, MaxLength(50)]
-        public string Governorate { get; set; } = null!;
-        [MaxLength(500)]
-        public string? AddressDetails { get; set; }
+        [Required]
+        public AddressDto PickupAddress { get; set; } = null!;
         [Required, MaxLength(100)]
         public string ContactName { get; set; } = null!;
         [Required]

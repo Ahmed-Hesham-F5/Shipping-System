@@ -1,6 +1,6 @@
 ﻿using ShippingSystem.Enums;
 
-namespace ShippingSystem.DTOs
+namespace ShippingSystem.DTOs.RequestDTOs
 {
     public class RequestListDto
     {
@@ -9,6 +9,6 @@ namespace ShippingSystem.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public int ShipmentsCount { get; set; }
-        public string Status { get; set; } = null!;
+        public string RequestStatus { get; set; } = null!;
     }
 }
