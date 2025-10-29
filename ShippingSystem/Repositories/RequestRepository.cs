@@ -335,9 +335,9 @@ namespace ShippingSystem.Repositories
                     rescheduleRequest.UserId = userId;
                     rescheduleRequest.RequestType = RequestTypeEnum.RescheduleRequest;
                     rescheduleRequest.ScheduledRequestType = RequestTypeEnum.ReturnRequest;
-                    rescheduleRequest.OldRequestDate = returnRequest.ReturnPickupDate;
-                    rescheduleRequest.OldTimeWindowStart = returnRequest.ReturnPickupWindowStart;
-                    rescheduleRequest.OldTimeWindowEnd = returnRequest.ReturnPickupWindowEnd;
+                    rescheduleRequest.OldRequestDate = returnRequest.ReturnDate;
+                    rescheduleRequest.OldTimeWindowStart = returnRequest.WindowStart;
+                    rescheduleRequest.OldTimeWindowEnd = returnRequest.WindowEnd;
                     rescheduleRequest.RequestStatus = RequestStatusEnum.Pending;
                     rescheduleRequest.ShipmentsCount = returnRequest.ShipmentsCount;
                     rescheduleRequest.CreatedAt = rescheduleRequest.UpdatedAt = UtcNowTrimmedToSeconds();
@@ -404,6 +404,44 @@ namespace ShippingSystem.Repositories
             rescheduleRequest.Role = (await _userRepository.GetUserRoleAsync(userId)).Value!;
 
             return ValueOperationResult<RescheduleRequestDetailsDto?>.Ok(rescheduleRequest);
+        }
+
+        public async Task<ValueOperationResult<List<ToRescheduleRequestListDto>>> GetRequestsToReschedule(string userId)
+        {
+            try
+            {
+                if (await _userManager.FindByIdAsync(userId) == null)
+                    return ValueOperationResult<List<ToRescheduleRequestListDto>>
+                        .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+                var validReschduleStatuses = new List<RequestStatusEnum>
+                {
+                    RequestStatusEnum.InReview,
+                    RequestStatusEnum.Approved,
+                    RequestStatusEnum.InProgress
+                };
+
+                var requestsToReschedule = await _context.PickupRequests
+                    .Where(r => r.UserId == userId && validReschduleStatuses.Contains(r.RequestStatus))
+                    .ProjectTo<ToRescheduleRequestListDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                requestsToReschedule.AddRange(
+                    await _context.ReturnRequests
+                    .Where(r => r.UserId == userId && validReschduleStatuses.Contains(r.RequestStatus))
+                    .ProjectTo<ToRescheduleRequestListDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking()
+                    .ToListAsync()
+                );
+
+                return ValueOperationResult<List<ToRescheduleRequestListDto>>.Ok(requestsToReschedule);
+            }
+            catch
+            {
+                return ValueOperationResult<List<ToRescheduleRequestListDto>>.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+            }
         }
     }
 }

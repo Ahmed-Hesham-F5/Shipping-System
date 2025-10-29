@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShippingSystem.Data;
 
@@ -11,9 +12,11 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029182910_AlterReturnRequestsColumnsName")]
+    partial class AlterReturnRequestsColumnsName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -434,6 +437,7 @@ namespace ShippingSystem.Migrations
                         .HasColumnType("varchar");
 
                     b.Property<string>("CustomerEmail")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar");
 
@@ -733,9 +737,6 @@ namespace ShippingSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CustomerEmail")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateOnly>("ReturnDate")
                         .HasColumnType("date");
 
@@ -989,7 +990,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Address", "PickupAddress", b1 =>
                         {
                             b1.Property<int>("PickupRequestId")
                                 .HasColumnType("int");
@@ -1025,7 +1026,7 @@ namespace ShippingSystem.Migrations
                                 .HasForeignKey("PickupRequestId");
                         });
 
-                    b.Navigation("Address")
+                    b.Navigation("PickupAddress")
                         .IsRequired();
                 });
 
@@ -1046,7 +1047,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Address", "ReturnPickupAddress", b1 =>
                         {
                             b1.Property<int>("ReturnRequestId")
                                 .HasColumnType("int");
@@ -1077,7 +1078,7 @@ namespace ShippingSystem.Migrations
                                 .HasForeignKey("ReturnRequestId");
                         });
 
-                    b.Navigation("Address")
+                    b.Navigation("ReturnPickupAddress")
                         .IsRequired();
                 });
 

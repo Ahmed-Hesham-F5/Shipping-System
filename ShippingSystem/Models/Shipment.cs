@@ -15,7 +15,7 @@ namespace ShippingSystem.Models
         public string CustomerPhone { get; set; } = null!;
         public string? CustomerAdditionalPhone { get; set; }
         public Address CustomerAddress { get; set; } = null!;
-        public string CustomerEmail { get; set; } = null!;
+        public string? CustomerEmail { get; set; }
 
         // Shipment details
         public string ShipmentDescription { get; set; } = null!;

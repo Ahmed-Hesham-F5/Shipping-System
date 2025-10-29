@@ -8,7 +8,7 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(EntityTypeBuilder<ReturnRequest> builder)
         {
-            builder.OwnsOne(rr => rr.ReturnPickupAddress, address =>
+            builder.OwnsOne(rr => rr.Address, address =>
             {
                 address.Property(a => a.Street)
                 .HasColumnType("nvarchar")
@@ -34,17 +34,32 @@ namespace ShippingSystem.Data.Config
                 .HasColumnType("nvarchar")
                 .HasMaxLength(2083)
                 .IsRequired(false);
-            }); 
+            });
+            
+            builder.Property(rr => rr.CustomerContactName)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(100)
+                .IsRequired();
 
-            builder.Property(rr => rr.ReturnPickupDate)
+            builder.Property(rr => rr.CustomerContactPhone) 
+                .HasColumnType("varchar")
+                .HasMaxLength(11)
+                .IsRequired();
+
+            builder.Property(rr => rr.CustomerEmail)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(255)
+                .IsRequired(false);
+
+            builder.Property(rr => rr.ReturnDate)
                 .HasColumnType("date")
                 .IsRequired();
 
-            builder.Property(rr => rr.ReturnPickupWindowStart)
+            builder.Property(rr => rr.WindowStart)
                 .HasColumnType("time")
                 .IsRequired();
 
-            builder.Property(rr => rr.ReturnPickupWindowEnd)
+            builder.Property(rr => rr.WindowEnd)
                 .HasColumnType("time")
                 .IsRequired();
 

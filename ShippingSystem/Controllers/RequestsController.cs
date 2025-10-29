@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs.RequestDTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
@@ -6,6 +7,7 @@ using System.Security.Claims;
 
 namespace ShippingSystem.Controllers
 {
+    [Authorize(Roles = "Shipper")]
     [Route("api/[controller]")]
     [ApiController]
     public class RequestsController : ControllerBase
@@ -195,6 +197,30 @@ namespace ShippingSystem.Controllers
                     new ApiResponse<string>(false, result.ErrorMessage));
 
             return Ok(new ApiResponse<RescheduleRequestDetailsDto>(true, null!, result.Value!));
+        }
+
+        [HttpGet("to-reschedule-requests")]
+        public async Task<IActionResult> GetRescheduleRequestsToProcess()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+           
+            var result = await _requestRepository.GetRequestsToReschedule(userId);
+            
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<List<ToRescheduleRequestListDto>> response = new(
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
         }
     }
 }

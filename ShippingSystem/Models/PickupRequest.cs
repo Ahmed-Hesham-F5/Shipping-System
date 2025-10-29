@@ -5,7 +5,7 @@
         public DateOnly PickupDate { get; set; }
         public TimeOnly WindowStart { get; set; }
         public TimeOnly WindowEnd { get; set; }
-        public Address PickupAddress { get; set; } = null!;
+        public Address Address { get; set; } = null!;
         public string ContactName { get; set; } = null!;
         public string ContactPhone { get; set; } = null!;
         public ICollection<PickupRequestShipment> PickupRequestShipments { get; set; } = new List<PickupRequestShipment>();

@@ -14,5 +14,6 @@ namespace ShippingSystem.Interfaces
         Task<ValueOperationResult<ReturnRequestDetailsDto?>> GetReturnRequestById(string userId, int returnRequestId);
         Task<ValueOperationResult<CancellationRequestDetailsDto?>> GetCancellationRequestById(string userId, int cancellationRequestId);
         Task<ValueOperationResult<RescheduleRequestDetailsDto?>> GetRescheduleRequestById(string userId, int rescheduleRequestId);
+        Task<ValueOperationResult<List<ToRescheduleRequestListDto>>> GetRequestsToReschedule(string userId);
     }
 }

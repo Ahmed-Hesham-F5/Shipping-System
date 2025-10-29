@@ -58,7 +58,7 @@ namespace ShippingSystem.Data.Config
             builder.Property(shipment => shipment.CustomerEmail)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(255)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(shipment => shipment.ShipmentDescription)
                 .HasColumnType("nvarchar")

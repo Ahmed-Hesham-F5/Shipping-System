@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ShippingSystem.DTOs.RequestDTOs;
-using ShippingSystem.DTOs.RequestDTOs;
 using ShippingSystem.DTOs.ShipmentDTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
@@ -226,6 +224,30 @@ namespace ShippingSystem.Controllers
                     new ApiResponse<string>(false, result.ErrorMessage));
 
             return NoContent();
+        }
+
+        [HttpGet("to-cancel")]
+        public async Task<IActionResult> GetShipmentsToCancel()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.GetShipmentsToCancel(userId);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<List<ToCancelShipmentListDto>> response = new(
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
         }
     }
 }

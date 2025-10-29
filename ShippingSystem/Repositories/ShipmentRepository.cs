@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
+using ShippingSystem.DTOs.RequestDTOs;
 using ShippingSystem.DTOs.ShipmentDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
@@ -306,6 +307,46 @@ namespace ShippingSystem.Repositories
             };
 
             return ValueOperationResult<ShipmentStatusStatisticsDto>.Ok(result);
+        }
+
+        public async Task<ValueOperationResult<List<ToCancelShipmentListDto>>> GetShipmentsToCancel(string userId)
+        {
+            try
+            {
+                if (await _userManager.FindByIdAsync(userId) == null)
+                    return ValueOperationResult<List<ToCancelShipmentListDto>>
+                        .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+                var validCancelStatuses = new List<RequestStatusEnum>
+                {
+                    RequestStatusEnum.InReview,
+                    RequestStatusEnum.Approved,
+                    RequestStatusEnum.InProgress
+                };
+
+                List<ToCancelShipmentListDto> toCancelShipments = await _context.PickupRequestShipments
+                    .Where(ps => ps.PickupRequest.UserId == userId)
+                    .Where(ps => validCancelStatuses.Contains(ps.PickupRequest.RequestStatus))
+                    .ProjectTo<ToCancelShipmentListDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                toCancelShipments.AddRange(
+                    await _context.ReturnRequestShipments
+                    .Where(ps => ps.ReturnRequest.UserId == userId)
+                    .Where(ps => validCancelStatuses.Contains(ps.ReturnRequest.RequestStatus))
+                    .ProjectTo<ToCancelShipmentListDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking()
+                    .ToListAsync()
+                );
+
+                return ValueOperationResult<List<ToCancelShipmentListDto>>.Ok(toCancelShipments);
+            }
+            catch
+            {
+                return ValueOperationResult<List<ToCancelShipmentListDto>>.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+            }
         }
     }
 }
