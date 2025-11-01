@@ -16,7 +16,7 @@ namespace ShippingSystem.Data.Config
 
             builder.Property(ss => ss.Key)
                 .HasConversion<string>()
-                .HasColumnType("varchar")
+                .HasColumnType("nvarchar")
                 .HasMaxLength(100)
                 .IsRequired();
 

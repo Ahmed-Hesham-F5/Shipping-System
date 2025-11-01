@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs.AuthenticationDTOs;
+using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
@@ -20,12 +21,12 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpPost("shipperRegistration")]
-        public async Task<IActionResult> ShipperRegistration([FromBody] ShipperRegisterDTO shipperRegisterDTO)
+        public async Task<IActionResult> ShipperRegistration([FromBody] CreateShipperDto shipperRegisterDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _shipperRepository.AddShipperAsync(shipperRegisterDTO);
+            var result = await _shipperRepository.CreateShipperAsync(shipperRegisterDTO);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,

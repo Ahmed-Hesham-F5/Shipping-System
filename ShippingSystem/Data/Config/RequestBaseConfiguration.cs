@@ -14,13 +14,13 @@ namespace ShippingSystem.Data.Config
 
             builder.Property(srb => srb.RequestType)
                 .HasConversion<string>()
-                .HasColumnType("varchar")
+                .HasColumnType("nvarchar")
                 .HasMaxLength(50)
                 .IsRequired();
 
             builder.Property(srb => srb.RequestStatus)
                 .HasConversion<string>()
-                .HasColumnType("varchar")
+                .HasColumnType("nvarchar")
                 .HasMaxLength(50)
                 .IsRequired();
 

@@ -10,6 +10,10 @@ namespace ShippingSystem.Models
         [ForeignKey("ShipperId")]
         public Shipper Shipper { get; set; } = null!;
 
+        public int? HubId { get; set; }
+        [ForeignKey("HubId")]
+        public Hub? Hub { get; set; }
+
         // Customer details
         public string CustomerName { get; set; } = null!;
         public string CustomerPhone { get; set; } = null!;

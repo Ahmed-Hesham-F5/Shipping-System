@@ -206,26 +206,6 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpPut("make-shipment-delivered/{shipmentId}")]
-        public async Task<IActionResult> MakeShipmentDelivered(int shipmentId)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return StatusCode(StatusCodes.Status401Unauthorized,
-                    new ApiResponse<string>(false, "User not authenticated."));
-
-            var result = await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId,
-                Enums.ShipmentStatusEnum.Delivered,
-                "Changed manually until we build the courier entity");
-
-            if (!result.Success)
-                return StatusCode(result.StatusCode,
-                    new ApiResponse<string>(false, result.ErrorMessage));
-
-            return NoContent();
-        }
-
         [HttpGet("to-cancel")]
         public async Task<IActionResult> GetShipmentsToCancel()
         {
@@ -248,6 +228,66 @@ namespace ShippingSystem.Controllers
             );
 
             return Ok(response);
+        }
+
+        [HttpPut("make-shipment-delivered/{shipmentId}")]
+        public async Task<IActionResult> MakeShipmentDelivered(int shipmentId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId,
+                Enums.ShipmentStatusEnum.Delivered,
+                "Changed manually until we build the courier entity");
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return NoContent();
+        }
+
+        [HttpPut("make-shipment-waiting-for-pickup/{shipmentId}")]
+        public async Task<IActionResult> MakeShipmentWaitingForPickup(int shipmentId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId,
+                Enums.ShipmentStatusEnum.WaitingForPickup,
+                "Changed manually until we build the courier entity");
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return NoContent();
+        }
+
+        [HttpPut("make-shipment-waiting-for-return/{shipmentId}")]
+        public async Task<IActionResult> MakeShipmentWaitingForReturn(int shipmentId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId,
+                Enums.ShipmentStatusEnum.WaitingForReturn,
+                "Changed manually until we build the courier entity");
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return NoContent();
         }
     }
 }

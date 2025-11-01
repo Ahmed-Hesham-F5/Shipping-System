@@ -42,7 +42,7 @@ namespace ShippingSystem.Data.Config
                 .IsRequired();
 
             builder.Property(rr => rr.CustomerContactPhone) 
-                .HasColumnType("varchar")
+                .HasColumnType("nvarchar")
                 .HasMaxLength(11)
                 .IsRequired();
 

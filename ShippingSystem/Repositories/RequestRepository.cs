@@ -15,12 +15,14 @@ namespace ShippingSystem.Repositories
     public class RequestRepository(AppDbContext context,
         UserManager<ApplicationUser> userManager,
         IUserRepository userRepository,
+        IShipmentRepository shipmentRepository,
         IMapper mapper) : IRequestRepository
     {
 
         private readonly AppDbContext _context = context;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly IUserRepository _userRepository = userRepository;
+        private readonly IShipmentRepository _shipmentRepository = shipmentRepository;
         private readonly IMapper _mapper = mapper;
 
         public async Task<OperationResult> CreatePickupRequest(string userId, CreatePickupRequestDto pickupRequestDto)
@@ -67,6 +69,9 @@ namespace ShippingSystem.Repositories
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred. Please try again later.");
 
+            foreach (var shipmentId in validShipmentIds)
+                await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId, ShipmentStatusEnum.InReviewForPickup, "");
+
             return OperationResult.Ok();
         }
 
@@ -103,22 +108,10 @@ namespace ShippingSystem.Repositories
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred. Please try again later.");
 
+            foreach (var shipmentId in validShipmentIds)
+                await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId, ShipmentStatusEnum.InReviewForReturn, "");
+
             return OperationResult.Ok();
-        }
-
-        public async Task<ValueOperationResult<List<RequestListDto>>> GetAllRequests(string userId)
-        {
-            if (await _userManager.FindByIdAsync(userId) == null)
-                return ValueOperationResult<List<RequestListDto>>
-                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
-
-            var allRequests = await _context.Requests
-                .Where(r => r.UserId == userId)
-                .ProjectTo<RequestListDto>(_mapper.ConfigurationProvider)
-                .AsNoTracking()
-                .ToListAsync();
-
-            return ValueOperationResult<List<RequestListDto>>.Ok(allRequests);
         }
 
         public async Task<OperationResult> CreateCancellationRequest(string userId, int requestId, CreateCancellationRequestDto cancellationRequestDto)
@@ -196,7 +189,25 @@ namespace ShippingSystem.Repositories
                     "An unexpected error occurred. Please try again later.");
             }
 
+            foreach (var shipmentId in validShipmentIds)
+                await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId, ShipmentStatusEnum.InReviewForCancellation, "");
+
             return OperationResult.Ok();
+        }
+
+        public async Task<ValueOperationResult<List<RequestListDto>>> GetAllRequests(string userId)
+        {
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return ValueOperationResult<List<RequestListDto>>
+                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var allRequests = await _context.Requests
+                .Where(r => r.UserId == userId)
+                .ProjectTo<RequestListDto>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return ValueOperationResult<List<RequestListDto>>.Ok(allRequests);
         }
 
         private async Task<RequestInfoDto?> GetRequestInfo(string userId, int requestId)
@@ -442,6 +453,40 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<List<ToRescheduleRequestListDto>>.Fail(StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred. Please try again later.");
             }
+        }
+
+        public async Task<OperationResult> UpdateRequestStatus(string userId, int requestId, RequestStatusEnum newStatus, string? notes = null)
+        {
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var request = await _context.Requests.FirstOrDefaultAsync(r => r.Id == requestId && r.UserId == userId);
+
+            if (request == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Request not found");
+
+            var getUserRoleResult = await _userRepository.GetUserRoleAsync(userId);
+
+            if (!getUserRoleResult.Success)
+                return OperationResult.Fail(getUserRoleResult.StatusCode, getUserRoleResult.ErrorMessage);
+
+            if (getUserRoleResult.Value == RolesEnum.Shipper.ToString() && request.UserId != userId)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Request not found");
+
+            if (request.RequestStatus.ToString() == newStatus.ToString())
+                return OperationResult.Fail(StatusCodes.Status400BadRequest,
+                    "The request already has the specified status.");
+
+            request.RequestStatus = newStatus;
+            request.UpdatedAt = UtcNowTrimmedToSeconds();
+            _context.Requests.Update(request);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            if (!result)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
         }
     }
 }

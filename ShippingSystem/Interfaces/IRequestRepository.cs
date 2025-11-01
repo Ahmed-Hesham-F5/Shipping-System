@@ -1,4 +1,5 @@
 ﻿using ShippingSystem.DTOs.RequestDTOs;
+using ShippingSystem.Enums;
 using ShippingSystem.Results;
 
 namespace ShippingSystem.Interfaces
@@ -15,5 +16,6 @@ namespace ShippingSystem.Interfaces
         Task<ValueOperationResult<CancellationRequestDetailsDto?>> GetCancellationRequestById(string userId, int cancellationRequestId);
         Task<ValueOperationResult<RescheduleRequestDetailsDto?>> GetRescheduleRequestById(string userId, int rescheduleRequestId);
         Task<ValueOperationResult<List<ToRescheduleRequestListDto>>> GetRequestsToReschedule(string userId);
+        Task<OperationResult> UpdateRequestStatus(string userId, int requestId, RequestStatusEnum newStatus, string? notes = null);
     }
 }

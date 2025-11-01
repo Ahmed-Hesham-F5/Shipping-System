@@ -18,12 +18,12 @@ namespace ShippingSystem.Data.Config
                 .IsRequired();
 
             builder.Property(shipment => shipment.CustomerPhone)
-                .HasColumnType("varchar")
+                .HasColumnType("nvarchar")
                 .HasMaxLength(11)
                 .IsRequired();
 
             builder.Property(shipment => shipment.CustomerAdditionalPhone)
-                .HasColumnType("varchar")
+                .HasColumnType("nvarchar")
                 .HasMaxLength(11)
                 .IsRequired(false);
 

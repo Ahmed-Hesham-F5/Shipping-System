@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
-using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.AuthenticationDTOs;
+using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
@@ -20,7 +20,7 @@ namespace ShippingSystem.Repositories
             _userRepository = userRepository;
         }
 
-        public async Task<ValueOperationResult<AuthDTO>> AddShipperAsync(ShipperRegisterDTO shipperRegisterDTO)
+        public async Task<ValueOperationResult<AuthDTO>> CreateShipperAsync(CreateShipperDto shipperRegisterDTO)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -30,8 +30,15 @@ namespace ShippingSystem.Repositories
                     UserName = shipperRegisterDTO.Email,
                     Email = shipperRegisterDTO.Email,
                     FirstName = shipperRegisterDTO.FirstName,
-                    LastName = shipperRegisterDTO.LastName
+                    LastName = shipperRegisterDTO.LastName,
                 };
+
+                user.Phones?.Add(new UserPhone
+                {
+                    PhoneNumber = shipperRegisterDTO.PhoneNumber,
+                    User = user,
+                    UserId = user.Id
+                });
 
                 var CreateUserResult = await _userRepository.CreateUserAsync(user, shipperRegisterDTO.Password);
 
@@ -60,12 +67,6 @@ namespace ShippingSystem.Repositories
                     ShipperId = shipper.ShipperId
                 });
 
-                shipper?.Phones?.Add(new ShipperPhone
-                {
-                    PhoneNumber = shipperRegisterDTO.PhoneNumber,
-                    ShipperId = shipper.ShipperId
-                });
-
                 _context.Shippers.Add(shipper!);
                 var saveResult = await _context.SaveChangesAsync();
 
@@ -90,9 +91,9 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<ShipperAddressDto?>.Fail(StatusCodes.Status400BadRequest, "Invalid shipper username.");
 
             var shipper = await _context.Shippers
-                .Include(s => s.ApplicationUser)
+                .Include(s => s.User)
                 .Include(s => s.Addresses)
-                .Where(s => s.ApplicationUser.Email == shipperUserEmail)
+                .Where(s => s.User.Email == shipperUserEmail)
                 .Select(s => new
                 {
                     Addresses = s.Addresses!.Select(address => new ShipperAddressDto

@@ -11,9 +11,10 @@ namespace ShippingSystem.Models
         public string HubPhoneNumber { get; set; } = null!;
         public decimal AreaInSquareMeters { get; set; }
 
-        public string ManagerId { get; set; } = null!;
-        public Employee Manager { get; set; } = null!;
+        public string? ManagerId { get; set; }
+        public Employee? Manager { get; set; }
 
-        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+        public ICollection<Employee>? Employees { get; set; } = new List<Employee>();
+        public ICollection<Shipment>? Shipments { get; set; } = new List<Shipment>();
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace ShippingSystem.DTOs.AddressDTOs
+namespace ShippingSystem.DTOs.ShipperDTOs
 {
     public class ShipperAddressDto
     {

@@ -222,5 +222,65 @@ namespace ShippingSystem.Controllers
 
             return Ok(response);
         }
+
+        [HttpPut("make-request-in-review/{requestId}")]
+        public async Task<IActionResult> MakeRequestInReview(int requestId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _requestRepository.UpdateRequestStatus(userId, requestId,
+                Enums.RequestStatusEnum.InReview,
+                "Changed manually until we build the courier entity");
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return NoContent();
+        }
+
+        [HttpPut("make-request-approved/{requestId}")]
+        public async Task<IActionResult> MakeRequestApproved(int requestId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _requestRepository.UpdateRequestStatus(userId, requestId,
+                Enums.RequestStatusEnum.Approved,
+                "Changed manually until we build the courier entity");
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return NoContent();
+        }
+
+        [HttpPut("make-request-inprogress/{requestId}")]
+        public async Task<IActionResult> MakeRequestInProgress(int requestId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _requestRepository.UpdateRequestStatus(userId, requestId,
+                Enums.RequestStatusEnum.InProgress,
+                "Changed manually until we build the courier entity");
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return NoContent();
+        }
     }
 }

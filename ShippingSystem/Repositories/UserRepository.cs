@@ -26,11 +26,11 @@ namespace ShippingSystem.Repositories
 
         public async Task<OperationResult> CreateUserAsync(ApplicationUser user, string Password)
         {
-            bool res = await IsEmailExistAsync(user.Email!);
-            if (res)
-                return OperationResult.Fail(409, "Email already registered");
             try
             {
+                if (!await IsEmailExistAsync(user.Email!))
+                    return OperationResult.Fail(409, "Email already registered");
+
                 var creatingUserResult =
                    await _userManager.CreateAsync(user, Password);
 
@@ -51,19 +51,35 @@ namespace ShippingSystem.Repositories
 
         public async Task<OperationResult> AddRoleAsync(ApplicationUser user, RolesEnum role)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                if (await _userManager.IsInRoleAsync(user, role.ToString()))
+                    return OperationResult.Ok();
+
                 var addingRoleResult =
-                   await _userManager.AddToRoleAsync(user, RolesEnum.Shipper.ToString());
+                   await _userManager.AddToRoleAsync(user, role.ToString());
 
                 if (!addingRoleResult.Succeeded)
                 {
                     Console.WriteLine(addingRoleResult.Errors.FirstOrDefault()?.Description);
                     return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
                 }
+
+                user.Role = role;
+                var updateUserRoleResult = await _userManager.UpdateAsync(user);
+
+                if (!updateUserRoleResult.Succeeded)
+                {
+                    Console.WriteLine(updateUserRoleResult.Errors.FirstOrDefault()?.Description);
+                    return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+                }
+
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 Console.WriteLine(ex.Message);
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }

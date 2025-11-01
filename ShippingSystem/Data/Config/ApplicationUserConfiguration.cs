@@ -23,6 +23,18 @@ namespace ShippingSystem.Data.Config
                 .HasForeignKey(rt => rt.UserId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(appUser => appUser.Role)
+                .HasConversion<string>()
+                .HasColumnType("nvarchar")
+                .HasMaxLength(50)
+                .IsRequired();
+
+            builder.HasMany(appUser => appUser.Phones)
+                .WithOne(phone => phone.User)
+                .HasForeignKey(phone => phone.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

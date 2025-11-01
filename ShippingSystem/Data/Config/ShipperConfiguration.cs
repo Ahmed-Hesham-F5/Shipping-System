@@ -17,7 +17,7 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(100);
 
             builder.Property(shipper => shipper.CompanyLink)
-                .HasColumnType("varchar")
+                .HasColumnType("nvarchar")
                 .HasMaxLength(255)
                 .IsRequired(false);
 
@@ -26,15 +26,9 @@ namespace ShippingSystem.Data.Config
                 .IsRequired(false)
                 .HasMaxLength(255);
 
-            builder.HasOne(shipper => shipper.ApplicationUser)
+            builder.HasOne(shipper => shipper.User)
                 .WithOne()
                 .HasForeignKey<Shipper>(shipper => shipper.ShipperId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(shipper => shipper.Phones)
-                .WithOne(phone => phone.Shipper)
-                .HasForeignKey(phone => phone.ShipperId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 

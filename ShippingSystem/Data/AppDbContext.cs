@@ -8,7 +8,7 @@ namespace ShippingSystem.Data
     {
         public DbSet<Shipper> Shippers { get; set; }
         public DbSet<ShipperAddress> ShipperAddresses { get; set; }
-        public DbSet<ShipperPhone> ShipperPhones { get; set; }
+        public DbSet<UserPhone> ShipperPhones { get; set; }
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<ShipmentStatus> ShipmentStatuses { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -21,6 +21,8 @@ namespace ShippingSystem.Data
         public DbSet<CancellationRequest> CancellationRequests { get; set; }
         public DbSet<CancellationRequestShipment> CancellationRequestShipments { get; set; }
         public DbSet<RescheduleRequest> RescheduleRequests { get; set; }
+        public DbSet<Hub> Hubs { get; set; }
+        public DbSet<Employee> Employees { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

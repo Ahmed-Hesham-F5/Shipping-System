@@ -13,7 +13,7 @@ namespace ShippingSystem.Data.Config
                 .ValueGeneratedOnAdd();
 
             builder.Property(shipmentStatus => shipmentStatus.Status)
-                .HasColumnType("varchar")
+                .HasColumnType("nvarchar")
                 .HasMaxLength(50)
                 .IsRequired();
 
