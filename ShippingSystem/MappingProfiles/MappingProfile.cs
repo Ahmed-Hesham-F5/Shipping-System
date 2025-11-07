@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using ShippingSystem.DTOs.AddressDTOs;
+using ShippingSystem.DTOs.EmployeeDTOs;
+using ShippingSystem.DTOs.HubDTOs;
 using ShippingSystem.DTOs.RequestDTOs;
 using ShippingSystem.DTOs.ShipmentDTOs;
 using ShippingSystem.Models;
@@ -28,6 +30,8 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Timestamp));
 
             CreateMap<ShipmentStatus, ShipmentStatusHistoryDto>();
+
+            CreateMap<UserAddress, AddressDto>().ReverseMap();
 
             CreateMap<Address, AddressDto>().ReverseMap();
 
@@ -111,7 +115,25 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.RequestDate, opt => opt.MapFrom(src => src.PickupDate));
 
             CreateMap<ReturnRequest, ToRescheduleRequestListDto>()
-                .ForMember(dest => dest.RequestDate, opt => opt.MapFrom(src => src.ReturnDate));
+                .ForMember(dest => dest.RequestDate, opt => opt.MapFrom(src => src.PickupDate));
+
+            CreateMap<CreateHubDto, Hub>()
+                .ForMember(dest => dest.Type, opt => opt.Ignore());
+
+            CreateMap<Hub, HubListDto>()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()))
+                .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.Manager!.User.FirstName + " " + src.Manager.User.LastName))
+                .ForMember(dest => dest.EmployeeCount, opt => opt.MapFrom(src => src.Employees!.Count));
+
+            CreateMap<Hub, HubSelectDto>()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
+
+            CreateMap<Employee, EmployeeListDto>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.Phones!.FirstOrDefault()!.PhoneNumber))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role.ToString()))
+                .ForMember(dest => dest.HubName, opt => opt.MapFrom(src => src.Hub!.Name));
         }
     }
 }

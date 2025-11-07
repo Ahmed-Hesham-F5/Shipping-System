@@ -5,11 +5,14 @@ namespace ShippingSystem.Models
     public class Hub
     {
         public int Id { get; set; }
-        public HubTypesEnum HubType { get; set; }
+        public HubTypesEnum Type { get; set; }
         public string Name { get; set; } = null!;
         public Address Address { get; set; } = null!;
-        public string HubPhoneNumber { get; set; } = null!;
+        public string PhoneNumber { get; set; } = null!;
         public decimal AreaInSquareMeters { get; set; }
+        public HubStatus HubStatus { get; set; } = HubStatus.Active;
+
+        public DateTime CreatedAt { get; set; }
 
         public string? ManagerId { get; set; }
         public Employee? Manager { get; set; }

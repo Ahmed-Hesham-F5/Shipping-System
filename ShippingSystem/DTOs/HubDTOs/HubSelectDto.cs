@@ -1,8 +1,9 @@
 ﻿namespace ShippingSystem.DTOs.HubDTOs
 {
-    public class HubSelectDto
+    public class HubSelectDto   
     {
-        public string HubType { get; set; } = null!;
+        public int Id { get; set; }
+        public string Type { get; set; } = null!;
         public string Name { get; set; } = null!;
     }
 }

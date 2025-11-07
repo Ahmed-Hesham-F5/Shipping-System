@@ -75,33 +75,33 @@ namespace ShippingSystem.Migrations
                         },
                         new
                         {
-                            Id = "5",
+                            Id = "4",
                             Name = "HubManager",
                             NormalizedName = "HUBMANAGER"
                         },
                         new
                         {
-                            Id = "4",
-                            Name = "OperationsAgent",
-                            NormalizedName = "OPERATIONSAGENT"
-                        },
-                        new
-                        {
-                            Id = "6",
+                            Id = "5",
                             Name = "Accountant",
                             NormalizedName = "ACCOUNTANT"
                         },
                         new
                         {
-                            Id = "7",
+                            Id = "6",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "8",
+                            Id = "7",
                             Name = "MainAdmin",
                             NormalizedName = "MAINADMIN"
+                        },
+                        new
+                        {
+                            Id = "8",
+                            Name = "OperationsAgent",
+                            NormalizedName = "OPERATIONSAGENT"
                         });
                 });
 
@@ -219,8 +219,10 @@ namespace ShippingSystem.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<short>("AccountStatus")
-                        .HasColumnType("smallint");
+                    b.Property<byte>("AccountStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)1);
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -314,6 +316,14 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("EmployeeId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("FirstLogin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<int?>("HubId")
                         .HasColumnType("int");
 
@@ -335,24 +345,31 @@ namespace ShippingSystem.Migrations
                     b.Property<decimal>("AreaInSquareMeters")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("HubPhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(11)
-                        .HasColumnType("nvarchar");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("HubType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<byte>("HubStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("tinyint")
+                        .HasDefaultValue((byte)1);
 
                     b.Property<string>("ManagerId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -623,44 +640,6 @@ namespace ShippingSystem.Migrations
                     b.ToTable("Shippers", (string)null);
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.ShipperAddress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar");
-
-                    b.Property<string>("Details")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar");
-
-                    b.Property<string>("Governorate")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar");
-
-                    b.Property<string>("ShipperId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShipperId");
-
-                    b.ToTable("ShipperAddresses", (string)null);
-                });
-
             modelBuilder.Entity("ShippingSystem.Models.ShippingSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -705,6 +684,48 @@ namespace ShippingSystem.Migrations
                             Key = "CollectionFeeThreshold",
                             Value = "3000"
                         });
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.UserAddress", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("GoogleMapAddressLink")
+                        .HasMaxLength(2083)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("Governorate")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("Street")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("UserID")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("UserAddresses", (string)null);
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.UserPhone", b =>
@@ -804,7 +825,7 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("CustomerEmail")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateOnly>("ReturnDate")
+                    b.Property<DateOnly>("PickupDate")
                         .HasColumnType("date");
 
                     b.Property<TimeOnly>("WindowEnd")
@@ -899,44 +920,6 @@ namespace ShippingSystem.Migrations
                         .HasForeignKey("HubId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
-                        {
-                            b1.Property<string>("EmployeeId")
-                                .HasColumnType("nvarchar(450)");
-
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasMaxLength(50)
-                                .HasColumnType("nvarchar");
-
-                            b1.Property<string>("Details")
-                                .HasMaxLength(500)
-                                .HasColumnType("nvarchar");
-
-                            b1.Property<string>("GoogleMapAddressLink")
-                                .HasMaxLength(2083)
-                                .HasColumnType("nvarchar");
-
-                            b1.Property<string>("Governorate")
-                                .IsRequired()
-                                .HasMaxLength(50)
-                                .HasColumnType("nvarchar");
-
-                            b1.Property<string>("Street")
-                                .IsRequired()
-                                .HasMaxLength(256)
-                                .HasColumnType("nvarchar");
-
-                            b1.HasKey("EmployeeId");
-
-                            b1.ToTable("Employees");
-
-                            b1.WithOwner()
-                                .HasForeignKey("EmployeeId");
-                        });
-
-                    b.Navigation("Address");
-
                     b.Navigation("Hub");
 
                     b.Navigation("User");
@@ -947,8 +930,7 @@ namespace ShippingSystem.Migrations
                     b.HasOne("ShippingSystem.Models.Employee", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
                         {
@@ -1131,15 +1113,15 @@ namespace ShippingSystem.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.ShipperAddress", b =>
+            modelBuilder.Entity("ShippingSystem.Models.UserAddress", b =>
                 {
-                    b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
+                    b.HasOne("ShippingSystem.Models.ApplicationUser", "User")
                         .WithMany("Addresses")
-                        .HasForeignKey("ShipperId")
+                        .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Shipper");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.UserPhone", b =>
@@ -1170,7 +1152,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Address", "PickupAddress", b1 =>
                         {
                             b1.Property<int>("PickupRequestId")
                                 .HasColumnType("int");
@@ -1206,7 +1188,7 @@ namespace ShippingSystem.Migrations
                                 .HasForeignKey("PickupRequestId");
                         });
 
-                    b.Navigation("Address")
+                    b.Navigation("PickupAddress")
                         .IsRequired();
                 });
 
@@ -1227,7 +1209,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Address", "CustomerAddress", b1 =>
                         {
                             b1.Property<int>("ReturnRequestId")
                                 .HasColumnType("int");
@@ -1258,12 +1240,14 @@ namespace ShippingSystem.Migrations
                                 .HasForeignKey("ReturnRequestId");
                         });
 
-                    b.Navigation("Address")
+                    b.Navigation("CustomerAddress")
                         .IsRequired();
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("Addresses");
+
                     b.Navigation("Phones");
 
                     b.Navigation("RefreshTokens");
@@ -1283,8 +1267,6 @@ namespace ShippingSystem.Migrations
 
             modelBuilder.Entity("ShippingSystem.Models.Shipper", b =>
                 {
-                    b.Navigation("Addresses");
-
                     b.Navigation("Shipments");
                 });
 

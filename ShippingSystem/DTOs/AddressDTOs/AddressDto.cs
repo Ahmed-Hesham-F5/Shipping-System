@@ -4,6 +4,7 @@ namespace ShippingSystem.DTOs.AddressDTOs
 {
     public class AddressDto
     {
+        [Required, MaxLength(256)]
         public string Street { get; set; } = null!;
         [Required, MaxLength(50)]
         public string City { get; set; } = null!;

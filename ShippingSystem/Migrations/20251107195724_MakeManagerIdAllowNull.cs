@@ -5,31 +5,31 @@
 namespace ShippingSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class MakeEmailNullableInReturnRequest : Migration
+    public partial class MakeManagerIdAllowNull : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "CustomerEmail",
-                table: "ReturnRequests",
-                type: "nvarchar(max)",
+                name: "ManagerId",
+                table: "Hubs",
+                type: "nvarchar(450)",
                 nullable: true,
                 oldClrType: typeof(string),
-                oldType: "nvarchar(max)");
+                oldType: "nvarchar(450)");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "CustomerEmail",
-                table: "ReturnRequests",
-                type: "nvarchar(max)",
+                name: "ManagerId",
+                table: "Hubs",
+                type: "nvarchar(450)",
                 nullable: false,
                 defaultValue: "",
                 oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
+                oldType: "nvarchar(450)",
                 oldNullable: true);
         }
     }

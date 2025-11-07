@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs.AuthenticationDTOs;
-using ShippingSystem.DTOs.ShipperDTOs;
-using ShippingSystem.Enums;
+using ShippingSystem.Helpers;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
 
@@ -9,44 +8,9 @@ namespace ShippingSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountsController : ControllerBase
+    public class AccountsController(IUserRepository userRepository) : ControllerBase
     {
-        private readonly IShipperRepository _shipperRepository;
-        private readonly IUserRepository _userRepository;
-
-        public AccountsController(IShipperRepository shipperRepository, IUserRepository userRepository)
-        {
-            _shipperRepository = shipperRepository;
-            _userRepository = userRepository;
-        }
-
-        [HttpPost("shipperRegistration")]
-        public async Task<IActionResult> ShipperRegistration([FromBody] CreateShipperDto shipperRegisterDTO)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _shipperRepository.CreateShipperAsync(shipperRegisterDTO);
-
-            if (!result.Success)
-                return StatusCode(result.StatusCode,
-                    new ApiResponse<string>(false, result.ErrorMessage));
-
-            SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
-
-            var shipperAddress = await _shipperRepository.GetShipperAddressAsync(shipperRegisterDTO.Email);
-
-            result.Value.City = shipperAddress.Value?.City ?? string.Empty;
-            result.Value.Governorate = shipperAddress.Value?.Governorate ?? string.Empty;
-
-            ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
-                success: true,
-                message: "User registered successfully!",
-                data: result.Value
-            );
-
-            return StatusCode(StatusCodes.Status201Created, response);
-        }
+        private readonly IUserRepository _userRepository = userRepository;
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
@@ -60,14 +24,11 @@ namespace ShippingSystem.Controllers
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
+            CookieHelper.SetRefreshTokenInCookie(Response, result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
-            if (result.Value.Role == (RolesEnum.Shipper.ToString()))
-            {
-                var shipperAddress = await _shipperRepository.GetShipperAddressAsync(loginDTO.Email);
-                result.Value.City = shipperAddress.Value?.City ?? string.Empty;
-                result.Value.Governorate = shipperAddress.Value?.Governorate ?? string.Empty;
-            }
+            var userAddress = await _userRepository.GetUserAddressAsync(loginDTO.Email);
+            result.Value.City = userAddress.Value?.City ?? string.Empty;
+            result.Value.Governorate = userAddress.Value?.Governorate ?? string.Empty;
 
             ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
                 success: true,
@@ -93,7 +54,7 @@ namespace ShippingSystem.Controllers
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(success: false, message: result.ErrorMessage));
 
-            SetRefreshTokenInCookie(result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
+            CookieHelper.SetRefreshTokenInCookie(Response, result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
             ApiResponse<AuthDTO> response = new ApiResponse<AuthDTO>(
                 success: true,
@@ -122,20 +83,6 @@ namespace ShippingSystem.Controllers
             Response.Cookies.Delete("refreshToken");
 
             return NoContent();
-        }
-
-        private void SetRefreshTokenInCookie(string refreshToken, DateTime expires)
-        {
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Expires = expires.ToLocalTime(),
-                Secure = true,
-                IsEssential = true,
-                SameSite = SameSiteMode.None
-            };
-
-            Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
     }
 }

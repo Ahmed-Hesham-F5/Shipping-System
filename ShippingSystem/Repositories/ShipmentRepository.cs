@@ -169,6 +169,7 @@ namespace ShippingSystem.Repositories
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
 
             var shipment = await _context.Shipments
+                .Include(s => s.ShipmentStatuses)
                 .FirstOrDefaultAsync(s => s.ShipperId == userId && s.Id == id);
 
             if (shipment == null)
@@ -207,6 +208,7 @@ namespace ShippingSystem.Repositories
                 return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
 
             var shipment = await _context.Shipments
+                .Include(s => s.ShipmentStatuses)
                 .FirstOrDefaultAsync(s => s.ShipperId == userId && s.Id == id);
 
             if (shipment == null)

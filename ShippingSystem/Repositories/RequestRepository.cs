@@ -346,7 +346,7 @@ namespace ShippingSystem.Repositories
                     rescheduleRequest.UserId = userId;
                     rescheduleRequest.RequestType = RequestTypeEnum.RescheduleRequest;
                     rescheduleRequest.ScheduledRequestType = RequestTypeEnum.ReturnRequest;
-                    rescheduleRequest.OldRequestDate = returnRequest.ReturnDate;
+                    rescheduleRequest.OldRequestDate = returnRequest.PickupDate;
                     rescheduleRequest.OldTimeWindowStart = returnRequest.WindowStart;
                     rescheduleRequest.OldTimeWindowEnd = returnRequest.WindowEnd;
                     rescheduleRequest.RequestStatus = RequestStatusEnum.Pending;

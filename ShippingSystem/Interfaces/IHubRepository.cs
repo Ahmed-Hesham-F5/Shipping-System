@@ -1,12 +1,12 @@
-﻿using ShippingSystem.DTOs.AuthenticationDTOs;
-using ShippingSystem.DTOs.HubDTOs;
+﻿using ShippingSystem.DTOs.HubDTOs;
 using ShippingSystem.Results;
 
 namespace ShippingSystem.Interfaces
 {
     public interface IHubRepository
     {
-        Task<ValueOperationResult<AuthDTO>> CreateHubAsync(CreateHubDto createHubDto);
+        Task<OperationResult> CreateHubAsync(CreateHubDto createHubDto);
+        Task<ValueOperationResult<List<HubListDto>>> GetAllHubsAsync();
         Task<ValueOperationResult<List<HubSelectDto>>> GetSelectableHubs();
     }
 }

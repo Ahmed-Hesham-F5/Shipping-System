@@ -20,8 +20,6 @@ namespace ShippingSystem.DTOs.EmployeeDTOs
         
         [Required, MaxLength(50)]
         public string Role { get; set; } = null!;
-      
-        [Required]
-        public int HubId { get; set; }
+        public int? HubId { get; set; } = null;
     }
 }

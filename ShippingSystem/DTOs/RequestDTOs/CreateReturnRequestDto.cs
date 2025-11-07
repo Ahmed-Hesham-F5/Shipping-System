@@ -6,13 +6,13 @@ namespace ShippingSystem.DTOs.RequestDTOs
     public class CreateReturnRequestDto
     {
         [Required]
-        public DateOnly ReturnPickupDate { get; set; }
+        public DateOnly PickupDate { get; set; }
         [Required]
-        public TimeOnly ReturnPickupWindowStart { get; set; }
+        public TimeOnly WindowStart { get; set; }
         [Required]
-        public TimeOnly ReturnPickupWindowEnd { get; set; }
+        public TimeOnly WindowEnd { get; set; }
         [Required]
-        public AddressDto ReturnPickupAddress { get; set; } = null!;
+        public AddressDto CustomerAddress { get; set; } = null!;
         [Required, MaxLength(100)]
         public string CustomerContactName { get; set; } = null!;
         [Required]

@@ -6,7 +6,8 @@ namespace ShippingSystem.Interfaces
 {
     public interface IEmployeeRepository
     {
-        Task<ValueOperationResult<AuthDTO>> CreateEmployeeAsync(CreateEmployeeDto createEmployeeDto);
-        Task<ValueOperationResult<List<string>>> GetAssignableEmployeeRoles();
+        Task<OperationResult> CreateEmployeeAsync(CreateEmployeeDto createEmployeeDto);
+        ValueOperationResult<List<string>> GetAssignableEmployeeRoles();
+        Task<ValueOperationResult<List<EmployeeListDto>>> GetAllEmployeesAsync();
     }
 }

@@ -9,7 +9,9 @@ namespace ShippingSystem.Models
         public string EmployeeId { get; set; } = null!;
         public ApplicationUser User { get; set; } = null!;
 
-        public Address? Address { get; set; }
+        public bool FirstLogin { get; set; } = true;
+        public DateTime CreatedAt { get; set; }
+
         public int? HubId { get; set; }
         [ForeignKey("HubId")]
         public Hub? Hub { get; set; }

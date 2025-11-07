@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
+using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
@@ -10,25 +13,19 @@ using System.Security.Claims;
 
 namespace ShippingSystem.Repositories
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository(UserManager<ApplicationUser> userManager, IAuthService authService,
+        AppDbContext context, IMapper mapper) : IUserRepository
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IAuthService _authService;
-        private readonly AppDbContext _context;
-
-        public UserRepository(UserManager<ApplicationUser> userManager, IAuthService authService,
-            AppDbContext context)
-        {
-            _userManager = userManager;
-            _authService = authService;
-            _context = context;
-        }
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly IAuthService _authService = authService;
+        private readonly AppDbContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<OperationResult> CreateUserAsync(ApplicationUser user, string Password)
         {
             try
             {
-                if (!await IsEmailExistAsync(user.Email!))
+                if (await IsEmailExistAsync(user.Email!))
                     return OperationResult.Fail(409, "Email already registered");
 
                 var creatingUserResult =
@@ -51,7 +48,6 @@ namespace ShippingSystem.Repositories
 
         public async Task<OperationResult> AddRoleAsync(ApplicationUser user, RolesEnum role)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 if (await _userManager.IsInRoleAsync(user, role.ToString()))
@@ -65,21 +61,9 @@ namespace ShippingSystem.Repositories
                     Console.WriteLine(addingRoleResult.Errors.FirstOrDefault()?.Description);
                     return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
                 }
-
-                user.Role = role;
-                var updateUserRoleResult = await _userManager.UpdateAsync(user);
-
-                if (!updateUserRoleResult.Succeeded)
-                {
-                    Console.WriteLine(updateUserRoleResult.Errors.FirstOrDefault()?.Description);
-                    return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
-                }
-
-                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 Console.WriteLine(ex.Message);
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
@@ -197,6 +181,23 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<string>.Fail(StatusCodes.Status404NotFound, "Role not found");
 
             return ValueOperationResult<string>.Ok(role.FirstOrDefault()!);
+        }
+
+        public async Task<ValueOperationResult<AddressDto?>> GetUserAddressAsync(string userEmail)
+        {
+            if (await _userManager.FindByEmailAsync(userEmail) == null)
+                return ValueOperationResult<AddressDto?>
+                    .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            AddressDto? Address = await _context.UserAddresses
+                .Where(a => a.User.Email == userEmail)
+                .ProjectTo<AddressDto>(_mapper.ConfigurationProvider)
+                .FirstOrDefaultAsync();
+
+            if (Address == null)
+                return ValueOperationResult<AddressDto?>.Fail(StatusCodes.Status404NotFound, "User address not found.");
+
+            return ValueOperationResult<AddressDto?>.Ok(Address);
         }
     }
 }

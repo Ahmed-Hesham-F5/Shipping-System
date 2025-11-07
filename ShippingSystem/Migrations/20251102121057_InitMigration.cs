@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ShippingSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,6 +35,7 @@ namespace ShippingSystem.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     AccountStatus = table.Column<short>(type: "smallint", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -61,7 +62,7 @@ namespace ShippingSystem.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Key = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
+                    Key = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Value = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -199,12 +200,36 @@ namespace ShippingSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Requests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RequestType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ShipmentsCount = table.Column<int>(type: "int", nullable: false),
+                    RequestStatus = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Requests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Requests_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Shippers",
                 columns: table => new
                 {
                     ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     CompanyName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CompanyLink = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true),
+                    CompanyLink = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     TypeOfProduction = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
@@ -219,73 +244,118 @@ namespace ShippingSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Requests",
+                name: "UserPhones",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RequestType = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ShipmentsCount = table.Column<int>(type: "int", nullable: false),
-                    RequestStatus = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                    PhoneNumber = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Requests", x => x.Id);
+                    table.PrimaryKey("PK_UserPhones", x => new { x.UserId, x.PhoneNumber });
                     table.ForeignKey(
-                        name: "FK_Requests_Shippers_ShipperId",
-                        column: x => x.ShipperId,
-                        principalTable: "Shippers",
-                        principalColumn: "ShipperId",
+                        name: "FK_UserPhones_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Shipments",
+                name: "CancellationRequests",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CustomerName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CustomerPhone = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false),
-                    CustomerAdditionalPhone = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: true),
-                    CustomerAddress_Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    CustomerAddress_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CustomerAddress_Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CustomerAddress_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CustomerAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(2083)", maxLength: 2083, nullable: true),
-                    CustomerEmail = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    ShipmentDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    ShipmentWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ShipmentLength = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ShipmentWidth = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ShipmentHeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    ShipmentNotes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CashOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    OpenPackageOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    ExpressDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    CollectionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    AdditionalWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ShippingCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    AdditionalWeightCostPrtKg = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CollectionFeePercentage = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CollectionFeeThreshold = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    ShipmentTrackingNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Shipments", x => x.Id);
+                    table.PrimaryKey("PK_CancellationRequests", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Shipments_Shippers_ShipperId",
-                        column: x => x.ShipperId,
-                        principalTable: "Shippers",
-                        principalColumn: "ShipperId",
+                        name: "FK_CancellationRequests_Requests_Id",
+                        column: x => x.Id,
+                        principalTable: "Requests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PickupRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    PickupDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    WindowStart = table.Column<TimeOnly>(type: "time", nullable: false),
+                    WindowEnd = table.Column<TimeOnly>(type: "time", nullable: false),
+                    Address_Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Address_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Address_Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Address_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Address_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(2083)", maxLength: 2083, nullable: true),
+                    ContactName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    ContactPhone = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PickupRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PickupRequests_Requests_Id",
+                        column: x => x.Id,
+                        principalTable: "Requests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RescheduleRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    ScheduledRequestId = table.Column<int>(type: "int", nullable: false),
+                    ScheduledRequestType = table.Column<int>(type: "int", nullable: false),
+                    OldRequestDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    OldTimeWindowStart = table.Column<TimeOnly>(type: "time", nullable: false),
+                    OldTimeWindowEnd = table.Column<TimeOnly>(type: "time", nullable: false),
+                    NewRequestDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    NewTimeWindowStart = table.Column<TimeOnly>(type: "time", nullable: false),
+                    NewTimeWindowEnd = table.Column<TimeOnly>(type: "time", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RescheduleRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RescheduleRequests_Requests_Id",
+                        column: x => x.Id,
+                        principalTable: "Requests",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ReturnRequests",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false),
+                    ReturnDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    WindowStart = table.Column<TimeOnly>(type: "time", nullable: false),
+                    WindowEnd = table.Column<TimeOnly>(type: "time", nullable: false),
+                    Address_Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_Governorate = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address_Details = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Address_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CustomerContactName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CustomerContactPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CustomerEmail = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReturnRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ReturnRequests_Requests_Id",
+                        column: x => x.Id,
+                        principalTable: "Requests",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -313,106 +383,125 @@ namespace ShippingSystem.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ShipperPhones",
+                name: "CancellationRequestShipments",
                 columns: table => new
                 {
-                    PhoneNumber = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false),
-                    ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    CancellationRequestId = table.Column<int>(type: "int", nullable: false),
+                    ShipmentId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ShipperPhones", x => new { x.ShipperId, x.PhoneNumber });
+                    table.PrimaryKey("PK_CancellationRequestShipments", x => new { x.CancellationRequestId, x.ShipmentId });
                     table.ForeignKey(
-                        name: "FK_ShipperPhones_Shippers_ShipperId",
-                        column: x => x.ShipperId,
-                        principalTable: "Shippers",
-                        principalColumn: "ShipperId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PickupRequests",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    PickupDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    WindowStart = table.Column<TimeOnly>(type: "time", nullable: false),
-                    WindowEnd = table.Column<TimeOnly>(type: "time", nullable: false),
-                    PickupAddress_Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
-                    PickupAddress_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    PickupAddress_Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    PickupAddress_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    PickupAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(2083)", maxLength: 2083, nullable: true),
-                    ContactName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    ContactPhone = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PickupRequests", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PickupRequests_Requests_Id",
-                        column: x => x.Id,
-                        principalTable: "Requests",
+                        name: "FK_CancellationRequestShipments_CancellationRequests_CancellationRequestId",
+                        column: x => x.CancellationRequestId,
+                        principalTable: "CancellationRequests",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ReturnRequests",
+                name: "Employees",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    ReturnPickupDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    ReturnPickupWindowStart = table.Column<TimeOnly>(type: "time", nullable: false),
-                    ReturnPickupWindowEnd = table.Column<TimeOnly>(type: "time", nullable: false),
-                    ReturnPickupAddress_Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReturnPickupAddress_City = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReturnPickupAddress_Governorate = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReturnPickupAddress_Details = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ReturnPickupAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CustomerContactName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CustomerContactPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReturnDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    ReturnWindowStart = table.Column<TimeOnly>(type: "time", nullable: false),
-                    ReturnWindowEnd = table.Column<TimeOnly>(type: "time", nullable: false),
-                    ReturnAddress_Street = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReturnAddress_City = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReturnAddress_Governorate = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReturnAddress_Details = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ReturnAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ShipperContactName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ShipperContactPhone = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    EmployeeId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Address_Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Address_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Address_Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Address_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Address_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(2083)", maxLength: 2083, nullable: true),
+                    HubId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ReturnRequests", x => x.Id);
+                    table.PrimaryKey("PK_Employees", x => x.EmployeeId);
                     table.ForeignKey(
-                        name: "FK_ReturnRequests_Requests_Id",
-                        column: x => x.Id,
-                        principalTable: "Requests",
+                        name: "FK_Employees_AspNetUsers_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ShipmentStatuses",
+                name: "Hubs",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ShipmentId = table.Column<int>(type: "int", nullable: false),
-                    Status = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
-                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                    HubType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Address_Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Address_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Address_Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Address_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Address_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(2083)", maxLength: 2083, nullable: true),
+                    HubPhoneNumber = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    AreaInSquareMeters = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ManagerId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ShipmentStatuses", x => x.Id);
+                    table.PrimaryKey("PK_Hubs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ShipmentStatuses_Shipments_ShipmentId",
-                        column: x => x.ShipmentId,
-                        principalTable: "Shipments",
+                        name: "FK_Hubs_Employees_ManagerId",
+                        column: x => x.ManagerId,
+                        principalTable: "Employees",
+                        principalColumn: "EmployeeId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Shipments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ShipperId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    HubId = table.Column<int>(type: "int", nullable: true),
+                    CustomerName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    CustomerPhone = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    CustomerAdditionalPhone = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: true),
+                    CustomerAddress_Street = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    CustomerAddress_City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CustomerAddress_Governorate = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    CustomerAddress_Details = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CustomerAddress_GoogleMapAddressLink = table.Column<string>(type: "nvarchar(2083)", maxLength: 2083, nullable: true),
+                    CustomerEmail = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    ShipmentDescription = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    ShipmentWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShipmentLength = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShipmentWidth = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShipmentHeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    ShipmentNotes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CashOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    OpenPackageOnDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    ExpressDeliveryEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    CollectionAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AdditionalWeight = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShippingCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AdditionalWeightCostPrtKg = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CollectionFeePercentage = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CollectionFeeThreshold = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    ShipmentTrackingNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Shipments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Shipments_Hubs_HubId",
+                        column: x => x.HubId,
+                        principalTable: "Hubs",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Shipments_Shippers_ShipperId",
+                        column: x => x.ShipperId,
+                        principalTable: "Shippers",
+                        principalColumn: "ShipperId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -462,19 +551,42 @@ namespace ShippingSystem.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ShipmentStatuses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ShipmentId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShipmentStatuses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ShipmentStatuses_Shipments_ShipmentId",
+                        column: x => x.ShipmentId,
+                        principalTable: "Shipments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "1", null, "Shipper", "SHIPPER" },
-                    { "128", null, "MainAdmin", "MAINADMIN" },
-                    { "16", null, "WarehouseManager", "WAREHOUSEMANAGER" },
-                    { "2", null, "Courier", "COURIER" },
-                    { "32", null, "Accountant", "ACCOUNTANT" },
-                    { "4", null, "Storekeeper", "STOREKEEPER" },
-                    { "64", null, "Admin", "ADMIN" },
-                    { "8", null, "TechnicalSupport", "TECHNICALSUPPORT" }
+                    { "0", null, "Shipper", "SHIPPER" },
+                    { "1", null, "Courier", "COURIER" },
+                    { "2", null, "Storekeeper", "STOREKEEPER" },
+                    { "3", null, "TechnicalSupport", "TECHNICALSUPPORT" },
+                    { "4", null, "HubManager", "HUBMANAGER" },
+                    { "5", null, "Accountant", "ACCOUNTANT" },
+                    { "6", null, "Admin", "ADMIN" },
+                    { "7", null, "MainAdmin", "MAINADMIN" },
+                    { "8", null, "OperationsAgent", "OPERATIONSAGENT" }
                 });
 
             migrationBuilder.InsertData(
@@ -527,6 +639,21 @@ namespace ShippingSystem.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CancellationRequestShipments_ShipmentId",
+                table: "CancellationRequestShipments",
+                column: "ShipmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employees_HubId",
+                table: "Employees",
+                column: "HubId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Hubs_ManagerId",
+                table: "Hubs",
+                column: "ManagerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PickupRequestShipments_ShipmentId",
                 table: "PickupRequestShipments",
                 column: "ShipmentId");
@@ -538,14 +665,19 @@ namespace ShippingSystem.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Requests_ShipperId",
+                name: "IX_Requests_UserId",
                 table: "Requests",
-                column: "ShipperId");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReturnRequestShipments_ShipmentId",
                 table: "ReturnRequestShipments",
                 column: "ShipmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Shipments_HubId",
+                table: "Shipments",
+                column: "HubId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Shipments_ShipmentTrackingNumber",
@@ -573,11 +705,34 @@ namespace ShippingSystem.Migrations
                 table: "ShippingSettings",
                 column: "Key",
                 unique: true);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_CancellationRequestShipments_Shipments_ShipmentId",
+                table: "CancellationRequestShipments",
+                column: "ShipmentId",
+                principalTable: "Shipments",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Employees_Hubs_HubId",
+                table: "Employees",
+                column: "HubId",
+                principalTable: "Hubs",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Employees_AspNetUsers_EmployeeId",
+                table: "Employees");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Employees_Hubs_HubId",
+                table: "Employees");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
@@ -594,10 +749,16 @@ namespace ShippingSystem.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "CancellationRequestShipments");
+
+            migrationBuilder.DropTable(
                 name: "PickupRequestShipments");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "RescheduleRequests");
 
             migrationBuilder.DropTable(
                 name: "ReturnRequestShipments");
@@ -609,13 +770,16 @@ namespace ShippingSystem.Migrations
                 name: "ShipperAddresses");
 
             migrationBuilder.DropTable(
-                name: "ShipperPhones");
-
-            migrationBuilder.DropTable(
                 name: "ShippingSettings");
 
             migrationBuilder.DropTable(
+                name: "UserPhones");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "CancellationRequests");
 
             migrationBuilder.DropTable(
                 name: "PickupRequests");
@@ -634,6 +798,12 @@ namespace ShippingSystem.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Hubs");
+
+            migrationBuilder.DropTable(
+                name: "Employees");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ShippingSystem.Enums;
 using ShippingSystem.Models;
 
 namespace ShippingSystem.Data.Config
@@ -29,6 +30,17 @@ namespace ShippingSystem.Data.Config
                 .HasColumnType("nvarchar")
                 .HasMaxLength(50)
                 .IsRequired();
+
+            builder.Property(appUser => appUser.AccountStatus)
+                .HasConversion<byte>()
+                .HasDefaultValue(AccountStatus.Active)
+                .IsRequired();
+
+            builder.HasMany(appUser => appUser.Addresses)
+                .WithOne(address => address.User)
+                .HasForeignKey(address => address.UserID)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(appUser => appUser.Phones)
                 .WithOne(phone => phone.User)

@@ -5,25 +5,25 @@
 namespace ShippingSystem.Migrations
 {
     /// <inheritdoc />
-    public partial class addEmailToReturnRequest : Migration
+    public partial class AddFirstLoginToEmployeesTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "CustomerEmail",
-                table: "ReturnRequests",
-                type: "nvarchar(max)",
+            migrationBuilder.AddColumn<bool>(
+                name: "FirstLogin",
+                table: "Employees",
+                type: "bit",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "CustomerEmail",
-                table: "ReturnRequests");
+                name: "FirstLogin",
+                table: "Employees");
         }
     }
 }

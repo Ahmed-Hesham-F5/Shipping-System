@@ -7,8 +7,8 @@ namespace ShippingSystem.Data
     public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Shipper> Shippers { get; set; }
-        public DbSet<ShipperAddress> ShipperAddresses { get; set; }
-        public DbSet<UserPhone> ShipperPhones { get; set; }
+        public DbSet<UserAddress> UserAddresses { get; set; }
+        public DbSet<UserPhone> UserPhones { get; set; }
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<ShipmentStatus> ShipmentStatuses { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }

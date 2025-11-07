@@ -32,12 +32,6 @@ namespace ShippingSystem.Data.Config
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.HasMany(shipper => shipper.Addresses)
-                .WithOne(address => address.Shipper)
-                .HasForeignKey(address => address.ShipperId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Cascade);
-
             builder.HasMany(shipper => shipper.Shipments)
                 .WithOne(shipment => shipment.Shipper)
                 .HasForeignKey(shipment => shipment.ShipperId)

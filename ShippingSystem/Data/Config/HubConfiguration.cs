@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using ShippingSystem.Enums;
 using ShippingSystem.Models;
 
 namespace ShippingSystem.Data.Config
@@ -13,7 +14,7 @@ namespace ShippingSystem.Data.Config
             builder.Property(h => h.Id)
                 .ValueGeneratedOnAdd();
 
-            builder.Property(h => h.HubType)
+            builder.Property(h => h.Type)
                 .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(50);
@@ -21,6 +22,15 @@ namespace ShippingSystem.Data.Config
             builder.Property(h => h.Name)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            builder.Property(h => h.AreaInSquareMeters)
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+
+            builder.Property(h => h.HubStatus)
+                .HasConversion<byte>()
+                .HasDefaultValue(HubStatus.Active)
+                .IsRequired();
 
             builder.OwnsOne(h => h.Address, address =>
             {
@@ -50,9 +60,13 @@ namespace ShippingSystem.Data.Config
                 .IsRequired(false);
             });
 
-            builder.Property(h => h.HubPhoneNumber)
+            builder.Property(h => h.PhoneNumber)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(11)
+                .IsRequired();
+
+            builder.Property(h => h.CreatedAt)
+                .HasColumnType("datetime2")
                 .IsRequired();
 
             builder.HasMany(h => h.Shipments)
@@ -64,7 +78,7 @@ namespace ShippingSystem.Data.Config
             builder.HasOne(h => h.Manager)
                 .WithMany()
                 .HasForeignKey(h => h.ManagerId)
-                .IsRequired()
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(h => h.Employees)
@@ -72,7 +86,6 @@ namespace ShippingSystem.Data.Config
                 .HasForeignKey(e => e.HubId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
-
 
             builder.ToTable("Hubs");
         }

@@ -40,7 +40,7 @@ namespace ShippingSystem.Controllers
                 new ApiResponse<string>(true, "Pickup request created successfully."));
         }
 
-        [HttpGet("getAllRequests")]
+        [HttpGet]
         public async Task<IActionResult> GetAllRequests()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -64,7 +64,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpPost("return-request")]
+        [HttpPost("return-requests")]
         public async Task<IActionResult> ReturnRequest([FromBody] CreateReturnRequestDto returnRequestDto)
         {
             if (!ModelState.IsValid)
@@ -86,7 +86,7 @@ namespace ShippingSystem.Controllers
                 new ApiResponse<string>(true, "Return request created successfully."));
         }
 
-        [HttpPost("cancellation-request/{requestId}")]
+        [HttpPost("{requestId}/cancellations")]
         public async Task<IActionResult> CancellationRequest(int requestId, [FromBody] CreateCancellationRequestDto cancellationRequestDto)
         {
             if (!ModelState.IsValid)
@@ -223,7 +223,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpPut("make-request-in-review/{requestId}")]
+        [HttpPut("{requestId}/make-request-in-review")]
         public async Task<IActionResult> MakeRequestInReview(int requestId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -243,7 +243,7 @@ namespace ShippingSystem.Controllers
             return NoContent();
         }
 
-        [HttpPut("make-request-approved/{requestId}")]
+        [HttpPut("{requestId}/make-request-approved")]
         public async Task<IActionResult> MakeRequestApproved(int requestId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -263,7 +263,7 @@ namespace ShippingSystem.Controllers
             return NoContent();
         }
 
-        [HttpPut("make-request-inprogress/{requestId}")]
+        [HttpPut("{requestId}/make-request-inprogress")]
         public async Task<IActionResult> MakeRequestInProgress(int requestId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

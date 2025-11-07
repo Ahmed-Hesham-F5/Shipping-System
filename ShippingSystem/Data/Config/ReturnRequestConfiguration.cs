@@ -8,7 +8,7 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(EntityTypeBuilder<ReturnRequest> builder)
         {
-            builder.OwnsOne(rr => rr.Address, address =>
+            builder.OwnsOne(rr => rr.CustomerAddress, address =>
             {
                 address.Property(a => a.Street)
                 .HasColumnType("nvarchar")
@@ -51,7 +51,7 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(255)
                 .IsRequired(false);
 
-            builder.Property(rr => rr.ReturnDate)
+            builder.Property(rr => rr.PickupDate)
                 .HasColumnType("date")
                 .IsRequired();
 

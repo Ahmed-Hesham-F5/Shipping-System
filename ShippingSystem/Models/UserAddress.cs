@@ -1,19 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShippingSystem.Models
 {
-    public class ShipperAddress
+    public class UserAddress
     {
-        [Key]
         public int Id { get; set; }
         public string Street { get; set; } = null!;
         public string City { get; set; } = null!;
         public string Governorate { get; set; } = null!;
         public string? Details { get; set; }
-        public string ShipperId { get; set; } = null!;
+        public string? GoogleMapAddressLink { get; set; }
 
-        [ForeignKey("ShipperId")]
-        public Shipper Shipper { get; set; } = null!;
+        public string UserID { get; set; } = null!;
+
+        [ForeignKey("UserID")]
+        public ApplicationUser User { get; set; } = null!;
     }
 }

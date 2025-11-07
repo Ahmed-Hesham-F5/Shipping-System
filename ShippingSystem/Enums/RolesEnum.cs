@@ -6,10 +6,10 @@
         Courier,
         Storekeeper,
         TechnicalSupport,
-        OperationsAgent,
         HubManager,
         Accountant,
         Admin,
-        MainAdmin
+        MainAdmin,
+        OperationsAgent,
     }
 }

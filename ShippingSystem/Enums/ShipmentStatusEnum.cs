@@ -13,6 +13,7 @@
         InReviewForDelivery,
         InReviewForCancellation,
         InReviewForReschedule,
+        InReviewForExchange,
         WaitingForPickup,
         WaitingForReturn,
         WaitingForDelivery,

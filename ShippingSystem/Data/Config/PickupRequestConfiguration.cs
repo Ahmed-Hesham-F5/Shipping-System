@@ -8,7 +8,7 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(EntityTypeBuilder<PickupRequest> builder)
         {
-            builder.OwnsOne(pr => pr.Address, address =>
+            builder.OwnsOne(pr => pr.PickupAddress, address =>
             {
                 address.Property(a => a.Street)
                 .HasColumnType("nvarchar")

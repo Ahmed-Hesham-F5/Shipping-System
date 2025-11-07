@@ -20,7 +20,7 @@ namespace ShippingSystem.Controllers
             _shipmentRepository = shipmentRepository;
         }
 
-        [HttpPost("addShipment")]
+        [HttpPost]
         public async Task<IActionResult> AddShipment([FromBody] CreateShipmentDto shipmentDTO)
         {
             if (!ModelState.IsValid)
@@ -42,7 +42,7 @@ namespace ShippingSystem.Controllers
                 new ApiResponse<string>(true, "Shipment added successfully"));
         }
 
-        [HttpGet("getShipments")]
+        [HttpGet]
         public async Task<IActionResult> GetAllShipments()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -66,7 +66,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpGet("getShipmentById/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetShipmentById(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -90,7 +90,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpPut("updateShipment/{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateShipment(int id, [FromBody] UpdateShipmentDto shipmentDTO)
         {
             if (!ModelState.IsValid)
@@ -117,7 +117,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpDelete("deleteShipment/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteShipment(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -159,7 +159,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpGet("getShipmentsToReturn")]
+        [HttpGet("to-return")]
         public async Task<IActionResult> GetShipmentsToReturn()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -230,7 +230,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
-        [HttpPut("make-shipment-delivered/{shipmentId}")]
+        [HttpPut("{shipmentId}/make-shipment-delivered")]
         public async Task<IActionResult> MakeShipmentDelivered(int shipmentId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -250,7 +250,7 @@ namespace ShippingSystem.Controllers
             return NoContent();
         }
 
-        [HttpPut("make-shipment-waiting-for-pickup/{shipmentId}")]
+        [HttpPut("{shipmentId}/make-shipment-waiting-for-pickup")]
         public async Task<IActionResult> MakeShipmentWaitingForPickup(int shipmentId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -270,7 +270,7 @@ namespace ShippingSystem.Controllers
             return NoContent();
         }
 
-        [HttpPut("make-shipment-waiting-for-return/{shipmentId}")]
+        [HttpPut("{shipmentId}/make-shipment-waiting-for-return")]
         public async Task<IActionResult> MakeShipmentWaitingForReturn(int shipmentId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

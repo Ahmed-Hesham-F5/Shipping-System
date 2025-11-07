@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using ShippingSystem.Data;
+﻿using ShippingSystem.Data;
 using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Enums;
@@ -9,16 +8,12 @@ using ShippingSystem.Results;
 
 namespace ShippingSystem.Repositories
 {
-    public class ShipperRepository : IShipperRepository
+    public class ShipperRepository(AppDbContext context,
+        IUserRepository userRepository
+        ) : IShipperRepository
     {
-        private readonly AppDbContext _context;
-        private readonly IUserRepository _userRepository;
-
-        public ShipperRepository(AppDbContext context, IUserRepository userRepository)
-        {
-            _context = context;
-            _userRepository = userRepository;
-        }
+        private readonly AppDbContext _context = context;
+        private readonly IUserRepository _userRepository = userRepository;
 
         public async Task<ValueOperationResult<AuthDTO>> CreateShipperAsync(CreateShipperDto shipperRegisterDTO)
         {
@@ -31,6 +26,7 @@ namespace ShippingSystem.Repositories
                     Email = shipperRegisterDTO.Email,
                     FirstName = shipperRegisterDTO.FirstName,
                     LastName = shipperRegisterDTO.LastName,
+                    Role = RolesEnum.Shipper,
                 };
 
                 user.Phones?.Add(new UserPhone
@@ -38,6 +34,17 @@ namespace ShippingSystem.Repositories
                     PhoneNumber = shipperRegisterDTO.PhoneNumber,
                     User = user,
                     UserId = user.Id
+                });
+
+                user.Addresses?.Add(new UserAddress
+                {
+                    City = shipperRegisterDTO.Address.City,
+                    Street = shipperRegisterDTO.Address.Street,
+                    Governorate = shipperRegisterDTO.Address.Governorate,
+                    Details = shipperRegisterDTO.Address.Details,
+                    GoogleMapAddressLink = shipperRegisterDTO.Address.GoogleMapAddressLink,
+                    User = user,
+                    UserID = user.Id
                 });
 
                 var CreateUserResult = await _userRepository.CreateUserAsync(user, shipperRegisterDTO.Password);
@@ -58,15 +65,6 @@ namespace ShippingSystem.Repositories
                     ShipperId = user.Id,
                 };
 
-                shipper?.Addresses?.Add(new ShipperAddress
-                {
-                    City = shipperRegisterDTO.City,
-                    Street = shipperRegisterDTO.Street,
-                    Governorate = shipperRegisterDTO.Governorate,
-                    Details = shipperRegisterDTO.AddressDetails,
-                    ShipperId = shipper.ShipperId
-                });
-
                 _context.Shippers.Add(shipper!);
                 var saveResult = await _context.SaveChangesAsync();
 
@@ -83,33 +81,6 @@ namespace ShippingSystem.Repositories
                 Console.WriteLine(e.Message.ToString());
                 return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
-        }
-
-        public async Task<ValueOperationResult<ShipperAddressDto?>> GetShipperAddressAsync(string shipperUserEmail)
-        {
-            if (string.IsNullOrEmpty(shipperUserEmail))
-                return ValueOperationResult<ShipperAddressDto?>.Fail(StatusCodes.Status400BadRequest, "Invalid shipper username.");
-
-            var shipper = await _context.Shippers
-                .Include(s => s.User)
-                .Include(s => s.Addresses)
-                .Where(s => s.User.Email == shipperUserEmail)
-                .Select(s => new
-                {
-                    Addresses = s.Addresses!.Select(address => new ShipperAddressDto
-                    {
-                        City = address.City,
-                        Street = address.Street,
-                        Governorate = address.Governorate,
-                        Details = address.Details
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
-
-            if (shipper == null)
-                return ValueOperationResult<ShipperAddressDto?>.Fail(StatusCodes.Status404NotFound, "Shipper address not found.");
-
-            return ValueOperationResult<ShipperAddressDto?>.Ok(shipper.Addresses.FirstOrDefault());
         }
     }
 }

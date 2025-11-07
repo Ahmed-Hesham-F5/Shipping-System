@@ -15,10 +15,10 @@ namespace ShippingSystem.Data.Config
                  new IdentityRole { Id=((int)RolesEnum.Storekeeper).ToString(), Name = RolesEnum.Storekeeper.ToString(), NormalizedName = RolesEnum.Storekeeper.ToString().ToUpper() },
                  new IdentityRole { Id=((int)RolesEnum.TechnicalSupport).ToString(), Name = RolesEnum.TechnicalSupport.ToString(), NormalizedName = RolesEnum.TechnicalSupport.ToString().ToUpper() },
                  new IdentityRole { Id=((int)RolesEnum.HubManager).ToString(), Name = RolesEnum.HubManager.ToString(), NormalizedName = RolesEnum.HubManager.ToString().ToUpper() },
-                 new IdentityRole { Id=((int)RolesEnum.OperationsAgent).ToString(), Name = RolesEnum.OperationsAgent.ToString(), NormalizedName = RolesEnum.OperationsAgent.ToString().ToUpper() },
                  new IdentityRole { Id=((int)RolesEnum.Accountant).ToString(), Name = RolesEnum.Accountant.ToString(), NormalizedName = RolesEnum.Accountant.ToString().ToUpper() },
                  new IdentityRole { Id=((int)RolesEnum.Admin).ToString(), Name = RolesEnum.Admin.ToString(), NormalizedName = RolesEnum.Admin.ToString().ToUpper() },
-                 new IdentityRole { Id=((int)RolesEnum.MainAdmin).ToString(), Name = RolesEnum.MainAdmin.ToString(), NormalizedName = RolesEnum.MainAdmin.ToString().ToUpper() }
+                 new IdentityRole { Id=((int)RolesEnum.MainAdmin).ToString(), Name = RolesEnum.MainAdmin.ToString(), NormalizedName = RolesEnum.MainAdmin.ToString().ToUpper() },
+                 new IdentityRole { Id=((int)RolesEnum.OperationsAgent).ToString(), Name = RolesEnum.OperationsAgent.ToString(), NormalizedName = RolesEnum.OperationsAgent.ToString().ToUpper() }
                 
                  );
 

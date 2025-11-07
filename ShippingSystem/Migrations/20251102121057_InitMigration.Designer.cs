@@ -12,8 +12,8 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251010211657_UpdateRequestsTable")]
-    partial class UpdateRequestsTable
+    [Migration("20251102121057_InitMigration")]
+    partial class InitMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,51 +54,57 @@ namespace ShippingSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1",
+                            Id = "0",
                             Name = "Shipper",
                             NormalizedName = "SHIPPER"
                         },
                         new
                         {
-                            Id = "2",
+                            Id = "1",
                             Name = "Courier",
                             NormalizedName = "COURIER"
                         },
                         new
                         {
-                            Id = "4",
+                            Id = "2",
                             Name = "Storekeeper",
                             NormalizedName = "STOREKEEPER"
                         },
                         new
                         {
-                            Id = "8",
+                            Id = "3",
                             Name = "TechnicalSupport",
                             NormalizedName = "TECHNICALSUPPORT"
                         },
                         new
                         {
-                            Id = "16",
-                            Name = "WarehouseManager",
-                            NormalizedName = "WAREHOUSEMANAGER"
+                            Id = "4",
+                            Name = "HubManager",
+                            NormalizedName = "HUBMANAGER"
                         },
                         new
                         {
-                            Id = "32",
+                            Id = "5",
                             Name = "Accountant",
                             NormalizedName = "ACCOUNTANT"
                         },
                         new
                         {
-                            Id = "64",
+                            Id = "6",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "128",
+                            Id = "7",
                             Name = "MainAdmin",
                             NormalizedName = "MAINADMIN"
+                        },
+                        new
+                        {
+                            Id = "8",
+                            Name = "OperationsAgent",
+                            NormalizedName = "OPERATIONSAGENT"
                         });
                 });
 
@@ -263,6 +269,11 @@ namespace ShippingSystem.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -284,6 +295,73 @@ namespace ShippingSystem.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.CancellationRequestShipment", b =>
+                {
+                    b.Property<int>("CancellationRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ShipmentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CancellationRequestId", "ShipmentId");
+
+                    b.HasIndex("ShipmentId");
+
+                    b.ToTable("CancellationRequestShipments", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.Employee", b =>
+                {
+                    b.Property<string>("EmployeeId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("HubId")
+                        .HasColumnType("int");
+
+                    b.HasKey("EmployeeId");
+
+                    b.HasIndex("HubId");
+
+                    b.ToTable("Employees", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.Hub", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AreaInSquareMeters")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("HubPhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar");
+
+                    b.Property<string>("HubType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ManagerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManagerId");
+
+                    b.ToTable("Hubs", (string)null);
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.PickupRequestShipment", b =>
@@ -347,12 +425,12 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("RequestStatus")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar");
 
                     b.Property<string>("RequestType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar");
 
                     b.Property<int>("ShipmentsCount")
                         .HasColumnType("int");
@@ -419,10 +497,9 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("CustomerAdditionalPhone")
                         .HasMaxLength(11)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar");
 
                     b.Property<string>("CustomerEmail")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar");
 
@@ -434,10 +511,13 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("CustomerPhone")
                         .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar");
 
                     b.Property<bool>("ExpressDeliveryEnabled")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("HubId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("OpenPackageOnDeliveryEnabled")
                         .HasColumnType("bit");
@@ -483,6 +563,8 @@ namespace ShippingSystem.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("HubId");
+
                     b.HasIndex("ShipmentTrackingNumber")
                         .IsUnique();
 
@@ -509,7 +591,7 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
@@ -528,7 +610,7 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("CompanyLink")
                         .HasMaxLength(255)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
@@ -582,20 +664,6 @@ namespace ShippingSystem.Migrations
                     b.ToTable("ShipperAddresses", (string)null);
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.ShipperPhone", b =>
-                {
-                    b.Property<string>("ShipperId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(11)
-                        .HasColumnType("varchar");
-
-                    b.HasKey("ShipperId", "PhoneNumber");
-
-                    b.ToTable("ShipperPhones", (string)null);
-                });
-
             modelBuilder.Entity("ShippingSystem.Models.ShippingSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -607,7 +675,7 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("Key")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar");
 
                     b.Property<string>("Value")
                         .IsRequired()
@@ -642,6 +710,27 @@ namespace ShippingSystem.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ShippingSystem.Models.UserPhone", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar");
+
+                    b.HasKey("UserId", "PhoneNumber");
+
+                    b.ToTable("UserPhones", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.CancellationRequest", b =>
+                {
+                    b.HasBaseType("ShippingSystem.Models.RequestBase");
+
+                    b.ToTable("CancellationRequests", (string)null);
+                });
+
             modelBuilder.Entity("ShippingSystem.Models.PickupRequest", b =>
                 {
                     b.HasBaseType("ShippingSystem.Models.RequestBase");
@@ -654,7 +743,7 @@ namespace ShippingSystem.Migrations
                     b.Property<string>("ContactPhone")
                         .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("varchar");
+                        .HasColumnType("nvarchar");
 
                     b.Property<DateOnly>("PickupDate")
                         .HasColumnType("date");
@@ -666,6 +755,41 @@ namespace ShippingSystem.Migrations
                         .HasColumnType("time");
 
                     b.ToTable("PickupRequests", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.RescheduleRequest", b =>
+                {
+                    b.HasBaseType("ShippingSystem.Models.RequestBase");
+
+                    b.Property<DateOnly>("NewRequestDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("NewTimeWindowEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("NewTimeWindowStart")
+                        .HasColumnType("time");
+
+                    b.Property<DateOnly>("OldRequestDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("OldTimeWindowEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("OldTimeWindowStart")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("ScheduledRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ScheduledRequestType")
+                        .HasColumnType("int");
+
+                    b.ToTable("RescheduleRequests", (string)null);
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.ReturnRequest", b =>
@@ -680,31 +804,17 @@ namespace ShippingSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CustomerEmail")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateOnly>("ReturnDate")
                         .HasColumnType("date");
 
-                    b.Property<DateOnly>("ReturnPickupDate")
-                        .HasColumnType("date");
-
-                    b.Property<TimeOnly>("ReturnPickupWindowEnd")
+                    b.Property<TimeOnly>("WindowEnd")
                         .HasColumnType("time");
 
-                    b.Property<TimeOnly>("ReturnPickupWindowStart")
+                    b.Property<TimeOnly>("WindowStart")
                         .HasColumnType("time");
-
-                    b.Property<TimeOnly>("ReturnWindowEnd")
-                        .HasColumnType("time");
-
-                    b.Property<TimeOnly>("ReturnWindowStart")
-                        .HasColumnType("time");
-
-                    b.Property<string>("ShipperContactName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ShipperContactPhone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.ToTable("ReturnRequests");
                 });
@@ -758,6 +868,131 @@ namespace ShippingSystem.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.CancellationRequestShipment", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.CancellationRequest", "CancellationRequest")
+                        .WithMany("CancellationRequestShipments")
+                        .HasForeignKey("CancellationRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ShippingSystem.Models.Shipment", "Shipment")
+                        .WithMany()
+                        .HasForeignKey("ShipmentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("CancellationRequest");
+
+                    b.Navigation("Shipment");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.Employee", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ShippingSystem.Models.Hub", "Hub")
+                        .WithMany("Employees")
+                        .HasForeignKey("HubId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
+                        {
+                            b1.Property<string>("EmployeeId")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Details")
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("GoogleMapAddressLink")
+                                .HasMaxLength(2083)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Governorate")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar");
+
+                            b1.HasKey("EmployeeId");
+
+                            b1.ToTable("Employees");
+
+                            b1.WithOwner()
+                                .HasForeignKey("EmployeeId");
+                        });
+
+                    b.Navigation("Address");
+
+                    b.Navigation("Hub");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.Hub", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.Employee", "Manager")
+                        .WithMany()
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
+                        {
+                            b1.Property<int>("HubId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Details")
+                                .HasMaxLength(500)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("GoogleMapAddressLink")
+                                .HasMaxLength(2083)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Governorate")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("nvarchar");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasMaxLength(256)
+                                .HasColumnType("nvarchar");
+
+                            b1.HasKey("HubId");
+
+                            b1.ToTable("Hubs");
+
+                            b1.WithOwner()
+                                .HasForeignKey("HubId");
+                        });
+
+                    b.Navigation("Address")
+                        .IsRequired();
+
+                    b.Navigation("Manager");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.PickupRequestShipment", b =>
@@ -822,6 +1057,11 @@ namespace ShippingSystem.Migrations
 
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
                 {
+                    b.HasOne("ShippingSystem.Models.Hub", "Hub")
+                        .WithMany("Shipments")
+                        .HasForeignKey("HubId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
                         .WithMany("Shipments")
                         .HasForeignKey("ShipperId")
@@ -867,6 +1107,8 @@ namespace ShippingSystem.Migrations
                     b.Navigation("CustomerAddress")
                         .IsRequired();
 
+                    b.Navigation("Hub");
+
                     b.Navigation("Shipper");
                 });
 
@@ -883,13 +1125,13 @@ namespace ShippingSystem.Migrations
 
             modelBuilder.Entity("ShippingSystem.Models.Shipper", b =>
                 {
-                    b.HasOne("ShippingSystem.Models.ApplicationUser", "ApplicationUser")
+                    b.HasOne("ShippingSystem.Models.ApplicationUser", "User")
                         .WithOne()
                         .HasForeignKey("ShippingSystem.Models.Shipper", "ShipperId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ApplicationUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.ShipperAddress", b =>
@@ -903,15 +1145,24 @@ namespace ShippingSystem.Migrations
                     b.Navigation("Shipper");
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.ShipperPhone", b =>
+            modelBuilder.Entity("ShippingSystem.Models.UserPhone", b =>
                 {
-                    b.HasOne("ShippingSystem.Models.Shipper", "Shipper")
+                    b.HasOne("ShippingSystem.Models.ApplicationUser", "User")
                         .WithMany("Phones")
-                        .HasForeignKey("ShipperId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Shipper");
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.CancellationRequest", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.RequestBase", null)
+                        .WithOne()
+                        .HasForeignKey("ShippingSystem.Models.CancellationRequest", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.PickupRequest", b =>
@@ -922,7 +1173,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "PickupAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
                         {
                             b1.Property<int>("PickupRequestId")
                                 .HasColumnType("int");
@@ -958,7 +1209,16 @@ namespace ShippingSystem.Migrations
                                 .HasForeignKey("PickupRequestId");
                         });
 
-                    b.Navigation("PickupAddress")
+                    b.Navigation("Address")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.RescheduleRequest", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.RequestBase", null)
+                        .WithOne()
+                        .HasForeignKey("ShippingSystem.Models.RescheduleRequest", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -970,7 +1230,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "ReturnAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
                         {
                             b1.Property<int>("ReturnRequestId")
                                 .HasColumnType("int");
@@ -1001,47 +1261,22 @@ namespace ShippingSystem.Migrations
                                 .HasForeignKey("ReturnRequestId");
                         });
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "ReturnPickupAddress", b1 =>
-                        {
-                            b1.Property<int>("ReturnRequestId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Details")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("GoogleMapAddressLink")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Governorate")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Street")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("ReturnRequestId");
-
-                            b1.ToTable("ReturnRequests");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ReturnRequestId");
-                        });
-
-                    b.Navigation("ReturnAddress")
-                        .IsRequired();
-
-                    b.Navigation("ReturnPickupAddress")
+                    b.Navigation("Address")
                         .IsRequired();
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.ApplicationUser", b =>
                 {
+                    b.Navigation("Phones");
+
                     b.Navigation("RefreshTokens");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.Hub", b =>
+                {
+                    b.Navigation("Employees");
+
+                    b.Navigation("Shipments");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
@@ -1053,9 +1288,12 @@ namespace ShippingSystem.Migrations
                 {
                     b.Navigation("Addresses");
 
-                    b.Navigation("Phones");
-
                     b.Navigation("Shipments");
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.CancellationRequest", b =>
+                {
+                    b.Navigation("CancellationRequestShipments");
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.PickupRequest", b =>

@@ -13,7 +13,6 @@ namespace ShippingSystem.Models
         public string? CompanyLink { get; set; }
         public string? TypeOfProduction { get; set; }
    
-        public ICollection<ShipperAddress>? Addresses { get; set; } = new List<ShipperAddress>();
         public ICollection<Shipment>? Shipments { get; set; } = new List<Shipment>();
     }
 }

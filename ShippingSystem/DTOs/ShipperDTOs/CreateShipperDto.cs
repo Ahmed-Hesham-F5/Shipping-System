@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShippingSystem.DTOs.AddressDTOs;
+using System.ComponentModel.DataAnnotations;
 
 namespace ShippingSystem.DTOs.ShipperDTOs
 {
@@ -24,17 +25,8 @@ namespace ShippingSystem.DTOs.ShipperDTOs
         [MaxLength(255), Url]
         public string? CompanyLink { get; set; }
 
-        [Required, MaxLength(256)]
-        public string Street { get; set; } = null!;
-
-        [Required, MaxLength(50)]
-        public string City { get; set; } = null!;
-
-        [Required, MaxLength(50)]
-        public string Governorate { get; set; } = null!;
-
-        [MaxLength(500)]
-        public string? AddressDetails { get; set; }
+        [Required]
+        public AddressDto Address { get; set; } = null!;
 
         [MaxLength(255)]
         public string? TypeOfProduction { get; set; }

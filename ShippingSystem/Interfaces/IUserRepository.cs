@@ -1,4 +1,5 @@
-﻿using ShippingSystem.DTOs.AuthenticationDTOs;
+﻿using ShippingSystem.DTOs.AddressDTOs;
+using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Models;
 using ShippingSystem.Results;
@@ -15,5 +16,6 @@ namespace ShippingSystem.Interfaces
         Task<OperationResult> RevokeTokenAsync(string token);
         Task<bool> IsEmailExistAsync(string email);
         Task<ValueOperationResult<string>> GetUserRoleAsync(string userId);
+        Task<ValueOperationResult<AddressDto?>> GetUserAddressAsync(string userEmail);
     }
 }
