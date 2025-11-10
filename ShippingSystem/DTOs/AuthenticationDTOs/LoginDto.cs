@@ -2,7 +2,7 @@
 
 namespace ShippingSystem.DTOs.AuthenticationDTOs
 {
-    public class LoginDTO
+    public class LoginDto
     {
         [Required, MaxLength(255), EmailAddress]
         public string Email { get; set; } = null!;

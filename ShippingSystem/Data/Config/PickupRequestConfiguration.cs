@@ -46,18 +46,6 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(11)
                 .IsRequired();
 
-            builder.Property(pr => pr.PickupDate)
-                .HasColumnType("date")
-                .IsRequired();
-
-            builder.Property(pr => pr.WindowStart)
-                .HasColumnType("time")
-                .IsRequired();
-
-            builder.Property(pr => pr.WindowEnd)
-                .HasColumnType("time")
-                .IsRequired();
-
             builder.HasMany(pr => pr.PickupRequestShipments)
                    .WithOne(prs => prs.PickupRequest)
                    .HasForeignKey(prs => prs.PickupRequestId)

@@ -160,69 +160,6 @@ namespace ShippingSystem.Controllers
             return Ok(new ApiResponse<CancellationRequestDetailsDto>(true, null!, result.Value!));
         }
 
-        [HttpPost("reschedule-requests")]
-        public async Task<IActionResult> RescheduleRequest([FromBody] CreateRescheduleRequestDto rescheduleRequestDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return StatusCode(StatusCodes.Status401Unauthorized,
-                    new ApiResponse<string>(false, "User not authenticated."));
-
-            var result = await _requestRepository.CreateRescheduleRequest(userId, rescheduleRequestDto);
-
-            if (!result.Success)
-                return StatusCode(result.StatusCode,
-                    new ApiResponse<string>(false, result.ErrorMessage));
-
-            return StatusCode(StatusCodes.Status201Created,
-                   new ApiResponse<string>(true, "Reschedule request created successfully."));
-        }
-
-        [HttpGet("reschedule-requests/{rescheduleRequestId}")]
-        public async Task<IActionResult> GetRescheduleRequest(int rescheduleRequestId)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return StatusCode(StatusCodes.Status401Unauthorized,
-                    new ApiResponse<string>(false, "User not authenticated."));
-
-            var result = await _requestRepository.GetRescheduleRequestById(userId, rescheduleRequestId);
-
-            if (!result.Success)
-                return StatusCode(result.StatusCode,
-                    new ApiResponse<string>(false, result.ErrorMessage));
-
-            return Ok(new ApiResponse<RescheduleRequestDetailsDto>(true, null!, result.Value!));
-        }
-
-        [HttpGet("to-reschedule-requests")]
-        public async Task<IActionResult> GetRescheduleRequestsToProcess()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
-            if (string.IsNullOrEmpty(userId))
-                return StatusCode(StatusCodes.Status401Unauthorized,
-                    new ApiResponse<string>(false, "User not authenticated."));
-           
-            var result = await _requestRepository.GetRequestsToReschedule(userId);
-            
-            if (!result.Success)
-                return StatusCode(result.StatusCode,
-                    new ApiResponse<string>(false, result.ErrorMessage));
-
-            ApiResponse<List<ToRescheduleRequestListDto>> response = new(
-                success: true,
-                message: null!,
-                data: result.Value!
-            );
-
-            return Ok(response);
-        }
-
         [HttpPut("{requestId}/make-request-in-review")]
         public async Task<IActionResult> MakeRequestInReview(int requestId)
         {

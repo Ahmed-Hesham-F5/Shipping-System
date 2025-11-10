@@ -1,15 +1,17 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ShippingSystem.Data;
+using ShippingSystem.Helpers;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Midleware;
 using ShippingSystem.Models;
 using ShippingSystem.Repositories;
-using ShippingSystem.Helpers;
 using ShippingSystem.Settings;
+using System.Security.Claims;
 using System.Text;
 
 
@@ -76,8 +78,33 @@ namespace ShippingSystem
                     )),
                     ClockSkew = TimeSpan.Zero
                 };
-            });
 
+                o.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = async context =>
+                    {
+                        // Get user manager from DI
+                        var _userManager = context.HttpContext.RequestServices
+                            .GetRequiredService<UserManager<ApplicationUser>>();
+
+                        var userId = context.Principal!.FindFirstValue(ClaimTypes.NameIdentifier);
+                        var tokenVersionClaim = context.Principal!.FindFirstValue("access_token_version");
+
+                        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(tokenVersionClaim))
+                        {
+                            context.Fail("Invalid token");
+                            return;
+                        }
+
+                        var user = await _userManager.FindByIdAsync(userId);
+                        if (user == null || user.AccessTokenVersion.ToString() != tokenVersionClaim)
+                        {
+                            context.Fail("Token revoked");
+                        }
+                    }
+                };
+            });
+            
             // Register AutoMapper
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShippingSystem.Data;
 
@@ -11,9 +12,11 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251108233302_AddAccessTokenVersion")]
+    partial class AddAccessTokenVersion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -254,11 +257,6 @@ namespace ShippingSystem.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<bool>("MustChangePassword")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -326,6 +324,11 @@ namespace ShippingSystem.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("FirstLogin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<int?>("HubId")
                         .HasColumnType("int");
@@ -766,7 +769,51 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar");
 
+                    b.Property<DateOnly>("PickupDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("WindowEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("WindowStart")
+                        .HasColumnType("time");
+
                     b.ToTable("PickupRequests", (string)null);
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.RescheduleRequest", b =>
+                {
+                    b.HasBaseType("ShippingSystem.Models.RequestBase");
+
+                    b.Property<DateOnly>("NewRequestDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("NewTimeWindowEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("NewTimeWindowStart")
+                        .HasColumnType("time");
+
+                    b.Property<DateOnly>("OldRequestDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("OldTimeWindowEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("OldTimeWindowStart")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("ScheduledRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ScheduledRequestType")
+                        .HasColumnType("int");
+
+                    b.ToTable("RescheduleRequests", (string)null);
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.ReturnRequest", b =>
@@ -783,6 +830,15 @@ namespace ShippingSystem.Migrations
 
                     b.Property<string>("CustomerEmail")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly>("PickupDate")
+                        .HasColumnType("date");
+
+                    b.Property<TimeOnly>("WindowEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("WindowStart")
+                        .HasColumnType("time");
 
                     b.ToTable("ReturnRequests");
                 });
@@ -1139,6 +1195,15 @@ namespace ShippingSystem.Migrations
                         });
 
                     b.Navigation("PickupAddress")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ShippingSystem.Models.RescheduleRequest", b =>
+                {
+                    b.HasOne("ShippingSystem.Models.RequestBase", null)
+                        .WithOne()
+                        .HasForeignKey("ShippingSystem.Models.RescheduleRequest", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

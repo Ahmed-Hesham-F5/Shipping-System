@@ -8,6 +8,7 @@
         Rejected,
         InProgress,
         Completed,
+        Rescheduled,
         Failed,
         Canceled
     }

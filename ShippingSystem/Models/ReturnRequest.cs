@@ -2,9 +2,6 @@
 {
     public class ReturnRequest : RequestBase
     {
-        public DateOnly PickupDate { get; set; }
-        public TimeOnly WindowStart { get; set; }
-        public TimeOnly WindowEnd { get; set; }
         public Address CustomerAddress { get; set; } = null!;
         public string CustomerContactName { get; set; } = null!;
         public string CustomerContactPhone { get; set; } = null!;

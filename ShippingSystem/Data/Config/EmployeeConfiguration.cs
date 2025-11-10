@@ -11,9 +11,6 @@ namespace ShippingSystem.Data.Config
             builder.HasKey(e => e.EmployeeId);
             builder.Property(e => e.EmployeeId).ValueGeneratedNever();
 
-            builder.Property(e => e.FirstLogin)
-                .HasDefaultValue(true);
-
             builder.Property(e => e.CreatedAt)
                 .HasColumnType("datetime2")
                 .IsRequired();

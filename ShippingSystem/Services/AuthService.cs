@@ -30,7 +30,8 @@ namespace ShippingSystem.Helpers
                 new Claim(JwtRegisteredClaimNames.Email, user.Email!),
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName!),
                 new Claim(JwtRegisteredClaimNames.Iat,
-                    DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+                    DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+                new Claim("access_token_version", user.AccessTokenVersion.ToString())
             }
             .Union(Userclaims);
 

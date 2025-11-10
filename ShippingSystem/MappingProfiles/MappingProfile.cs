@@ -22,8 +22,9 @@ namespace ShippingSystem.MappingProfiles
             CreateMap<Shipment, ShipmentListDto>()
                 .ForMember(dest => dest.LatestShipmentStatus,
                 opt => opt.MapFrom(src => src.ShipmentStatuses
-                .OrderByDescending(ss => ss.Timestamp)
-                .FirstOrDefault()));
+                .OrderByDescending(ss => ss.Timestamp).FirstOrDefault()))
+                .ForMember(dest => dest.Governorate,
+                opt => opt.MapFrom(src => src.CustomerAddress.Governorate));
 
             CreateMap<ShipmentStatus, LatestShipmentStatusDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
@@ -71,8 +72,6 @@ namespace ShippingSystem.MappingProfiles
                 .Select(id => new CancellationRequestShipment { ShipmentId = id })
                 ));
 
-            CreateMap<CreateRescheduleRequestDto, RescheduleRequest>();
-
             CreateMap<RequestBase, RequestListDto>();
 
             CreateMap<PickupRequest, PickupRequestDetailsDto>()
@@ -86,9 +85,6 @@ namespace ShippingSystem.MappingProfiles
 
             CreateMap<CancellationRequest, CancellationRequestDetailsDto>()
                 .ForMember(dest => dest.Shipments, opt => opt.MapFrom(src => src.CancellationRequestShipments.Select(c => c.Shipment)))
-                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.User.UserName));
-
-            CreateMap<RescheduleRequest, RescheduleRequestDetailsDto>()
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.User.UserName));
 
             CreateMap<PickupRequestShipment, ToCancelShipmentListDto>()
@@ -110,12 +106,6 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.CollectionAmount, opt => opt.MapFrom(src => src.Shipment.CollectionAmount))
                 .ForMember(dest => dest.RequestId, opt => opt.MapFrom(src => src.ReturnRequest.Id))
                 .ForMember(dest => dest.RequestType, opt => opt.MapFrom(src => src.ReturnRequest.RequestType));
-
-            CreateMap<PickupRequest, ToRescheduleRequestListDto>()
-                .ForMember(dest => dest.RequestDate, opt => opt.MapFrom(src => src.PickupDate));
-
-            CreateMap<ReturnRequest, ToRescheduleRequestListDto>()
-                .ForMember(dest => dest.RequestDate, opt => opt.MapFrom(src => src.PickupDate));
 
             CreateMap<CreateHubDto, Hub>()
                 .ForMember(dest => dest.Type, opt => opt.Ignore());

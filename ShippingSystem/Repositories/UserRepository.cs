@@ -74,7 +74,7 @@ namespace ShippingSystem.Repositories
         public async Task<bool> IsEmailExistAsync(string email) =>
            await _userManager.FindByEmailAsync(email) != null;
 
-        public async Task<ValueOperationResult<AuthDTO>> LoginUserAsync(LoginDTO loginDTO)
+        public async Task<ValueOperationResult<AuthDTO>> LoginUserAsync(LoginDto loginDTO)
         {
             var user = await _userManager.FindByEmailAsync(loginDTO.Email);
 
@@ -83,6 +83,9 @@ namespace ShippingSystem.Repositories
 
             if (user.AccountStatus == AccountStatus.Banned)
                 return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Account is banned");
+
+            if (user.MustChangePassword)
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status403Forbidden, "Password change is required");
 
             return await GetUserTokensAsync(user);
         }
@@ -149,7 +152,7 @@ namespace ShippingSystem.Repositories
             }
         }
 
-        public async Task<OperationResult> RevokeTokenAsync(string token)
+        public async Task<OperationResult> RevokeRefreshTokenAsync(string token)
         {
             var user = _context.RefreshTokens.Include(rt => rt.User).SingleOrDefault(t => t.Token == token)?.User;
 
@@ -164,6 +167,24 @@ namespace ShippingSystem.Repositories
             refreshToken.RevokedOn = DateTime.UtcNow;
 
             await _userManager.UpdateAsync(user);
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> RevokeAccessTokenAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "User not found");
+
+            user.AccessTokenVersion++;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
 
             return OperationResult.Ok();
         }
@@ -198,6 +219,85 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<AddressDto?>.Fail(StatusCodes.Status404NotFound, "User address not found.");
 
             return ValueOperationResult<AddressDto?>.Ok(Address);
+        }
+
+        public async Task<ValueOperationResult<ForgetPasswordResponseDto>> RequestForgetPasswordAsync(RequestForgetPasswordDto requestForgetPasswordDto)
+        {
+            var user = await _userManager.FindByEmailAsync(requestForgetPasswordDto.Email);
+
+            if (user == null)
+                return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status400BadRequest, "User not found");
+            else if (user.MustChangePassword)
+                return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+            else if (user.AccountStatus == AccountStatus.Banned)
+                return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status403Forbidden, "Account is banned");
+
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Send email with reset link (not implemented)
+            // await _emailService.SendPasswordResetEmailAsync(user.Email, token);
+
+            return ValueOperationResult<ForgetPasswordResponseDto>.Ok(new ForgetPasswordResponseDto
+            {
+                Email = user.Email!,
+                ResetToken = token
+            });
+        }
+
+        public async Task<OperationResult> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+        {
+            var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
+
+            if (user == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "User not found");
+
+            var result = await _userManager.ResetPasswordAsync(user, resetPasswordDto.ResetToken, resetPasswordDto.NewPassword);
+
+            if (!result.Succeeded)
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "Failed to reset password");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null || !await _userManager.CheckPasswordAsync(user, changePasswordDto.CurrentPassword))
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Email or password is incorrect!");
+
+            var result = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+
+            if (!result.Succeeded)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> FirstLoginChangePasswordAsync(FirstLoginChangePasswordDto firstLoginChangePasswordDto)
+        {
+            var user = await _userManager.FindByEmailAsync(firstLoginChangePasswordDto.Email);
+
+            if (user == null || !await _userManager.CheckPasswordAsync(user, firstLoginChangePasswordDto.CurrentPassword))
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Email or password is incorrect!");
+            else if (!user.MustChangePassword)
+                return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+            else if (user.AccountStatus == AccountStatus.Banned)
+                return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status403Forbidden, "Account is banned");
+
+            var result = await _userManager.
+                    ChangePasswordAsync(user, firstLoginChangePasswordDto.CurrentPassword, firstLoginChangePasswordDto.NewPassword);
+
+            if (!result.Succeeded)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            user.MustChangePassword = false;
+            await _userManager.UpdateAsync(user);
+
+            return OperationResult.Ok();
         }
     }
 }

@@ -38,6 +38,7 @@ namespace ShippingSystem.Repositories
                     FirstName = createEmployeeDto.FirstName,
                     LastName = createEmployeeDto.LastName,
                     Role = Role,
+                    MustChangePassword = true
                 };
 
                 user.Phones?.Add(new UserPhone

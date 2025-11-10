@@ -36,6 +36,10 @@ namespace ShippingSystem.Data.Config
                 .HasDefaultValue(AccountStatus.Active)
                 .IsRequired();
 
+            builder.Property(appUser => appUser.MustChangePassword)
+                .HasDefaultValue(false)
+                .IsRequired();
+
             builder.HasMany(appUser => appUser.Addresses)
                 .WithOne(address => address.User)
                 .HasForeignKey(address => address.UserID)

@@ -20,7 +20,6 @@ namespace ShippingSystem.Data
         public DbSet<ReturnRequestShipment> ReturnRequestShipments { get; set; }
         public DbSet<CancellationRequest> CancellationRequests { get; set; }
         public DbSet<CancellationRequestShipment> CancellationRequestShipments { get; set; }
-        public DbSet<RescheduleRequest> RescheduleRequests { get; set; }
         public DbSet<Hub> Hubs { get; set; }
         public DbSet<Employee> Employees { get; set; }
 

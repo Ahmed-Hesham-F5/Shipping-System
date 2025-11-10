@@ -51,18 +51,6 @@ namespace ShippingSystem.Data.Config
                 .HasMaxLength(255)
                 .IsRequired(false);
 
-            builder.Property(rr => rr.PickupDate)
-                .HasColumnType("date")
-                .IsRequired();
-
-            builder.Property(rr => rr.WindowStart)
-                .HasColumnType("time")
-                .IsRequired();
-
-            builder.Property(rr => rr.WindowEnd)
-                .HasColumnType("time")
-                .IsRequired();
-
             builder.HasMany(rr => rr.ReturnRequestShipments)
                    .WithOne(rrs => rrs.ReturnRequest)
                    .HasForeignKey(rrs => rrs.ReturnRequestId)
