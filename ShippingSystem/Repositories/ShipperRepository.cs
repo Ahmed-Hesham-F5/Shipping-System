@@ -9,59 +9,67 @@ using ShippingSystem.Results;
 namespace ShippingSystem.Repositories
 {
     public class ShipperRepository(AppDbContext context,
-        IUserRepository userRepository
+        IUserRepository userRepository,
+        IEmailService emailService
         ) : IShipperRepository
     {
         private readonly AppDbContext _context = context;
         private readonly IUserRepository _userRepository = userRepository;
+        private readonly IEmailService _emailService = emailService;
 
-        public async Task<ValueOperationResult<AuthDTO>> CreateShipperAsync(CreateShipperDto shipperRegisterDTO)
+        public async Task<OperationResult> CreateShipperAsync(CreateShipperDto createShipperDto)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var user = new ApplicationUser
                 {
-                    UserName = shipperRegisterDTO.Email,
-                    Email = shipperRegisterDTO.Email,
-                    FirstName = shipperRegisterDTO.FirstName,
-                    LastName = shipperRegisterDTO.LastName,
+                    UserName = createShipperDto.Email,
+                    Email = createShipperDto.Email,
+                    FirstName = createShipperDto.FirstName,
+                    LastName = createShipperDto.LastName,
                     Role = RolesEnum.Shipper,
                 };
 
                 user.Phones?.Add(new UserPhone
                 {
-                    PhoneNumber = shipperRegisterDTO.PhoneNumber,
+                    PhoneNumber = createShipperDto.PhoneNumber,
                     User = user,
                     UserId = user.Id
                 });
 
                 user.Addresses?.Add(new UserAddress
                 {
-                    City = shipperRegisterDTO.Address.City,
-                    Street = shipperRegisterDTO.Address.Street,
-                    Governorate = shipperRegisterDTO.Address.Governorate,
-                    Details = shipperRegisterDTO.Address.Details,
-                    GoogleMapAddressLink = shipperRegisterDTO.Address.GoogleMapAddressLink,
+                    City = createShipperDto.Address.City,
+                    Street = createShipperDto.Address.Street,
+                    Governorate = createShipperDto.Address.Governorate,
+                    Details = createShipperDto.Address.Details,
+                    GoogleMapAddressLink = createShipperDto.Address.GoogleMapAddressLink,
                     User = user,
                     UserID = user.Id
                 });
 
-                var CreateUserResult = await _userRepository.CreateUserAsync(user, shipperRegisterDTO.Password);
+                var CreateUserResult = await _userRepository.CreateUserAsync(user, createShipperDto.Password);
 
                 if (!CreateUserResult.Success)
-                    return ValueOperationResult<AuthDTO>.Fail(CreateUserResult.StatusCode, CreateUserResult.ErrorMessage);
+                {
+                    await transaction.RollbackAsync();
+                    return OperationResult.Fail(CreateUserResult.StatusCode, CreateUserResult.ErrorMessage);
+                }
 
                 var addShipperRoleResult = await _userRepository.AddRoleAsync(user, RolesEnum.Shipper);
 
                 if (!addShipperRoleResult.Success)
-                    return ValueOperationResult<AuthDTO>.Fail(addShipperRoleResult.StatusCode, addShipperRoleResult.ErrorMessage);
+                {
+                    await transaction.RollbackAsync();
+                    return OperationResult.Fail(addShipperRoleResult.StatusCode, addShipperRoleResult.ErrorMessage);
+                }
 
                 var shipper = new Shipper
                 {
-                    CompanyName = shipperRegisterDTO.CompanyName,
-                    CompanyLink = shipperRegisterDTO.CompanyLink,
-                    TypeOfProduction = shipperRegisterDTO.TypeOfProduction,
+                    CompanyName = createShipperDto.CompanyName,
+                    CompanyLink = createShipperDto.CompanyLink,
+                    TypeOfProduction = createShipperDto.TypeOfProduction,
                     ShipperId = user.Id,
                 };
 
@@ -69,17 +77,31 @@ namespace ShippingSystem.Repositories
                 var saveResult = await _context.SaveChangesAsync();
 
                 if (saveResult <= 0)
-                    return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+                {
+                    await transaction.RollbackAsync();
+                    return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+                }
+
+                var sendEmailConfirmationLink = await _userRepository.
+                    SendEmailConfirmationLinkAsync(
+                        new RequestEmailConfirmationDto { ConfirmEmailUrl = createShipperDto.ConfirmEmailUrl, Email = createShipperDto.Email }
+                    );
+
+                if (!sendEmailConfirmationLink.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return OperationResult.Fail(sendEmailConfirmationLink.StatusCode, sendEmailConfirmationLink.ErrorMessage);
+                }
 
                 await transaction.CommitAsync();
 
-                return await _userRepository.GetUserTokensAsync(user);
+                return OperationResult.Ok();
             }
             catch (Exception e)
             {
                 await transaction.RollbackAsync();
                 Console.WriteLine(e.Message.ToString());
-                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
         }
     }

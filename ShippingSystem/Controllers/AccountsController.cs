@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.Helpers;
 using ShippingSystem.Interfaces;
@@ -19,14 +18,8 @@ namespace ShippingSystem.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-
+                
             var result = await _userRepository.LoginUserAsync(loginDto);
-
-            if (!result.Success && result.ErrorMessage == "Password change is required")
-            {
-                return StatusCode(result.StatusCode,
-                    new ApiResponse<string>(false, result.ErrorMessage!));
-            }
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
@@ -117,10 +110,9 @@ namespace ShippingSystem.Controllers
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<ForgetPasswordResponseDto> response = new(
+            ApiResponse<string> response = new(
                 success: true,
-                message: null!,
-                data: result.Value
+                message: "Check your email for password reset link!"
             );
 
             return Ok(response);
@@ -175,6 +167,34 @@ namespace ShippingSystem.Controllers
                     new ApiResponse<string>(false, result.ErrorMessage));
 
             return Ok(new ApiResponse<string>(true, "Password changed successfully!"));
+        }
+
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] ConfirmEmailDto confirmEmailDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _userRepository.ConfirmEmailAsync(confirmEmailDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return Ok(new ApiResponse<string>(true, "Email confirmed successfully!"));
+        }
+
+        [HttpGet("resend-email-confirmation-link")]
+        public async Task<IActionResult> ResendEmailConfirmationLink([FromQuery] RequestEmailConfirmationDto requestEmailConfirmationDto)
+        {
+            if (string.IsNullOrEmpty(requestEmailConfirmationDto.Email))
+                return BadRequest(new ApiResponse<string>(false, "Email is required."));
+
+            var result = await _userRepository.SendEmailConfirmationLinkAsync(requestEmailConfirmationDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return Ok(new ApiResponse<string>(true, "Email confirmation link resent successfully!"));
         }
     }
 }

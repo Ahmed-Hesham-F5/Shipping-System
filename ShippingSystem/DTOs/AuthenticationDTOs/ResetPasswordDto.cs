@@ -5,7 +5,7 @@ namespace ShippingSystem.DTOs.AuthenticationDTOs
     public class ResetPasswordDto
     {
         [Required]
-        public string ResetToken { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
         [Required, DataType(DataType.Password), MinLength(8), MaxLength(50)]

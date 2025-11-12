@@ -37,5 +37,8 @@ namespace ShippingSystem.DTOs.ShipperDTOs
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = null!;
+
+        [Required, Url]
+        public string ConfirmEmailUrl { get; set; } = string.Empty;
     }
 }

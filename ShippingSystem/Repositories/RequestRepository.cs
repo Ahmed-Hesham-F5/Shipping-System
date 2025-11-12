@@ -226,18 +226,44 @@ namespace ShippingSystem.Repositories
 
         private async Task<List<int>> GetValidPickupShipmentIds(int pickupRequestId, List<int> shipmentIds)
         {
+            var validShipmentStatuses = new List<string>
+            {
+                ShipmentStatusEnum.InReviewForPickup.ToString(),
+                ShipmentStatusEnum.WaitingForPickup.ToString()
+            };
+
             return await _context.PickupRequestShipments
                             .Where(prs => prs.PickupRequestId == pickupRequestId)
                             .Where(prs => shipmentIds.Contains(prs.ShipmentId))
+                            .Where(prs => validShipmentStatuses.Contains(
+                                prs.Shipment!
+                                .ShipmentStatuses
+                                .OrderByDescending(ss => ss.Timestamp)
+                                .Select(ss => ss.Status)
+                                .FirstOrDefault()!)
+                            )
                             .Select(prs => prs.ShipmentId)
                             .ToListAsync();
         }
 
         private async Task<List<int>> GetValidReturnShipmentIds(int returnRequestId, List<int> shipmentIds)
         {
+            var validShipmentStatuses = new List<string>
+            {
+                ShipmentStatusEnum.InReviewForReturn.ToString(),
+                ShipmentStatusEnum.WaitingForReturn.ToString()
+            };
+
             return await _context.ReturnRequestShipments
                             .Where(r => r.ReturnRequestId == returnRequestId)
                             .Where(r => shipmentIds.Contains(r.ShipmentId))
+                            .Where(r => validShipmentStatuses.Contains(
+                                r.Shipment!
+                                .ShipmentStatuses
+                                .OrderByDescending(ss => ss.Timestamp)
+                                .Select(ss => ss.Status)
+                                .FirstOrDefault()!)
+                            )
                             .Select(r => r.ShipmentId)
                             .ToListAsync();
         }

@@ -9,5 +9,7 @@ namespace ShippingSystem.DTOs.AuthenticationDTOs
 
         [Required, DataType(DataType.Password), MinLength(8), MaxLength(50)]
         public string Password { get; set; } = null!;
+        [Required, Url]
+        public string ConfirmEmailUrl { get; set; } = null!;
     }
 }

@@ -2,11 +2,11 @@
 
 namespace ShippingSystem.DTOs.AuthenticationDTOs
 {
-    public class RequestForgetPasswordDto
+    public class RequestEmailConfirmationDto
     {
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
         [Required, Url]
-        public string? ResetPasswordUrl { get; set; } = string.Empty;
+        public string ConfirmEmailUrl { get; set; } = string.Empty;
     }
 }

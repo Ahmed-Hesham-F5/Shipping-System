@@ -242,7 +242,7 @@ namespace ShippingSystem.Repositories
             var validPickupStatuses = new List<string>
             {
                 ShipmentStatusEnum.Pending.ToString(),
-                ShipmentStatusEnum.Returned.ToString(),
+                ShipmentStatusEnum.Returned.ToString()
             };
 
             var toPickupShipments = await _context.Shipments
@@ -319,16 +319,33 @@ namespace ShippingSystem.Repositories
                     return ValueOperationResult<List<ToCancelShipmentListDto>>
                         .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
 
-                var validCancelStatuses = new List<RequestStatusEnum>
+                var validRequestCancelStatuses = new List<RequestStatusEnum>
                 {
                     RequestStatusEnum.InReview,
                     RequestStatusEnum.Approved,
                     RequestStatusEnum.InProgress
                 };
 
+                var validShipmentCancelStatuses = new List<string>
+                {
+                    ShipmentStatusEnum.InReviewForPickup.ToString(),
+                    ShipmentStatusEnum.WaitingForPickup.ToString(),
+                    ShipmentStatusEnum.InReviewForReturn.ToString(),
+                    ShipmentStatusEnum.WaitingForReturn.ToString(),
+                    ShipmentStatusEnum.InReviewForExchange.ToString(),
+                    ShipmentStatusEnum.WaitingForExchange.ToString(),
+                    ShipmentStatusEnum.InReviewForDelivery.ToString(),
+                    ShipmentStatusEnum.WaitingForDelivery.ToString(),
+                    ShipmentStatusEnum.OutForDelivery.ToString()
+                };
+
                 List<ToCancelShipmentListDto> toCancelShipments = await _context.PickupRequestShipments
                     .Where(ps => ps.PickupRequest.UserId == userId)
-                    .Where(ps => validCancelStatuses.Contains(ps.PickupRequest.RequestStatus))
+                    .Where(ps => validRequestCancelStatuses.Contains(ps.PickupRequest.RequestStatus))
+                    .Where(ps => validShipmentCancelStatuses.Contains(ps.Shipment.ShipmentStatuses
+                        .OrderByDescending(ss => ss.Timestamp)
+                        .Select(ss => ss.Status)
+                        .FirstOrDefault()!))
                     .ProjectTo<ToCancelShipmentListDto>(_mapper.ConfigurationProvider)
                     .AsNoTracking()
                     .ToListAsync();
@@ -336,7 +353,11 @@ namespace ShippingSystem.Repositories
                 toCancelShipments.AddRange(
                     await _context.ReturnRequestShipments
                     .Where(ps => ps.ReturnRequest.UserId == userId)
-                    .Where(ps => validCancelStatuses.Contains(ps.ReturnRequest.RequestStatus))
+                    .Where(ps => validRequestCancelStatuses.Contains(ps.ReturnRequest.RequestStatus))
+                    .Where(ps => validShipmentCancelStatuses.Contains(ps.Shipment.ShipmentStatuses
+                        .OrderByDescending(ss => ss.Timestamp)
+                        .Select(ss => ss.Status)
+                        .FirstOrDefault()!))
                     .ProjectTo<ToCancelShipmentListDto>(_mapper.ConfigurationProvider)
                     .AsNoTracking()
                     .ToListAsync()

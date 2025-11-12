@@ -10,6 +10,7 @@ using ShippingSystem.Interfaces;
 using ShippingSystem.Midleware;
 using ShippingSystem.Models;
 using ShippingSystem.Repositories;
+using ShippingSystem.Services;
 using ShippingSystem.Settings;
 using System.Security.Claims;
 using System.Text;
@@ -43,9 +44,15 @@ namespace ShippingSystem
                 options.Lockout.MaxFailedAccessAttempts = 5;
 
                 options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = true;
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
+
+            builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+            {
+                options.TokenLifespan = TimeSpan.FromHours(6);
+            });
 
             // Register DbContext with SQL Server
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -104,7 +111,11 @@ namespace ShippingSystem
                     }
                 };
             });
-            
+
+            // SMTP class mapper
+            builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SMTP"));
+            builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<SmtpSettings>>().Value);
+
             // Register AutoMapper
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -119,6 +130,7 @@ namespace ShippingSystem
             builder.Services.AddScoped<IRequestRepository, RequestRepository>();
             builder.Services.AddScoped<IHubRepository, HubRepository>();
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
             builder.Services.AddSwaggerGen(c =>
             {

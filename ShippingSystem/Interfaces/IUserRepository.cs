@@ -18,9 +18,11 @@ namespace ShippingSystem.Interfaces
         Task<bool> IsEmailExistAsync(string email);
         Task<ValueOperationResult<string>> GetUserRoleAsync(string userId);
         Task<ValueOperationResult<AddressDto?>> GetUserAddressAsync(string userEmail);
-        Task<ValueOperationResult<ForgetPasswordResponseDto>> RequestForgetPasswordAsync(RequestForgetPasswordDto requestForgetPasswordDto);
+        Task<OperationResult> RequestForgetPasswordAsync(RequestForgetPasswordDto requestForgetPasswordDto);
         Task<OperationResult> ResetPasswordAsync(ResetPasswordDto resetPasswordDto);
         Task<OperationResult> ChangePasswordAsync(string userId, ChangePasswordDto changePasswordDto);
         Task<OperationResult> FirstLoginChangePasswordAsync(FirstLoginChangePasswordDto firstLoginChangechangePasswordDto);
+        Task<OperationResult> SendEmailConfirmationLinkAsync(RequestEmailConfirmationDto requestEmailConfirmationDto);
+        Task<OperationResult> ConfirmEmailAsync(ConfirmEmailDto confirmEmailDto);
     }
 }

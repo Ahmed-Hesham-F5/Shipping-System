@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
 using ShippingSystem.DTOs.AddressDTOs;
@@ -10,16 +11,18 @@ using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
 using ShippingSystem.Results;
 using System.Security.Claims;
+using System.Web;
 
 namespace ShippingSystem.Repositories
 {
     public class UserRepository(UserManager<ApplicationUser> userManager, IAuthService authService,
-        AppDbContext context, IMapper mapper) : IUserRepository
+        AppDbContext context, IMapper mapper, IEmailService emailService) : IUserRepository
     {
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly IAuthService _authService = authService;
         private readonly AppDbContext _context = context;
         private readonly IMapper _mapper = mapper;
+        private readonly IEmailService _emailService = emailService;
 
         public async Task<OperationResult> CreateUserAsync(ApplicationUser user, string Password)
         {
@@ -74,18 +77,29 @@ namespace ShippingSystem.Repositories
         public async Task<bool> IsEmailExistAsync(string email) =>
            await _userManager.FindByEmailAsync(email) != null;
 
-        public async Task<ValueOperationResult<AuthDTO>> LoginUserAsync(LoginDto loginDTO)
+        public async Task<ValueOperationResult<AuthDTO>> LoginUserAsync(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDTO.Email);
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDTO.Password))
+            if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password))
                 return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Email or password is incorrect!");
 
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+            {
+                var emailResult = await SendEmailConfirmationLinkAsync(
+                    new RequestEmailConfirmationDto { ConfirmEmailUrl = loginDto.ConfirmEmailUrl, Email = loginDto.Email });
+
+                if (!emailResult.Success)
+                    return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred, please try again later.");
+
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status403Forbidden, "Check your email to confirm your account.");
+            }
+
             if (user.AccountStatus == AccountStatus.Banned)
-                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Account is banned");
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status403Forbidden, "Account is banned");
 
             if (user.MustChangePassword)
-                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status403Forbidden, "Password change is required");
+                return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status403Forbidden, "Change Password Required");
 
             return await GetUserTokensAsync(user);
         }
@@ -221,41 +235,55 @@ namespace ShippingSystem.Repositories
             return ValueOperationResult<AddressDto?>.Ok(Address);
         }
 
-        public async Task<ValueOperationResult<ForgetPasswordResponseDto>> RequestForgetPasswordAsync(RequestForgetPasswordDto requestForgetPasswordDto)
+        public async Task<OperationResult> RequestForgetPasswordAsync(RequestForgetPasswordDto requestForgetPasswordDto)
         {
+            if (string.IsNullOrEmpty(requestForgetPasswordDto.Email))
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "Email is required");
+            
             var user = await _userManager.FindByEmailAsync(requestForgetPasswordDto.Email);
 
             if (user == null)
-                return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status400BadRequest, "User not found");
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "User not found");
             else if (user.MustChangePassword)
-                return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
             else if (user.AccountStatus == AccountStatus.Banned)
-                return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status403Forbidden, "Account is banned");
+                return OperationResult.Fail(StatusCodes.Status403Forbidden, "Account is banned");
 
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            // Send email with reset link (not implemented)
-            // await _emailService.SendPasswordResetEmailAsync(user.Email, token);
+            var encodedToken = HttpUtility.UrlEncode(token);
 
-            return ValueOperationResult<ForgetPasswordResponseDto>.Ok(new ForgetPasswordResponseDto
-            {
-                Email = user.Email!,
-                ResetToken = token
-            });
+            // Send email with reset link
+            var emailResult = await _emailService.SendAsync(requestForgetPasswordDto.Email, "Reset Password",
+                _emailService.RequestResetPasswordBody(requestForgetPasswordDto.ResetPasswordUrl, requestForgetPasswordDto.Email, token));
+
+            if (!emailResult.Success)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred, please try again later.");
+
+            return OperationResult.Ok();
         }
 
         public async Task<OperationResult> ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
         {
-            var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(resetPasswordDto.Email);
 
-            if (user == null)
-                return OperationResult.Fail(StatusCodes.Status404NotFound, "User not found");
+                if (user == null)
+                    return OperationResult.Fail(StatusCodes.Status404NotFound, "User not found");
 
-            var result = await _userManager.ResetPasswordAsync(user, resetPasswordDto.ResetToken, resetPasswordDto.NewPassword);
+                var decodeToken = HttpUtility.UrlDecode(resetPasswordDto.Token);
 
-            if (!result.Succeeded)
-                return OperationResult.Fail(StatusCodes.Status400BadRequest, "Failed to reset password");
+                var result = await _userManager.ResetPasswordAsync(user, decodeToken, resetPasswordDto.NewPassword);
+
+                if (!result.Succeeded)
+                    return OperationResult.Fail(StatusCodes.Status400BadRequest, "Failed to reset password");
+            }
+            catch
+            {
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
 
             return OperationResult.Ok();
         }
@@ -296,6 +324,50 @@ namespace ShippingSystem.Repositories
 
             user.MustChangePassword = false;
             await _userManager.UpdateAsync(user);
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> SendEmailConfirmationLinkAsync(RequestEmailConfirmationDto requestEmailConfirmationDto)
+        {
+            var user = await _userManager.FindByEmailAsync(requestEmailConfirmationDto.Email);
+
+            if (user == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "User not found");
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var endcodeToken = HttpUtility.UrlEncode(token);
+
+            var result = await _emailService.SendAsync(user.Email!, "Email confirmation",
+                _emailService.EmailConfirmationBody(requestEmailConfirmationDto.ConfirmEmailUrl, requestEmailConfirmationDto.Email, endcodeToken));
+
+            if (!result.Success)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred, please try again later.");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> ConfirmEmailAsync(ConfirmEmailDto confirmEmailDto)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(confirmEmailDto.Email);
+
+                if (user == null)
+                    return OperationResult.Fail(StatusCodes.Status404NotFound, "User not found");
+
+                var decodeToken = HttpUtility.UrlDecode(confirmEmailDto.Token);
+
+                var result = await _userManager.ConfirmEmailAsync(user, decodeToken);
+
+                if (!result.Succeeded)
+                    return OperationResult.Fail(StatusCodes.Status400BadRequest, $"Failed to confirm email");
+            }
+            catch
+            {
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            }
 
             return OperationResult.Ok();
         }
