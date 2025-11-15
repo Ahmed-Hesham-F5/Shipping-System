@@ -8,7 +8,7 @@ namespace ShippingSystem.DTOs.HubDTOs
         public string Type { get; set; } = null!;
         public string Name { get; set; } = null!;
         public decimal AreaInSquareMeters { get; set; }
-        public HubStatus HubStatus { get; set; }
+        public HubStatusEnum HubStatus { get; set; }
         public string PhoneNumber { get; set; } = null!;
         public string ManagerName { get; set; } = null!;
         public int EmployeeCount { get; set; }

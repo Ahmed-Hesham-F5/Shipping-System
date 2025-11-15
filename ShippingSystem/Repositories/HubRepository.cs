@@ -54,5 +54,28 @@ namespace ShippingSystem.Repositories
 
             return Task.FromResult(ValueOperationResult<List<HubSelectDto>>.Ok(hubs));
         }
+
+        public async Task<OperationResult> AddEmployeeToHubAsync(int hubId, AssignEmployeeDto assignEmployeeDto)
+        {
+            var hub = await _context.Hubs.FindAsync(hubId);
+            if (hub == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Hub not found");
+
+            var employee = await _context.Employees.FindAsync(assignEmployeeDto.EmployeeId);
+            if (employee == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Employee not found");
+
+            hub.Employees ??= new List<Employee>();
+            if (hub.Employees.Any(e => e.EmployeeId == assignEmployeeDto.EmployeeId))
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "Employee already assigned to this hub");
+
+            hub.Employees.Add(employee);
+            var result = await _context.SaveChangesAsync();
+            if (result < 0)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
     }
 }

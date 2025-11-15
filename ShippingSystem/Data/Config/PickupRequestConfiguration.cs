@@ -36,16 +36,6 @@ namespace ShippingSystem.Data.Config
                 .IsRequired(false);
             });
 
-            builder.Property(pr => pr.ContactName)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(100)
-                .IsRequired();
-
-            builder.Property(pr => pr.ContactPhone)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(11)
-                .IsRequired();
-
             builder.HasMany(pr => pr.PickupRequestShipments)
                    .WithOne(prs => prs.PickupRequest)
                    .HasForeignKey(prs => prs.PickupRequestId)

@@ -95,7 +95,7 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status403Forbidden, "Check your email to confirm your account.");
             }
 
-            if (user.AccountStatus == AccountStatus.Banned)
+            if (user.AccountStatus == AccountStatusEnum.Banned)
                 return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status403Forbidden, "Account is banned");
 
             if (user.MustChangePassword)
@@ -246,7 +246,7 @@ namespace ShippingSystem.Repositories
                 return OperationResult.Fail(StatusCodes.Status400BadRequest, "User not found");
             else if (user.MustChangePassword)
                 return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
-            else if (user.AccountStatus == AccountStatus.Banned)
+            else if (user.AccountStatus == AccountStatusEnum.Banned)
                 return OperationResult.Fail(StatusCodes.Status403Forbidden, "Account is banned");
 
 
@@ -312,7 +312,7 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<AuthDTO>.Fail(StatusCodes.Status400BadRequest, "Email or password is incorrect!");
             else if (!user.MustChangePassword)
                 return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
-            else if (user.AccountStatus == AccountStatus.Banned)
+            else if (user.AccountStatus == AccountStatusEnum.Banned)
                 return ValueOperationResult<ForgetPasswordResponseDto>.Fail(StatusCodes.Status403Forbidden, "Account is banned");
 
             var result = await _userManager.

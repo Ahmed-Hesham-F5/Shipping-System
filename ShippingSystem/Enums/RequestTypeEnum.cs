@@ -6,6 +6,6 @@
         DeliveryRequest,
         ReturnRequest,
         CancellationRequest,
-        RescheduleRequest
+        ExchangeRequest
     }
 }

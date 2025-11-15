@@ -7,7 +7,7 @@ namespace ShippingSystem.Models
     {
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
-        public AccountStatus AccountStatus { get; set; } = AccountStatus.Active;
+        public AccountStatusEnum AccountStatus { get; set; } = AccountStatusEnum.Active;
         public RolesEnum Role { get; set; }
         public bool MustChangePassword { get; set; } = false;
         public int AccessTokenVersion { get; set; } = 0;

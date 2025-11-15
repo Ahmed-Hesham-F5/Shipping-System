@@ -14,5 +14,6 @@ namespace ShippingSystem.Interfaces
         Task<ValueOperationResult<ReturnRequestDetailsDto?>> GetReturnRequestById(string userId, int returnRequestId);
         Task<ValueOperationResult<CancellationRequestDetailsDto?>> GetCancellationRequestById(string userId, int cancellationRequestId);
         Task<OperationResult> UpdateRequestStatus(string userId, int requestId, RequestStatusEnum newStatus, string? notes = null);
+        Task<OperationResult> CreateExchangeRequest(string userId, CreateExchangeRequestDto exchangeRequestDto);
     }
 }

@@ -36,12 +36,12 @@ namespace ShippingSystem.Data.Config
                 .IsRequired(false);
             });
             
-            builder.Property(rr => rr.CustomerContactName)
+            builder.Property(rr => rr.CustomerName)
                 .HasColumnType("nvarchar")
                 .HasMaxLength(100)
                 .IsRequired();
 
-            builder.Property(rr => rr.CustomerContactPhone) 
+            builder.Property(rr => rr.CustomerPhone) 
                 .HasColumnType("nvarchar")
                 .HasMaxLength(11)
                 .IsRequired();

@@ -107,5 +107,29 @@ namespace ShippingSystem.Repositories
 
             return ValueOperationResult<List<string>>.Ok(roles);
         }
+
+        public async Task<OperationResult> AssignEmployeeToHubAsync(string employeeId, AssignHubDto assignHubDto)
+        {
+            if (! await _context.Hubs.AnyAsync(h => h.Id == assignHubDto.HubId))
+            {
+                return OperationResult.Fail(
+                    StatusCodes.Status404NotFound,
+                    "The specified hub does not exist.");
+            }
+
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+            if (employee == null)
+            {
+                return OperationResult.Fail(
+                    StatusCodes.Status404NotFound,
+                    "The specified employee does not exist.");
+            }
+
+            employee.HubId = assignHubDto.HubId;
+            _context.Employees.Update(employee);
+            await _context.SaveChangesAsync();
+
+            return OperationResult.Ok();
+        }
     }
 }

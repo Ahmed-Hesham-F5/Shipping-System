@@ -9,5 +9,6 @@ namespace ShippingSystem.Interfaces
         Task<OperationResult> CreateEmployeeAsync(CreateEmployeeDto createEmployeeDto);
         ValueOperationResult<List<string>> GetAssignableEmployeeRoles();
         Task<ValueOperationResult<List<EmployeeListDto>>> GetAllEmployeesAsync();
+        Task<OperationResult> AssignEmployeeToHubAsync(string employeeId, AssignHubDto assignHubDto);
     }
 }

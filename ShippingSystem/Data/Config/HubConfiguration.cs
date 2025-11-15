@@ -29,7 +29,7 @@ namespace ShippingSystem.Data.Config
 
             builder.Property(h => h.HubStatus)
                 .HasConversion<byte>()
-                .HasDefaultValue(HubStatus.Active)
+                .HasDefaultValue(HubStatusEnum.Active)
                 .IsRequired();
 
             builder.OwnsOne(h => h.Address, address =>

@@ -1,8 +1,8 @@
 ﻿namespace ShippingSystem.Enums
 {
-    public enum AccountStatus : byte
+    public enum HubStatusEnum : byte
     {
-        Banned = 0,
+        Inactive = 0,
         Active = 1
     }
 }

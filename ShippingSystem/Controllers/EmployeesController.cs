@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.DTOs.EmployeeDTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
@@ -16,11 +15,11 @@ namespace ShippingSystem.Controllers
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeDto employee)
         {
             var result = await _employeeRepository.CreateEmployeeAsync(employee);
-            
+
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
-            
+
             ApiResponse<string> response = new(
                 success: true,
                 message: "Employee created successfully!",
@@ -59,11 +58,28 @@ namespace ShippingSystem.Controllers
 
             ApiResponse<List<string>> response = new(
                 success: true,
-                message: "User registered successfully!",
+                message: null!,
                 data: result.Value
             );
 
             return StatusCode(StatusCodes.Status201Created, response);
+        }
+
+        [HttpPut("{id}/assign-to-hub")]
+        public async Task<IActionResult> AssignEmployeeToHub(string id, [FromBody] AssignHubDto assignHubDto)
+        {
+            var result = await _employeeRepository.AssignEmployeeToHubAsync(id, assignHubDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<string> response = new(
+                success: true,
+                message: "Employee assigned to hub successfully!",
+                data: null
+            );
+
+            return Ok(response);
         }
     }
 }

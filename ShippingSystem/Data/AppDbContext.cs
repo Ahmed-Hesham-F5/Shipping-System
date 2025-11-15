@@ -22,6 +22,8 @@ namespace ShippingSystem.Data
         public DbSet<CancellationRequestShipment> CancellationRequestShipments { get; set; }
         public DbSet<Hub> Hubs { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<ExchangeRequest> ExchangeRequests { get; set; }
+        public DbSet<ExchangeRequestShipment> ExchangeRequestShipments { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

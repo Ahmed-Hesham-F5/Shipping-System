@@ -364,5 +364,71 @@ namespace ShippingSystem.Repositories
 
             return OperationResult.Ok();
         }
+
+        public async Task<OperationResult> CreateExchangeRequest(string userId, CreateExchangeRequestDto exchangeRequestDto)
+        {
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var exchangeRequest = _mapper.Map<ExchangeRequest>(exchangeRequestDto);
+            exchangeRequest.UserId = userId;
+            exchangeRequest.RequestType = RequestTypeEnum.ExchangeRequest;
+            exchangeRequest.RequestStatus = RequestStatusEnum.Pending;
+            exchangeRequest.ShipmentsCount = exchangeRequestDto.ToCustomer.Count;
+            exchangeRequest.ShipmentsCount += exchangeRequestDto.FromCustomer.Count;    
+
+            var validToCustomerShipments = await _context.Shipments
+                .Where(s => s.ShipperId == userId && exchangeRequestDto.ToCustomer.Contains(s.Id))
+                .Where(s => s.ShipmentStatuses
+                    .OrderByDescending(ss => ss.Timestamp)
+                    .Select(ss => ss.Status)
+                    .FirstOrDefault() == ShipmentStatusEnum.Pending.ToString())
+                .Select(s => s.Id)
+                .ToListAsync();
+
+            if (validToCustomerShipments.Count != exchangeRequestDto.ToCustomer.Count)
+                return OperationResult.Fail(StatusCodes.Status404NotFound,
+                    "Some shipments to be sent to the customer are invalid or not found");
+
+            var validFromCustomerShipments = await _context.Shipments
+                .Where(s => s.ShipperId == userId && exchangeRequestDto.FromCustomer.Contains(s.Id))
+                .Where(s => s.ShipmentStatuses
+                    .OrderByDescending(ss => ss.Timestamp)
+                    .Select(ss => ss.Status)
+                    .FirstOrDefault() == ShipmentStatusEnum.Delivered.ToString())
+                .Select(s => s.Id)
+                .ToListAsync();
+
+            if (validFromCustomerShipments.Count != exchangeRequestDto.FromCustomer.Count)
+                return OperationResult.Fail(StatusCodes.Status404NotFound,
+                    "Some shipments to be received from the customer are invalid or not found");
+
+            exchangeRequest.ExchangeRequestShipments.AddRange(
+                validToCustomerShipments.Select(sid => new ExchangeRequestShipment
+                {
+                    ShipmentId = sid,
+                    ExchangeDirection = ExchangeDirectionEnum.ToCustomer
+                })
+            );
+
+            exchangeRequest.ExchangeRequestShipments.AddRange(
+                validFromCustomerShipments.Select(sid => new ExchangeRequestShipment
+                {
+                    ShipmentId = sid,
+                    ExchangeDirection = ExchangeDirectionEnum.FromCustomer
+                })
+            );
+
+            exchangeRequest.CreatedAt = exchangeRequest.UpdatedAt = UtcNowTrimmedToSeconds();
+
+            await _context.ExchangeRequests.AddAsync(exchangeRequest);
+            var result = await _context.SaveChangesAsync() > 0;
+
+            if (!result)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
     }
 }

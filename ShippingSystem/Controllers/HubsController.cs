@@ -28,7 +28,7 @@ namespace ShippingSystem.Controllers
         public async Task<IActionResult> GetAllHubs()
         {
             var result = await _hubRepository.GetAllHubsAsync();
-            
+
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
@@ -58,6 +58,17 @@ namespace ShippingSystem.Controllers
             );
 
             return Ok(response);
+        }
+
+        [HttpPut("{hubId}/add-employee")]
+        public async Task<IActionResult> AddEmployeeToHub(int hubId, [FromBody] AssignEmployeeDto assignEmployeeDto)
+        {
+            var result = await _hubRepository.AddEmployeeToHubAsync(hubId, assignEmployeeDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return Ok(new ApiResponse<string>(true, "Employee added to hub successfully."));
         }
     }
 }

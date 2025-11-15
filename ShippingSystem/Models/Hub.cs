@@ -10,7 +10,7 @@ namespace ShippingSystem.Models
         public Address Address { get; set; } = null!;
         public string PhoneNumber { get; set; } = null!;
         public decimal AreaInSquareMeters { get; set; }
-        public HubStatus HubStatus { get; set; } = HubStatus.Active;
+        public HubStatusEnum HubStatus { get; set; } = HubStatusEnum.Active;
 
         public DateTime CreatedAt { get; set; }
 

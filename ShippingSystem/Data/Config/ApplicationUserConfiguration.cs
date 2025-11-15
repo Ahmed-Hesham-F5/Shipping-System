@@ -33,7 +33,7 @@ namespace ShippingSystem.Data.Config
 
             builder.Property(appUser => appUser.AccountStatus)
                 .HasConversion<byte>()
-                .HasDefaultValue(AccountStatus.Active)
+                .HasDefaultValue(AccountStatusEnum.Active)
                 .IsRequired();
 
             builder.Property(appUser => appUser.MustChangePassword)

@@ -10,6 +10,6 @@
         Accountant,
         Admin,
         MainAdmin,
-        OperationsAgent,
+        OperationsAgent
     }
 }

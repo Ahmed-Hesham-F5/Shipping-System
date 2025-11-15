@@ -124,6 +124,9 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.Phones!.FirstOrDefault()!.PhoneNumber))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role.ToString()))
                 .ForMember(dest => dest.HubName, opt => opt.MapFrom(src => src.Hub!.Name));
+
+            CreateMap<CreateExchangeRequestDto, ExchangeRequest>()
+                .ForMember(dest => dest.ExchangeRequestShipments, opt => opt.Ignore());
         }
     }
 }
