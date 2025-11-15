@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShippingSystem.Data;
 
@@ -11,9 +12,11 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251115175658_AlterExchangeTable")]
+    partial class AlterExchangeTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1321,41 +1324,7 @@ namespace ShippingSystem.Migrations
                                 .HasForeignKey("ReturnRequestId");
                         });
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "ShipperAddress", b1 =>
-                        {
-                            b1.Property<int>("ReturnRequestId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Details")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("GoogleMapAddressLink")
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Governorate")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.Property<string>("Street")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
-
-                            b1.HasKey("ReturnRequestId");
-
-                            b1.ToTable("ReturnRequests");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ReturnRequestId");
-                        });
-
                     b.Navigation("CustomerAddress")
-                        .IsRequired();
-
-                    b.Navigation("ShipperAddress")
                         .IsRequired();
                 });
 

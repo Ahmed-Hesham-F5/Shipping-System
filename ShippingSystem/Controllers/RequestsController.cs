@@ -239,5 +239,21 @@ namespace ShippingSystem.Controllers
             return StatusCode(StatusCodes.Status201Created,
                 new ApiResponse<string>(true, "Exchange request created successfully."));
         }
+
+        [HttpGet("exchange-requests/{exchangeRequestId}")]
+        public async Task<IActionResult> GetExchangeRequest(int exchangeRequestId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return StatusCode(StatusCodes.Status401Unauthorized,
+                    new ApiResponse<string>(false, "User not authenticated."));
+
+            var result = await _requestRepository.GetExchangeRequestById(userId, exchangeRequestId);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            return Ok(new ApiResponse<ExchangeRequestDetailsDto>(true, null!, result.Value));
+        }
     }
 }

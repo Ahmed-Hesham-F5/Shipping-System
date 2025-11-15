@@ -7,5 +7,6 @@ namespace ShippingSystem.Interfaces
     public interface IShipperRepository
     {
         Task<OperationResult> CreateShipperAsync(CreateShipperDto createShipperDto);
+        Task<ValueOperationResult<ShipperProfileDto>> GetShipperProfileAsync(string shipperId);
     }
 }

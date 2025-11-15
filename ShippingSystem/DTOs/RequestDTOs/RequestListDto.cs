@@ -1,6 +1,4 @@
-﻿using ShippingSystem.Enums;
-
-namespace ShippingSystem.DTOs.RequestDTOs
+﻿namespace ShippingSystem.DTOs.RequestDTOs
 {
     public class RequestListDto
     {

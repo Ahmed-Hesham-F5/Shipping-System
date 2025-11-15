@@ -6,19 +6,15 @@ namespace ShippingSystem.DTOs.RequestDTOs
     public class CreateReturnRequestDto
     {
         [Required]
-        public DateOnly PickupDate { get; set; }
-        [Required]
-        public TimeOnly WindowStart { get; set; }
-        [Required]
-        public TimeOnly WindowEnd { get; set; }
+        public AddressDto ShipperAddress { get; set; } = null!;
         [Required]
         public AddressDto CustomerAddress { get; set; } = null!;
         [Required, MaxLength(100)]
-        public string CustomerContactName { get; set; } = null!;
+        public string CustomerName { get; set; } = null!;
         [Required]
         [MaxLength(11, ErrorMessage = "Phone number must be 11 digits.")]
         [RegularExpression(@"^(010|011|012|015)\d{8}$", ErrorMessage = "Phone number must start with 010, 011, 012 or 015.")]
-        public string CustomerContactPhone { get; set; } = null!;
+        public string CustomerPhone { get; set; } = null!;
         [MaxLength(255), EmailAddress]
         public string? CustomerEmail { get; set; } = null!;
 

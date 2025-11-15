@@ -3,6 +3,7 @@ using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
+using System.Security.Claims;
 
 namespace ShippingSystem.Controllers
 {
@@ -30,6 +31,29 @@ namespace ShippingSystem.Controllers
             );
 
             return StatusCode(StatusCodes.Status201Created, response);
+        }
+
+        [HttpGet("shipper-profile")]
+        public async Task<IActionResult> GetShipperProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized access."));
+
+            var result = await _shipperRepository.GetShipperProfileAsync(userId);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<ShipperProfileDto> response = new(
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
         }
     }
 }

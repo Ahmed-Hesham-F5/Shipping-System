@@ -2,6 +2,8 @@
 {
     public class ReturnRequest : RequestBase
     {
+        public Address ShipperAddress { get; set; } = null!;
+
         public Address CustomerAddress { get; set; } = null!;
         public string CustomerName { get; set; } = null!;
         public string CustomerPhone { get; set; } = null!;

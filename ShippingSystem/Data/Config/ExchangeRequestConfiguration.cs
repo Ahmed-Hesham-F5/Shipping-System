@@ -36,16 +36,6 @@ namespace ShippingSystem.Data.Config
                 .IsRequired(false);
             });
 
-            builder.Property(e => e.ShipperName)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(100)
-                .IsRequired();
-
-            builder.Property(e => e.ShipperPhone)
-                .HasColumnType("nvarchar")
-                .HasMaxLength(11)
-                .IsRequired();
-
             builder.OwnsOne(e => e.CustomerAddress, address =>
             {
                 address.Property(a => a.Street)

@@ -47,5 +47,6 @@ namespace ShippingSystem.DTOs.ShipmentDTOs
 
         [ValueRequiredIfCod("CashOnDeliveryEnabled", ErrorMessage = "CollectionAmount is required when CashOnDeliveryEnabled is true and must be greater than 0.")]
         public decimal CollectionAmount { get; set; }
+        public bool IsDelivered { get; set; }
     }
 }

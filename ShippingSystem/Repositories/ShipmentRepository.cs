@@ -60,7 +60,22 @@ namespace ShippingSystem.Repositories
 
                 await _context.SaveChangesAsync();
 
-                await UpdateShipmentStatus(userId, shipment.Id, ShipmentStatusEnum.Pending, "Shipment created");
+                OperationResult UpdateStatusResult;
+                
+                if (shipmentRequestDTO.IsDelivered)
+                {
+                    UpdateStatusResult = await UpdateShipmentStatus(userId, shipment.Id, ShipmentStatusEnum.Delivered, "Shipment Delivered Successfully");
+                }
+                else
+                {
+                    UpdateStatusResult = await UpdateShipmentStatus(userId, shipment.Id, ShipmentStatusEnum.Pending, "Shipment Created");
+                }
+
+                if (!UpdateStatusResult.Success)
+                {
+                    await transaction.RollbackAsync();
+                    return UpdateStatusResult;
+                }
 
                 await transaction.CommitAsync();
             }

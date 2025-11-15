@@ -430,5 +430,24 @@ namespace ShippingSystem.Repositories
 
             return OperationResult.Ok();
         }
+
+        public async Task<ValueOperationResult<ExchangeRequestDetailsDto?>> GetExchangeRequestById(string userId, int exchangeRequestId)
+        {
+            if (await _userManager.FindByIdAsync(userId) == null)
+                return ValueOperationResult<ExchangeRequestDetailsDto?>.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var exchangeRequest = await _context.ExchangeRequests
+                .Where(r => r.Id == exchangeRequestId && r.UserId == userId)
+                .ProjectTo<ExchangeRequestDetailsDto>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (exchangeRequest == null)
+                return ValueOperationResult<ExchangeRequestDetailsDto?>.Fail(StatusCodes.Status404NotFound, "Exchange request not found");
+
+            exchangeRequest.Role = (await _userRepository.GetUserRoleAsync(userId)).Value!;
+
+            return ValueOperationResult<ExchangeRequestDetailsDto?>.Ok(exchangeRequest);
+        }
     }
 }

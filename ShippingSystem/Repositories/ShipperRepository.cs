@@ -1,4 +1,6 @@
-﻿using ShippingSystem.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using ShippingSystem.Data;
+using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Enums;
@@ -103,6 +105,40 @@ namespace ShippingSystem.Repositories
                 Console.WriteLine(e.Message.ToString());
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
             }
+        }
+
+        public async Task<ValueOperationResult<ShipperProfileDto>> GetShipperProfileAsync(string shipperId)
+        {
+            var shipper = await _context.Shippers
+               .Include(s => s.User.Phones)
+               .Include(s => s.User.Addresses)
+               .AsSplitQuery()
+               .FirstOrDefaultAsync(s => s.ShipperId == shipperId);
+
+            if (shipper == null)
+                return ValueOperationResult<ShipperProfileDto>.Fail(StatusCodes.Status404NotFound, "Shipper not found.");
+
+            var shipperProfile = new ShipperProfileDto
+            {
+                ShipperId = shipper.ShipperId,
+                FirstName = shipper.User.FirstName,
+                LastName = shipper.User.LastName,
+                Email = shipper.User.Email!,
+                Phones = [.. shipper.User.Phones!.Select(p => p.PhoneNumber)],
+                Addresses = [.. shipper.User.Addresses!.Select(a => new AddressDto
+                {
+                    City = a.City,
+                    Street = a.Street,
+                    Governorate = a.Governorate,
+                    Details = a.Details,
+                    GoogleMapAddressLink = a.GoogleMapAddressLink
+                })],
+                CompanyName = shipper.CompanyName,
+                CompanyLink = shipper.CompanyLink,
+                TypeOfProduction = shipper.TypeOfProduction
+            };
+
+            return ValueOperationResult<ShipperProfileDto>.Ok(shipperProfile);
         }
     }
 }

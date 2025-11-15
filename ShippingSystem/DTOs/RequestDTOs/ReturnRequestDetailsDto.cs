@@ -12,12 +12,9 @@ namespace ShippingSystem.DTOs.RequestDTOs
         public string CreatedBy { get; set; } = null!;
         public string Role { get; set; } = null!;
 
-        public DateOnly PickupDate { get; set; }
-        public TimeOnly WindowStart { get; set; }
-        public TimeOnly WindowEnd { get; set; }
         public AddressDto CustomerAddress { get; set; } = null!;
-        public string CustomerContactName { get; set; } = null!;
-        public string CustomerContactPhone { get; set; } = null!;
+        public string CustomertName { get; set; } = null!;
+        public string CustomerPhone { get; set; } = null!;
         public string? CustomerEmail { get; set; } = null!;
         public int ShipmentsCount { get; set; }
         public List<ShipmentListDto> Shipments { get; set; } = new List<ShipmentListDto>();

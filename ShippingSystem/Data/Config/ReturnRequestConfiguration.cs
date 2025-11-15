@@ -8,6 +8,34 @@ namespace ShippingSystem.Data.Config
     {
         public void Configure(EntityTypeBuilder<ReturnRequest> builder)
         {
+            builder.OwnsOne(rr => rr.ShipperAddress, address =>
+            {
+                address.Property(a => a.Street)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(256)
+                .IsRequired();
+
+                address.Property(a => a.City)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(50)
+                .IsRequired();
+
+                address.Property(a => a.Governorate)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(50)
+                .IsRequired();
+
+                address.Property(a => a.Details)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(500)
+                .IsRequired(false);
+
+                address.Property(a => a.GoogleMapAddressLink)
+                .HasColumnType("nvarchar")
+                .HasMaxLength(2083)
+                .IsRequired(false);
+            });
+
             builder.OwnsOne(rr => rr.CustomerAddress, address =>
             {
                 address.Property(a => a.Street)

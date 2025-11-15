@@ -127,6 +127,13 @@ namespace ShippingSystem.MappingProfiles
 
             CreateMap<CreateExchangeRequestDto, ExchangeRequest>()
                 .ForMember(dest => dest.ExchangeRequestShipments, opt => opt.Ignore());
+
+            CreateMap<ExchangeRequest, ExchangeRequestDetailsDto>()
+                .ForMember(dest => dest.FromCustomer, opt => opt.MapFrom(src => src.ExchangeRequestShipments
+                .Where(s => s.ExchangeDirection == Enums.ExchangeDirectionEnum.FromCustomer).Select(c => c.Shipment)))
+                .ForMember(dest => dest.ToCustomer, opt => opt.MapFrom(src => src.ExchangeRequestShipments
+                .Where(s => s.ExchangeDirection == Enums.ExchangeDirectionEnum.ToCustomer).Select(c => c.Shipment)))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.User.UserName));
         }
     }
 }
