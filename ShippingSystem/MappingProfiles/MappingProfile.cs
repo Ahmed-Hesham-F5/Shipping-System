@@ -23,6 +23,8 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.LatestShipmentStatus,
                 opt => opt.MapFrom(src => src.ShipmentStatuses
                 .OrderByDescending(ss => ss.Timestamp).FirstOrDefault()))
+                .ForMember(dest => dest.City,
+                opt => opt.MapFrom(src => src.CustomerAddress.City))
                 .ForMember(dest => dest.Governorate,
                 opt => opt.MapFrom(src => src.CustomerAddress.Governorate));
 
