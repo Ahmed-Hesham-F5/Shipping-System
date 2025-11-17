@@ -68,5 +68,7 @@ namespace ShippingSystem.Models
         // Timestamps, Managed in Add/Update operations
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        public ICollection<ShipmentRequest> ShipmentRequests { get; set; } = new List<ShipmentRequest>();
     }
 }

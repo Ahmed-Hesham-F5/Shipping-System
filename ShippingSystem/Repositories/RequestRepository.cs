@@ -58,7 +58,6 @@ namespace ShippingSystem.Repositories
             pickupRequest.UserId = userId;
             pickupRequest.RequestType = RequestTypeEnum.PickupRequest;
             pickupRequest.RequestStatus = RequestStatusEnum.Pending;
-            pickupRequest.ShipmentsCount = validShipmentIds.Count;
             pickupRequest.CreatedAt = pickupRequest.UpdatedAt = UtcNowTrimmedToSeconds();
 
             await _context.PickupRequests.AddAsync(pickupRequest);
@@ -97,7 +96,6 @@ namespace ShippingSystem.Repositories
             returnRequest.UserId = userId;
             returnRequest.RequestType = RequestTypeEnum.ReturnRequest;
             returnRequest.RequestStatus = RequestStatusEnum.Pending;
-            returnRequest.ShipmentsCount = validShipmentIds.Count;
             returnRequest.CreatedAt = returnRequest.UpdatedAt = UtcNowTrimmedToSeconds();
 
             await _context.ReturnRequests.AddAsync(returnRequest);
@@ -168,7 +166,6 @@ namespace ShippingSystem.Repositories
                 cancellationRequest.UserId = userId;
                 cancellationRequest.RequestType = RequestTypeEnum.CancellationRequest;
                 cancellationRequest.RequestStatus = RequestStatusEnum.Pending;
-                cancellationRequest.ShipmentsCount = validShipmentIds.Count;
                 cancellationRequest.CreatedAt = cancellationRequest.UpdatedAt = UtcNowTrimmedToSeconds();
 
                 await _context.CancellationRequests.AddAsync(cancellationRequest);
@@ -374,8 +371,6 @@ namespace ShippingSystem.Repositories
             exchangeRequest.UserId = userId;
             exchangeRequest.RequestType = RequestTypeEnum.ExchangeRequest;
             exchangeRequest.RequestStatus = RequestStatusEnum.Pending;
-            exchangeRequest.ShipmentsCount = exchangeRequestDto.ToCustomer.Count;
-            exchangeRequest.ShipmentsCount += exchangeRequestDto.FromCustomer.Count;    
 
             var validToCustomerShipments = await _context.Shipments
                 .Where(s => s.ShipperId == userId && exchangeRequestDto.ToCustomer.Contains(s.Id))

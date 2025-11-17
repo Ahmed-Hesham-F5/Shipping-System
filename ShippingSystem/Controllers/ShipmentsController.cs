@@ -43,7 +43,8 @@ namespace ShippingSystem.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllShipments()
+        public async Task<IActionResult> GetAllShipments([FromQuery] ShipmentFiltrationParams filterParams,
+            [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 9)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -51,13 +52,13 @@ namespace ShippingSystem.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized,
                     new ApiResponse<string>(false, "User not authenticated."));
 
-            var result = await _shipmentRepository.GetAllShipments(userId);
+            var result = await _shipmentRepository.GetAllShipments(userId, filterParams, pageNumber, pageSize);
 
             if (!result.Success)
                 return StatusCode(result.StatusCode,
                     new ApiResponse<string>(false, result.ErrorMessage));
 
-            ApiResponse<List<ShipmentListDto>> response = new(
+            ApiResponse<PaginatedShipmentsDto> response = new(
                 success: true,
                 message: null!,
                 data: result.Value!
@@ -288,6 +289,14 @@ namespace ShippingSystem.Controllers
                     new ApiResponse<string>(false, result.ErrorMessage));
 
             return NoContent();
+        }
+
+        [AllowAnonymous]
+        [HttpGet("shipment-statuses")]
+        public IActionResult GetShipmentStatuses()
+        {
+            var statuses = _shipmentRepository.ShipmentStatus();
+            return Ok(new ApiResponse<List<string>>(true, null!, statuses));
         }
     }
 }

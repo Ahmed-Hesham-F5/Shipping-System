@@ -12,7 +12,6 @@ namespace ShippingSystem.Models
         public RequestTypeEnum RequestType { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public int ShipmentsCount { get; set; }
         public RequestStatusEnum RequestStatus { get; set; }
     }
 }

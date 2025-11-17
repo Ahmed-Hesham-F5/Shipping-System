@@ -74,6 +74,7 @@ namespace ShippingSystem.Data.Config
                 .HasColumnType("nvarchar")
                 .HasMaxLength(500)
                 .IsRequired(false);
+
             builder.HasMany(shipment => shipment.ShipmentStatuses)
                 .WithOne(status => status.Shipment)
                 .HasForeignKey(status => status.ShipmentId)

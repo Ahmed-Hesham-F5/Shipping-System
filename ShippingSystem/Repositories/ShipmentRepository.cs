@@ -6,9 +6,11 @@ using ShippingSystem.Data;
 using ShippingSystem.DTOs.RequestDTOs;
 using ShippingSystem.DTOs.ShipmentDTOs;
 using ShippingSystem.Enums;
+using ShippingSystem.Helpers;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Models;
 using ShippingSystem.Results;
+using System.Linq.Expressions;
 using static ShippingSystem.Helpers.DateTimeExtensions;
 
 namespace ShippingSystem.Repositories
@@ -61,7 +63,7 @@ namespace ShippingSystem.Repositories
                 await _context.SaveChangesAsync();
 
                 OperationResult UpdateStatusResult;
-                
+
                 if (shipmentRequestDTO.IsDelivered)
                 {
                     UpdateStatusResult = await UpdateShipmentStatus(userId, shipment.Id, ShipmentStatusEnum.Delivered, "Shipment Delivered Successfully");
@@ -144,19 +146,121 @@ namespace ShippingSystem.Repositories
             return OperationResult.Ok();
         }
 
-        public async Task<ValueOperationResult<List<ShipmentListDto>>> GetAllShipments(string userId)
+        public async Task<ValueOperationResult<PaginatedShipmentsDto>> GetAllShipments(string userId,
+            ShipmentFiltrationParams filtrationParams, int pageNumber = 1, int pageSize = 9)
         {
             if (await _userManager.FindByIdAsync(userId) == null)
-                return ValueOperationResult<List<ShipmentListDto>>
+                return ValueOperationResult<PaginatedShipmentsDto>
                     .Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
 
-            var allShipments = await _context.Shipments
-                .Where(s => s.ShipperId == userId)
+            var query = _context.Shipments.AsQueryable();
+
+            if (!string.IsNullOrEmpty(filtrationParams.StatusFilter))
+            {
+                query = query.Where(s => s.ShipmentStatuses
+                .OrderByDescending(ss => ss.Timestamp)
+                .FirstOrDefault()!.Status == filtrationParams.StatusFilter);
+            }
+
+            if (!string.IsNullOrEmpty(filtrationParams.SearchBy) && !string.IsNullOrEmpty(filtrationParams.SearchValue))
+            {
+                var searchMap = BuildShipmentSearchMap(filtrationParams.SearchValue);
+
+                if (searchMap.TryGetValue(filtrationParams.SearchBy, out var predicate))
+                {
+                    query = query.Where(predicate);
+                }
+                else
+                {
+                    return ValueOperationResult<PaginatedShipmentsDto>.Fail(
+                        StatusCodes.Status400BadRequest,
+                        "Invalid searchBy parameter."
+                    );
+                }
+            }
+
+            if (!string.IsNullOrEmpty(filtrationParams.SortBy))
+            {
+                bool isAscending = string.Equals(filtrationParams.SortDirection, "asc", StringComparison.OrdinalIgnoreCase);
+                query = filtrationParams.SortBy switch
+                {
+                    nameof(Shipment.CustomerName) =>
+                        isAscending ? query.OrderBy(s => s.CustomerName) : query.OrderByDescending(s => s.CustomerName),
+                    nameof(Shipment.CreatedAt) =>
+                        isAscending ? query.OrderBy(s => s.CreatedAt) : query.OrderByDescending(s => s.CreatedAt),
+                    nameof(Shipment.Id) =>
+                        isAscending ? query.OrderBy(s => s.Id) : query.OrderByDescending(s => s.Id),
+                    nameof(Shipment.CollectionAmount) =>
+                    isAscending ? query.OrderBy(s => s.CollectionAmount) : query.OrderByDescending(s => s.CollectionAmount),
+                    _ => query
+                };
+            }
+
+            if (filtrationParams.CashOnDeliveryEnabled.HasValue)
+            {
+                query = query.Where(s => s.CashOnDeliveryEnabled == filtrationParams.CashOnDeliveryEnabled.Value);
+            }
+
+            if (filtrationParams.ExpressDeliveryEnabled.HasValue)
+            {
+                query = query.Where(s => s.ExpressDeliveryEnabled == filtrationParams.ExpressDeliveryEnabled.Value);
+            }
+
+            if (filtrationParams.OpenPackageOnDeliveryEnabled.HasValue)
+            {
+                query = query.Where(s => s.OpenPackageOnDeliveryEnabled == filtrationParams.OpenPackageOnDeliveryEnabled.Value);
+            }
+
+            query = query.Where(s => s.ShipperId == userId);
+            var totalItems = await query.CountAsync();
+
+            if (pageNumber < 1) pageNumber = 1;
+
+            if (pageSize < 1) pageSize = 10;
+
+            var shipmentsPage = await query
                 .ProjectTo<ShipmentListDto>(_mapper.ConfigurationProvider)
                 .AsNoTracking()
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return ValueOperationResult<List<ShipmentListDto>>.Ok(allShipments);
+            PaginatedShipmentsDto paginatedShipmentsDto = new()
+            {
+                TotalCount = totalItems,
+                Shipments = shipmentsPage
+            };
+
+            return ValueOperationResult<PaginatedShipmentsDto>.Ok(paginatedShipmentsDto);
+        }
+
+        private Dictionary<string, Expression<Func<Shipment, bool>>> BuildShipmentSearchMap(string searchValue)
+        {
+            return new Dictionary<string, Expression<Func<Shipment, bool>>>
+            {
+                { nameof(Shipment.CustomerName),
+                    s => s.CustomerName.Contains(searchValue) },
+
+                { nameof(Shipment.CustomerPhone),
+                    s => s.CustomerPhone.Contains(searchValue) },
+
+                { nameof(Shipment.CustomerAddress.City),
+                    s => s.CustomerAddress != null &&
+                         s.CustomerAddress.City.Contains(searchValue) },
+
+                { nameof(Shipment.CustomerAddress.Governorate),
+                    s => s.CustomerAddress != null &&
+                         s.CustomerAddress.Governorate.Contains(searchValue) },
+
+                { nameof(Shipment.Id),
+                    s => s.Id.ToString().Contains(searchValue) },
+
+                { nameof(Shipment.ShipmentTrackingNumber),
+                    s => s.ShipmentTrackingNumber.Contains(searchValue) },
+
+                { nameof(Shipment.ShipmentDescription),
+                    s => s.ShipmentDescription.Contains(searchValue) }
+            };
         }
 
         public async Task<ValueOperationResult<ShipmentDetailsDto?>> GetShipmentById(string userId, int id)
@@ -385,6 +489,12 @@ namespace ShippingSystem.Repositories
                 return ValueOperationResult<List<ToCancelShipmentListDto>>.Fail(StatusCodes.Status500InternalServerError,
                     "An unexpected error occurred. Please try again later.");
             }
+        }
+
+        public List<string> ShipmentStatus()
+        {
+            var statuses = Enum.GetNames(typeof(ShipmentStatusEnum)).ToList();
+            return statuses;
         }
     }
 }

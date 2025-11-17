@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShippingSystem.Data;
 
@@ -11,9 +12,11 @@ using ShippingSystem.Data;
 namespace ShippingSystem.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251116233519_UpdateShipmentVolume")]
+    partial class UpdateShipmentVolume
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -468,6 +471,9 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar");
 
+                    b.Property<int>("ShipmentsCount")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -563,10 +569,10 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar");
 
-                    b.Property<decimal>("ShipmentHeight")
+                    b.Property<decimal?>("ShipmentHeight")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("ShipmentLength")
+                    b.Property<decimal?>("ShipmentLength")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ShipmentNotes")
@@ -578,10 +584,10 @@ namespace ShippingSystem.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar");
 
-                    b.Property<decimal>("ShipmentWeight")
+                    b.Property<decimal?>("ShipmentWeight")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("ShipmentWidth")
+                    b.Property<decimal?>("ShipmentWidth")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ShipperId")
@@ -604,24 +610,6 @@ namespace ShippingSystem.Migrations
                     b.HasIndex("ShipperId");
 
                     b.ToTable("Shipments", (string)null);
-                });
-
-            modelBuilder.Entity("ShippingSystem.Models.ShipmentRequest", b =>
-                {
-                    b.Property<int>("ShipmentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequestId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequestType")
-                        .HasColumnType("int");
-
-                    b.HasKey("ShipmentId", "RequestId");
-
-                    b.HasIndex("RequestId");
-
-                    b.ToTable("ShipmentRequests", (string)null);
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.ShipmentStatus", b =>
@@ -1109,25 +1097,6 @@ namespace ShippingSystem.Migrations
                     b.Navigation("Shipper");
                 });
 
-            modelBuilder.Entity("ShippingSystem.Models.ShipmentRequest", b =>
-                {
-                    b.HasOne("ShippingSystem.Models.RequestBase", "Request")
-                        .WithMany()
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("ShippingSystem.Models.Shipment", "Shipment")
-                        .WithMany("ShipmentRequests")
-                        .HasForeignKey("ShipmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Request");
-
-                    b.Navigation("Shipment");
-                });
-
             modelBuilder.Entity("ShippingSystem.Models.ShipmentStatus", b =>
                 {
                     b.HasOne("ShippingSystem.Models.Shipment", "Shipment")
@@ -1411,8 +1380,6 @@ namespace ShippingSystem.Migrations
 
             modelBuilder.Entity("ShippingSystem.Models.Shipment", b =>
                 {
-                    b.Navigation("ShipmentRequests");
-
                     b.Navigation("ShipmentStatuses");
                 });
 
