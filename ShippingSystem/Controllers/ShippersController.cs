@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.AuthenticationDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
@@ -9,12 +10,14 @@ using System.Security.Claims;
 namespace ShippingSystem.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = "Shipper")]
     [ApiController]
     public class ShippersController(IShipperRepository shipperRepository) : ControllerBase
     {
         private readonly IShipperRepository _shipperRepository = shipperRepository;
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> CreateShipper([FromBody] CreateShipperDto shipperRegisterDTO)
         {
             if (!ModelState.IsValid)

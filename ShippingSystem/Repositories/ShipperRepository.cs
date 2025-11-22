@@ -169,30 +169,6 @@ namespace ShippingSystem.Repositories
             return OperationResult.Ok();
         }
 
-        public async Task<OperationResult> DeleteShipperAddressAsync(string shipperId, int addressId)
-        {
-            var shipper = await _context.Shippers
-                .Include(s => s.User.Addresses)
-                .FirstOrDefaultAsync(s => s.ShipperId == shipperId);
-
-            if (shipper == null)
-                return OperationResult.Fail(StatusCodes.Status404NotFound, "Shipper not found.");
-
-            var address = shipper.User.Addresses!.FirstOrDefault(a => a.Id == addressId);
-            if (address == null)
-                return OperationResult.Fail(StatusCodes.Status404NotFound, "Address not found.");
-
-            if (shipper.User.Addresses!.Count <= 1)
-                return OperationResult.Fail(StatusCodes.Status400BadRequest, "At least one address must be maintained.");
-
-            shipper.User.Addresses!.Remove(address);
-            var saveResult = await _context.SaveChangesAsync();
-            if (saveResult <= 0)
-                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
-            
-            return OperationResult.Ok();
-        }
-
         public async Task<OperationResult> UpdateShipperAddressAsync(string shipperId, int addressId, AddressDto addressDto)
         {
             var shipper = await _context.Shippers
@@ -211,7 +187,7 @@ namespace ShippingSystem.Repositories
             foreach (var prop in typeof(AddressDto).GetProperties())
             {
                 var dtoValue = prop.GetValue(addressDto);
-                var entityValue = typeof(Address)
+                var entityValue = typeof(UserAddress)
                                     .GetProperty(prop.Name)?
                                     .GetValue(address);
 
@@ -231,6 +207,30 @@ namespace ShippingSystem.Repositories
             address.Details = addressDto.Details;
             address.GoogleMapAddressLink = addressDto.GoogleMapAddressLink;
 
+            var saveResult = await _context.SaveChangesAsync();
+            if (saveResult <= 0)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            
+            return OperationResult.Ok();
+        }
+ 
+        public async Task<OperationResult> DeleteShipperAddressAsync(string shipperId, int addressId)
+        {
+            var shipper = await _context.Shippers
+                .Include(s => s.User.Addresses)
+                .FirstOrDefaultAsync(s => s.ShipperId == shipperId);
+
+            if (shipper == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Shipper not found.");
+
+            var address = shipper.User.Addresses!.FirstOrDefault(a => a.Id == addressId);
+            if (address == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Address not found.");
+
+            if (shipper.User.Addresses!.Count <= 1)
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "At least one address must be maintained.");
+
+            shipper.User.Addresses!.Remove(address);
             var saveResult = await _context.SaveChangesAsync();
             if (saveResult <= 0)
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
