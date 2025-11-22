@@ -125,8 +125,9 @@ namespace ShippingSystem.Repositories
                 LastName = shipper.User.LastName,
                 Email = shipper.User.Email!,
                 Phones = [.. shipper.User.Phones!.Select(p => p.PhoneNumber)],
-                Addresses = [.. shipper.User.Addresses!.Select(a => new AddressDto
+                Addresses = [.. shipper.User.Addresses!.Select(a => new ShipperAddressListDto
                 {
+                    Id = a.Id,
                     City = a.City,
                     Street = a.Street,
                     Governorate = a.Governorate,
@@ -139,6 +140,102 @@ namespace ShippingSystem.Repositories
             };
 
             return ValueOperationResult<ShipperProfileDto>.Ok(shipperProfile);
+        }
+
+        public async Task<OperationResult> AddShipperAddressAsync(string shipperId, AddressDto addressDto)
+        {
+            var shipper = await _context.Shippers
+                .Include(s => s.User.Addresses)
+                .FirstOrDefaultAsync(s => s.ShipperId == shipperId);
+
+            if (shipper == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Shipper not found.");
+
+            var address = new UserAddress
+            {
+                City = addressDto.City,
+                Street = addressDto.Street,
+                Governorate = addressDto.Governorate,
+                Details = addressDto.Details,
+                GoogleMapAddressLink = addressDto.GoogleMapAddressLink
+            };
+
+            shipper.User.Addresses!.Add(address);
+            var saveResult = await _context.SaveChangesAsync();
+
+            if (saveResult <= 0)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> DeleteShipperAddressAsync(string shipperId, int addressId)
+        {
+            var shipper = await _context.Shippers
+                .Include(s => s.User.Addresses)
+                .FirstOrDefaultAsync(s => s.ShipperId == shipperId);
+
+            if (shipper == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Shipper not found.");
+
+            var address = shipper.User.Addresses!.FirstOrDefault(a => a.Id == addressId);
+            if (address == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Address not found.");
+
+            if (shipper.User.Addresses!.Count <= 1)
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "At least one address must be maintained.");
+
+            shipper.User.Addresses!.Remove(address);
+            var saveResult = await _context.SaveChangesAsync();
+            if (saveResult <= 0)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> UpdateShipperAddressAsync(string shipperId, int addressId, AddressDto addressDto)
+        {
+            var shipper = await _context.Shippers
+                .Include(s => s.User.Addresses)
+                .FirstOrDefaultAsync(s => s.ShipperId == shipperId);
+
+            if (shipper == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Shipper not found.");
+
+            var address = shipper.User.Addresses!.FirstOrDefault(a => a.Id == addressId);
+            if (address == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Address not found.");
+
+            bool noChanges = true;
+
+            foreach (var prop in typeof(AddressDto).GetProperties())
+            {
+                var dtoValue = prop.GetValue(addressDto);
+                var entityValue = typeof(Address)
+                                    .GetProperty(prop.Name)?
+                                    .GetValue(address);
+
+                if (!Equals(dtoValue, entityValue))
+                {
+                    noChanges = false;
+                    break;
+                }
+            }
+
+            if (noChanges)
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "No changes detected.");
+
+            address.City = addressDto.City;
+            address.Street = addressDto.Street;
+            address.Governorate = addressDto.Governorate;
+            address.Details = addressDto.Details;
+            address.GoogleMapAddressLink = addressDto.GoogleMapAddressLink;
+
+            var saveResult = await _context.SaveChangesAsync();
+            if (saveResult <= 0)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            
+            return OperationResult.Ok();
         }
     }
 }

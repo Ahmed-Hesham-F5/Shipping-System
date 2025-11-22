@@ -32,7 +32,7 @@ namespace ShippingSystem.Repositories
 
             var validPickupStatuses = new List<string>
             {
-                ShipmentStatusEnum.Pending.ToString(),
+                ShipmentStatusEnum.NewShipment.ToString(),
                 ShipmentStatusEnum.Returned.ToString(),
             };
 
@@ -187,7 +187,7 @@ namespace ShippingSystem.Repositories
             }
 
             foreach (var shipmentId in validShipmentIds)
-                await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId, ShipmentStatusEnum.InReviewForCancellation, "");
+                await _shipmentRepository.UpdateShipmentStatus(userId, shipmentId, ShipmentStatusEnum.Canceled, "");
 
             return OperationResult.Ok();
         }
@@ -377,7 +377,7 @@ namespace ShippingSystem.Repositories
                 .Where(s => s.ShipmentStatuses
                     .OrderByDescending(ss => ss.Timestamp)
                     .Select(ss => ss.Status)
-                    .FirstOrDefault() == ShipmentStatusEnum.Pending.ToString())
+                    .FirstOrDefault() == ShipmentStatusEnum.NewShipment.ToString())
                 .Select(s => s.Id)
                 .ToListAsync();
 

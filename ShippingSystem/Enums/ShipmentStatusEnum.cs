@@ -2,7 +2,7 @@
 {
     public enum ShipmentStatusEnum
     {
-        Pending,
+        NewShipment,
         InWarehouse,
         PickedUp,
         Returned,
@@ -11,8 +11,6 @@
         Canceled,
         InReviewForPickup,
         InReviewForReturn,
-        InReviewForDelivery,
-        InReviewForCancellation,
         InReviewForExchange,
         WaitingForPickup,
         WaitingForReturn,
@@ -21,7 +19,6 @@
         OutForDelivery,
         ReturningToWarehouse,
         ReturningToShipper,
-        OnHold,
         FailedDelivery,
         Lost,
         Damaged

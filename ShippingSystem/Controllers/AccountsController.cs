@@ -57,6 +57,10 @@ namespace ShippingSystem.Controllers
 
             CookieHelper.SetRefreshTokenInCookie(Response, result.Value?.RefreshToken!, result.Value!.RefreshTokenExpiration);
 
+            var userAddress = await _userRepository.GetUserAddressAsync(result.Value.Email);
+            result.Value.City = userAddress.Value?.City ?? string.Empty;
+            result.Value.Governorate = userAddress.Value?.Governorate ?? string.Empty;
+
             ApiResponse<AuthDTO> response = new(
                 success: true,
                 message: "Token refreshed successfully!",

@@ -70,7 +70,7 @@ namespace ShippingSystem.Repositories
                 }
                 else
                 {
-                    UpdateStatusResult = await UpdateShipmentStatus(userId, shipment.Id, ShipmentStatusEnum.Pending, "Shipment Created");
+                    UpdateStatusResult = await UpdateShipmentStatus(userId, shipment.Id, ShipmentStatusEnum.NewShipment, "Shipment Created");
                 }
 
                 if (!UpdateStatusResult.Success)
@@ -297,7 +297,7 @@ namespace ShippingSystem.Repositories
 
             if (shipment.ShipmentStatuses
                 .OrderByDescending(ss => ss.Timestamp)
-                .FirstOrDefault()?.Status != ShipmentStatusEnum.Pending.ToString())
+                .FirstOrDefault()?.Status != ShipmentStatusEnum.NewShipment.ToString())
             {
                 return ValueOperationResult<ShipmentDetailsDto?>
                     .Fail(StatusCodes.Status409Conflict,
@@ -337,7 +337,7 @@ namespace ShippingSystem.Repositories
                 .OrderByDescending(ss => ss.Timestamp)
                 .FirstOrDefault()?.Status;
 
-            if (latestStatus != ShipmentStatusEnum.Pending.ToString())
+            if (latestStatus != ShipmentStatusEnum.NewShipment.ToString())
                 return OperationResult.Fail(StatusCodes.Status409Conflict,
                     "Deletion is only allowed for pending shipments.");
 
@@ -360,7 +360,7 @@ namespace ShippingSystem.Repositories
 
             var validPickupStatuses = new List<string>
             {
-                ShipmentStatusEnum.Pending.ToString(),
+                ShipmentStatusEnum.NewShipment.ToString(),
                 ShipmentStatusEnum.Returned.ToString()
             };
 
@@ -412,11 +412,10 @@ namespace ShippingSystem.Repositories
 
             var result = new ShipmentStatusStatisticsDto
             {
-                PendingShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.Pending.ToString())?.Count ?? 0,
+                PendingShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.NewShipment.ToString())?.Count ?? 0,
                 WaitingForPickupShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.WaitingForPickup.ToString())?.Count ?? 0,
                 PickedUpShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.PickedUp.ToString())?.Count ?? 0,
                 InWarehouseShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.InWarehouse.ToString())?.Count ?? 0,
-                OnHoldShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.OnHold.ToString())?.Count ?? 0,
                 OutForDeliveryShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.OutForDelivery.ToString())?.Count ?? 0,
                 FailedDeliveryShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.FailedDelivery.ToString())?.Count ?? 0,
                 ReturningToWarehouseShipmentsCount = statistics.FirstOrDefault(s => s.Status == ShipmentStatusEnum.ReturningToWarehouse.ToString())?.Count ?? 0,
@@ -453,7 +452,6 @@ namespace ShippingSystem.Repositories
                     ShipmentStatusEnum.WaitingForReturn.ToString(),
                     ShipmentStatusEnum.InReviewForExchange.ToString(),
                     ShipmentStatusEnum.WaitingForExchange.ToString(),
-                    ShipmentStatusEnum.InReviewForDelivery.ToString(),
                     ShipmentStatusEnum.WaitingForDelivery.ToString(),
                     ShipmentStatusEnum.OutForDelivery.ToString()
                 };

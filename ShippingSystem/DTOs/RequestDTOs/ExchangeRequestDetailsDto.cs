@@ -18,7 +18,6 @@ namespace ShippingSystem.DTOs.RequestDTOs
         public string? CustomerEmail { get; set; } = null!;
         public string? ExchangeReason { get; set; }
 
-        public int ShipmentsCount { get; set; }
         public List<ShipmentListDto> FromCustomer { get; set; } = new List<ShipmentListDto>();
         public List<ShipmentListDto> ToCustomer { get; set; } = new List<ShipmentListDto>();
 

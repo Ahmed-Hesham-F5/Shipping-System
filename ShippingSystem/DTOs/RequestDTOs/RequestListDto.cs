@@ -6,7 +6,6 @@
         public string RequestType { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public int ShipmentsCount { get; set; }
         public string RequestStatus { get; set; } = null!;
     }
 }

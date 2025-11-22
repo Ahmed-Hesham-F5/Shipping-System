@@ -9,8 +9,6 @@ namespace ShippingSystem.DTOs.RequestDTOs
         public string Status { get; set; } = null!;
         public string CreatedBy { get; set; } = null!;
         public string Role { get; set; } = null!;
-
-        public int ShipmentsCount { get; set; }
         public List<ShipmentListDto> Shipments { get; set; } = new List<ShipmentListDto>();
     }
 }

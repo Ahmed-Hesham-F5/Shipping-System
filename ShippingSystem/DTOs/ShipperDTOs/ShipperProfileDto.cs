@@ -1,5 +1,4 @@
-﻿using ShippingSystem.DTOs.AddressDTOs;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ShippingSystem.DTOs.ShipperDTOs
 {
@@ -10,7 +9,7 @@ namespace ShippingSystem.DTOs.ShipperDTOs
         public string LastName { get; set; } = null!;
         public string Email { get; set; } = null!;
         public List<string> Phones { get; set; } = new List<string>();
-        public List<AddressDto> Addresses { get; set; } = new List<AddressDto>();
+        public List<ShipperAddressListDto> Addresses { get; set; } = new List<ShipperAddressListDto>();
 
         public string CompanyName { get; set; } = string.Empty;
         public string? CompanyLink { get; set; }

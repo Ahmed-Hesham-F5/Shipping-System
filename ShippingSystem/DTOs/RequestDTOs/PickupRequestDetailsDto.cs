@@ -11,7 +11,6 @@ namespace ShippingSystem.DTOs.RequestDTOs
         public string CreatedBy { get; set; } = null!;
         public string Role { get; set; } = null!;
         public AddressDto PickupAddress { get; set; } = null!;
-        public int ShipmentsCount { get; set; }
         public List<ShipmentListDto> Shipments { get; set; } = new List<ShipmentListDto>();
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
