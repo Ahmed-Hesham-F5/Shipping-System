@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.AuthenticationDTOs;
+using ShippingSystem.DTOs.PhoneNumberDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
@@ -123,6 +124,49 @@ namespace ShippingSystem.Controllers
             ApiResponse<string> response = new(
                 success: true,
                 message: "Address deleted successfully!"
+            );
+
+            return Ok(response);
+        }
+
+        [HttpPost("Add-Phone-Number")]
+        public async Task<IActionResult> AddPhoneNumber([FromBody] PhoneNumberDto phoneNumberDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized access."));
+
+            var result = await _shipperRepository.AddPhoneNumberAsync(userId, phoneNumberDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<string> response = new(
+                success: true,
+                message: "Phone number added successfully!"
+            );
+
+            return Ok(response);
+        }
+
+        [HttpDelete("Delete-Phone-Number")]
+        public async Task<IActionResult> DeletePhoneNumber([FromBody] PhoneNumberDto phoneNumberDto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized access."));
+
+            var result = await _shipperRepository.DeletePhoneNumberAsync(userId, phoneNumberDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<string> response = new(
+                success: true,
+                message: "Phone number deleted successfully!"
             );
 
             return Ok(response);

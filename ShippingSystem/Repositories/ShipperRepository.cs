@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
 using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.AuthenticationDTOs;
+using ShippingSystem.DTOs.PhoneNumberDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
@@ -12,12 +14,14 @@ namespace ShippingSystem.Repositories
 {
     public class ShipperRepository(AppDbContext context,
         IUserRepository userRepository,
-        IEmailService emailService
+        IEmailService emailService,
+        UserManager<ApplicationUser> userManager
         ) : IShipperRepository
     {
         private readonly AppDbContext _context = context;
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IEmailService _emailService = emailService;
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
 
         public async Task<OperationResult> CreateShipperAsync(CreateShipperDto createShipperDto)
         {
@@ -210,10 +214,10 @@ namespace ShippingSystem.Repositories
             var saveResult = await _context.SaveChangesAsync();
             if (saveResult <= 0)
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
-            
+
             return OperationResult.Ok();
         }
- 
+
         public async Task<OperationResult> DeleteShipperAddressAsync(string shipperId, int addressId)
         {
             var shipper = await _context.Shippers
@@ -234,7 +238,51 @@ namespace ShippingSystem.Repositories
             var saveResult = await _context.SaveChangesAsync();
             if (saveResult <= 0)
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> AddPhoneNumberAsync(string shipperId, PhoneNumberDto phoneNumberDto)
+        {
+            if (await _userManager.FindByIdAsync(shipperId) == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var phoneNumber = new UserPhone
+            {
+                PhoneNumber = phoneNumberDto.PhoneNumber,
+                UserId = shipperId
+            };
+
+            _context.UserPhones.Add(phoneNumber);
+
+            var saveResult = await _context.SaveChangesAsync();
             
+            if (saveResult <= 0)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> DeletePhoneNumberAsync(string shipperId, PhoneNumberDto phoneNumberDto)
+        {
+            if (await _userManager.FindByIdAsync(shipperId) == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var phoneNumber = await _context.UserPhones
+                .FirstOrDefaultAsync(p => p.UserId == shipperId && p.PhoneNumber == phoneNumberDto.PhoneNumber);
+
+            if (phoneNumber == null)
+                return OperationResult.Fail(StatusCodes.Status404NotFound, "Phone number not found.");
+
+            if ((await _context.UserPhones.CountAsync(p => p.UserId == shipperId)) <= 1)
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "At least one phone number must be maintained.");
+
+            _context.UserPhones.Remove(phoneNumber);
+
+            var saveResult = await _context.SaveChangesAsync();
+            if (saveResult <= 0)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+
             return OperationResult.Ok();
         }
     }
