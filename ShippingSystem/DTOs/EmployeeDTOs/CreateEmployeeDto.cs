@@ -4,10 +4,10 @@ namespace ShippingSystem.DTOs.EmployeeDTOs
 {
     public class CreateEmployeeDto
     {
-        [Required, MaxLength(50)]
+        [Required, MaxLength(50), MinLength(2)]
         public string FirstName { get; set; } = null!;
 
-        [Required, MaxLength(50)]
+        [Required, MaxLength(50), MinLength(2)]
         public string LastName { get; set; } = null!;
 
         [Required, EmailAddress, MaxLength(255)]

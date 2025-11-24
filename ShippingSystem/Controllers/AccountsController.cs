@@ -125,6 +125,8 @@ namespace ShippingSystem.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
+            resetPasswordDto.Email = System.Web.HttpUtility.UrlDecode(resetPasswordDto.Email);
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

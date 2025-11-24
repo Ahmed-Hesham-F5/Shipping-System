@@ -7,6 +7,8 @@ namespace ShippingSystem.Models
         public string PhoneNumber { get; set; } = null!;
         public string UserId { get; set; } = null!;
 
+        public bool IsConfirmed { get; set; } = false;
+
         [ForeignKey("UserId")]
         public ApplicationUser User{ get; set; } = null!;
     }

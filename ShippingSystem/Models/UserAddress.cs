@@ -11,9 +11,9 @@ namespace ShippingSystem.Models
         public string? Details { get; set; }
         public string? GoogleMapAddressLink { get; set; }
 
-        public string UserID { get; set; } = null!;
+        public string UserId { get; set; } = null!;
 
-        [ForeignKey("UserID")]
+        [ForeignKey("UserId")]
         public ApplicationUser User { get; set; } = null!;
     }
 }

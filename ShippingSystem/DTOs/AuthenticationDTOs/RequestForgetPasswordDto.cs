@@ -7,6 +7,6 @@ namespace ShippingSystem.DTOs.AuthenticationDTOs
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
         [Required, Url]
-        public string? ResetPasswordUrl { get; set; } = string.Empty;
+        public string ResetPasswordUrl { get; set; } = string.Empty;
     }
 }

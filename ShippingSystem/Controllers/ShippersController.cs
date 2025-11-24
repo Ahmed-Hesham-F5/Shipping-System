@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.AuthenticationDTOs;
+using ShippingSystem.DTOs.EmailDTOs;
 using ShippingSystem.DTOs.PhoneNumberDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Interfaces;
@@ -171,5 +172,112 @@ namespace ShippingSystem.Controllers
 
             return Ok(response);
         }
+
+        [HttpPost("change-email-request")]
+        public async Task<IActionResult> ChangeEmailRequest([FromBody] ChangeEmailRequestDto changeEmailRequestDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized access."));
+
+            var result = await _shipperRepository.ChangeEmailRequestAsync(userId, changeEmailRequestDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<string> response = new(
+                success: true,
+                message: "Check your email for the confirmation link."
+            );
+
+            return Ok(response);
+        }
+
+        [HttpPost("change-email")]
+        public async Task<IActionResult> ChangeEmail([FromQuery] ChangeEmailDto changeEmailDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _shipperRepository.ChangeEmailAsync(changeEmailDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<string> response = new(
+                success: true,
+                message: "Email changed successfully!"
+            );
+
+            return Ok(response);
+        }
+
+        [HttpPut("update-company-information")]
+        public async Task<IActionResult> UpdateCompanyInformation([FromBody] UpdateCompanyInfoDto updateCompanyInfoDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized access."));
+
+            var result = await _shipperRepository.UpdateCompanyInformationAsync(userId, updateCompanyInfoDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<string> response = new(
+                success: true,
+                message: "Company information updated successfully!"
+            );
+
+            return Ok(response);
+        }
+
+        [HttpPut("update-shipper-name")]
+        public async Task<IActionResult> UpdateShipperName([FromBody] UpdateShipperNameDto updateShipperNameDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized access."));
+
+            var result = await _shipperRepository.UpdateShipperNameAsync(userId, updateShipperNameDto);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            ApiResponse<string> response = new(
+                success: true,
+                message: "Shipper name updated successfully!"
+            );
+
+            return Ok(response);
+        }
+
+        [HttpGet("shipper-addresses")]
+        public async Task<IActionResult> GetShipperAddresses()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized access."));
+            var result = await _shipperRepository.GetShipperAddressesAsync(userId);
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+            ApiResponse<IEnumerable<AddressDto>> response = new(
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+            return Ok(response);
+        }
     }
 }
+

@@ -42,7 +42,7 @@ namespace ShippingSystem.Data.Config
 
             builder.HasMany(appUser => appUser.Addresses)
                 .WithOne(address => address.User)
-                .HasForeignKey(address => address.UserID)
+                .HasForeignKey(address => address.UserId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 

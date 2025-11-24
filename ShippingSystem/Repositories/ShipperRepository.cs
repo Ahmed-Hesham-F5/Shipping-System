@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
 using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.AuthenticationDTOs;
+using ShippingSystem.DTOs.EmailDTOs;
 using ShippingSystem.DTOs.PhoneNumberDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Enums;
@@ -15,13 +18,14 @@ namespace ShippingSystem.Repositories
     public class ShipperRepository(AppDbContext context,
         IUserRepository userRepository,
         IEmailService emailService,
-        UserManager<ApplicationUser> userManager
-        ) : IShipperRepository
+        UserManager<ApplicationUser> userManager,
+        IMapper mapper) : IShipperRepository
     {
         private readonly AppDbContext _context = context;
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IEmailService _emailService = emailService;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<OperationResult> CreateShipperAsync(CreateShipperDto createShipperDto)
         {
@@ -52,7 +56,7 @@ namespace ShippingSystem.Repositories
                     Details = createShipperDto.Address.Details,
                     GoogleMapAddressLink = createShipperDto.Address.GoogleMapAddressLink,
                     User = user,
-                    UserID = user.Id
+                    UserId = user.Id
                 });
 
                 var CreateUserResult = await _userRepository.CreateUserAsync(user, createShipperDto.Password);
@@ -129,15 +133,7 @@ namespace ShippingSystem.Repositories
                 LastName = shipper.User.LastName,
                 Email = shipper.User.Email!,
                 Phones = [.. shipper.User.Phones!.Select(p => p.PhoneNumber)],
-                Addresses = [.. shipper.User.Addresses!.Select(a => new ShipperAddressListDto
-                {
-                    Id = a.Id,
-                    City = a.City,
-                    Street = a.Street,
-                    Governorate = a.Governorate,
-                    Details = a.Details,
-                    GoogleMapAddressLink = a.GoogleMapAddressLink
-                })],
+                Addresses = [.. shipper.User.Addresses!.Select(a => _mapper.Map<ShipperAddressListDto>(a))],
                 CompanyName = shipper.CompanyName,
                 CompanyLink = shipper.CompanyLink,
                 TypeOfProduction = shipper.TypeOfProduction
@@ -155,14 +151,7 @@ namespace ShippingSystem.Repositories
             if (shipper == null)
                 return OperationResult.Fail(StatusCodes.Status404NotFound, "Shipper not found.");
 
-            var address = new UserAddress
-            {
-                City = addressDto.City,
-                Street = addressDto.Street,
-                Governorate = addressDto.Governorate,
-                Details = addressDto.Details,
-                GoogleMapAddressLink = addressDto.GoogleMapAddressLink
-            };
+            var address = _mapper.Map<UserAddress>(addressDto);
 
             shipper.User.Addresses!.Add(address);
             var saveResult = await _context.SaveChangesAsync();
@@ -256,7 +245,7 @@ namespace ShippingSystem.Repositories
             _context.UserPhones.Add(phoneNumber);
 
             var saveResult = await _context.SaveChangesAsync();
-            
+
             if (saveResult <= 0)
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
 
@@ -284,6 +273,139 @@ namespace ShippingSystem.Repositories
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
 
             return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> ChangeEmailRequestAsync(string shipperId, ChangeEmailRequestDto changeEmailRequestDto)
+        {
+            var user = await _userManager.FindByIdAsync(shipperId);
+            if (user == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var token = await _userManager.GenerateChangeEmailTokenAsync(user, changeEmailRequestDto.NewEmail);
+
+            var encodedToken = System.Web.HttpUtility.UrlEncode(token);
+
+            var sendChangeEmailLink = await _emailService.SendAsync(
+                changeEmailRequestDto.NewEmail,
+                "Change Email Confirmation",
+                _emailService.ChangeEmailConfirmationBody(
+                    changeEmailRequestDto.ConfirmNewEmailUrl,
+                    changeEmailRequestDto.NewEmail,
+                    user.Email!,
+                    encodedToken
+                )
+               );
+
+            if (!sendChangeEmailLink.Success)
+                return OperationResult.Fail(sendChangeEmailLink.StatusCode, sendChangeEmailLink.ErrorMessage);
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> ChangeEmailAsync(ChangeEmailDto changeEmailDto)
+        {
+            var user = await _userManager.FindByEmailAsync(changeEmailDto.OldEmail);
+            if (user == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var decodedToken = System.Web.HttpUtility.UrlDecode(changeEmailDto.Token);
+
+            var changeEmailResult = await _userManager.ChangeEmailAsync(user, changeEmailDto.NewEmail, decodedToken);
+
+            if (!changeEmailResult.Succeeded)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+
+
+            user.UserName = changeEmailDto.NewEmail;
+            var updateUserResult = await _userManager.UpdateAsync(user);
+
+            if (!updateUserResult.Succeeded)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> UpdateCompanyInformationAsync(string shipperId, UpdateCompanyInfoDto updateCompanyInfoDto)
+        {
+            var shipper = await _context.Shippers.FirstOrDefaultAsync(s => s.ShipperId == shipperId);
+            if (shipper == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            bool noChanges = true;
+
+            foreach (var prop in typeof(UpdateCompanyInfoDto).GetProperties())
+            {
+                var dtoValue = prop.GetValue(updateCompanyInfoDto);
+                var entityValue = typeof(Shipper)
+                                    .GetProperty(prop.Name)?
+                                    .GetValue(shipper);
+
+                if (!Equals(dtoValue, entityValue))
+                {
+                    noChanges = false;
+                    break;
+                }
+            }
+
+            if (noChanges)
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "No changes detected.");
+
+            shipper.CompanyName = updateCompanyInfoDto.CompanyName;
+            shipper.CompanyLink = updateCompanyInfoDto.CompanyLink;
+            shipper.TypeOfProduction = updateCompanyInfoDto.TypeOfProduction;
+            
+            var saveResult = await _context.SaveChangesAsync();
+            if (saveResult <= 0)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+            
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> UpdateShipperNameAsync(string shipperId, UpdateShipperNameDto updateShipperNameDto)
+        {
+            var shipper = await _userManager.FindByIdAsync(shipperId);
+            if (shipper == null)
+                return OperationResult.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            bool noChanges = true;
+
+            foreach (var prop in typeof(UpdateShipperNameDto).GetProperties())
+            {
+                var dtoValue = prop.GetValue(updateShipperNameDto);
+                var entityValue = typeof(ApplicationUser)
+                                    .GetProperty(prop.Name)?
+                                    .GetValue(shipper);
+                if (!Equals(dtoValue, entityValue))
+                {
+                    noChanges = false;
+                    break;
+                }
+            }
+
+            if (noChanges)
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "No changes detected.");
+
+            shipper.FirstName = updateShipperNameDto.FirstName;
+            shipper.LastName = updateShipperNameDto.LastName;
+
+            var updateResult = await _userManager.UpdateAsync(shipper);
+            if (!updateResult.Succeeded)
+                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<ValueOperationResult<List<AddressDto>>> GetShipperAddressesAsync(string shipperId)
+        {
+            if (await _userManager.FindByIdAsync(shipperId) == null)
+                return ValueOperationResult<List<AddressDto>>.Fail(StatusCodes.Status401Unauthorized, "Unauthorized access");
+
+            var shipperAddresses = await _context.UserAddresses
+                .Where(a => a.UserId == shipperId)
+                .ProjectTo<AddressDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return ValueOperationResult<List<AddressDto>>.Ok(shipperAddresses);
         }
     }
 }

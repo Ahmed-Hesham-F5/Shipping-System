@@ -256,7 +256,7 @@ namespace ShippingSystem.Repositories
 
             // Send email with reset link
             var emailResult = await _emailService.SendAsync(requestForgetPasswordDto.Email, "Reset Password",
-                _emailService.RequestResetPasswordBody(requestForgetPasswordDto.ResetPasswordUrl, requestForgetPasswordDto.Email, token));
+                _emailService.RequestResetPasswordBody(requestForgetPasswordDto.ResetPasswordUrl, requestForgetPasswordDto.Email, encodedToken));
 
             if (!emailResult.Success)
                 return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred, please try again later.");

@@ -4,6 +4,7 @@ using ShippingSystem.DTOs.EmployeeDTOs;
 using ShippingSystem.DTOs.HubDTOs;
 using ShippingSystem.DTOs.RequestDTOs;
 using ShippingSystem.DTOs.ShipmentDTOs;
+using ShippingSystem.DTOs.ShipperDTOs;
 using ShippingSystem.Models;
 
 namespace ShippingSystem.MappingProfiles
@@ -37,6 +38,8 @@ namespace ShippingSystem.MappingProfiles
             CreateMap<UserAddress, AddressDto>().ReverseMap();
 
             CreateMap<Address, AddressDto>().ReverseMap();
+
+            CreateMap<UserAddress, ShipperAddressListDto>();
 
             CreateMap<UpdateShipmentDto, Shipment>()
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));

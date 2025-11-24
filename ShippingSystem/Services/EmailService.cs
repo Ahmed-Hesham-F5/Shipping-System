@@ -46,9 +46,9 @@ namespace ShippingSystem.Services
             return OperationResult.Ok();
         }
 
-        public Func<string> EmailConfirmationBody(string confirmEmailUrl, string userEmail, string token)
+        public Func<string> EmailConfirmationBody(string confirmEmailUrl, string email, string endcodedToken)
         {
-            var confirmationLink = $"{confirmEmailUrl}?email={userEmail}&token={token}";
+            var confirmationLink = $"{confirmEmailUrl}?email={email}&token={endcodedToken}";
 
             string htmlBody = $@"
                 <p>Dear Shipper,</p>
@@ -59,11 +59,6 @@ namespace ShippingSystem.Services
 
                 <p><a href='{confirmationLink}'>Confirm My Email</a></p>
 
-                <p>If the link does not work, you can copy and paste the following URL into your browser:</p>
-
-                <p>{confirmationLink}</p>
-
-
                 <p>This link is valid for the next 6 hours. Please make sure to confirm your email before it expires.</p>
 
                 <p>Thank you,<br/>
@@ -73,17 +68,41 @@ namespace ShippingSystem.Services
             return () => htmlBody;
         }
 
-        public Func<string> RequestResetPasswordBody(string resetPasswordUrl, string userEmail, string token)
+        public Func<string> ChangeEmailConfirmationBody(string confirmNewEmailUrl, string newEmail, string oldEmail, string encodedToken)
         {
-            var resetPasswordLink = $"{resetPasswordUrl}/reset-password?email={userEmail}&token={token}";
+            var confirmNewEmailLink = $"{confirmNewEmailUrl}?newEmail={newEmail}&oldEmail={oldEmail}&token={encodedToken}";
+
+            string htmlBody = $@"
+                <p>Dear Shipper,</p>
+
+                <p>You requested to update your email address on <strong>StakeExpress</strong>.</p>
+
+                <p>To confirm your new email, please click the link below:</p>
+
+                <p><a href='{confirmNewEmailLink}'>Confirm New Email</a></p>
+
+                <p>This link is valid for the next 6 hours. Please confirm your new email to complete the update.</p>
+
+                <p>If you did not request this change, please ignore this email. Your account email will not be updated unless you confirm.</p>
+
+                <p>Thank you,<br/>
+                The StakeExpress Team</p>
+            ";
+
+            return () => htmlBody;
+        }
+
+        public Func<string> RequestResetPasswordBody(string resetPasswordUrl, string email, string encodedToken)
+        {
+            var resetPasswordLink = $"{resetPasswordUrl}/reset-password?email={email}&token={encodedToken}";
 
             var htmlBody = $@"
                 <p>Dear User,</p>
                 <p>We received a request to reset your password. Please click the link below to set a new password:</p>
                 <p><a href='{resetPasswordLink}'>Reset My Password</a></p>
-                <p>If the link does not work, you can copy and paste the following URL into your browser:</p>
-                <p>{resetPasswordLink}</p>
+
                 <p>This link is valid for the next 6 hours. Please make sure to reset your password before it expires.</p>
+                
                 <p>Thank you,<br/>
                 The StakeExpress Team</p>
                 ";
