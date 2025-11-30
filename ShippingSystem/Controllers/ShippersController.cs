@@ -196,6 +196,7 @@ namespace ShippingSystem.Controllers
             return Ok(response);
         }
 
+        [AllowAnonymous]
         [HttpPost("change-email")]
         public async Task<IActionResult> ChangeEmail([FromQuery] ChangeEmailDto changeEmailDto)
         {

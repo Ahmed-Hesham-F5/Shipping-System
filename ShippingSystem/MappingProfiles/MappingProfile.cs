@@ -113,7 +113,20 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.RequestType, opt => opt.MapFrom(src => src.ReturnRequest.RequestType));
 
             CreateMap<CreateHubDto, Hub>()
-                .ForMember(dest => dest.Type, opt => opt.Ignore());
+                .ForMember(dest => dest.Type, opt => opt.Ignore())
+                .ForMember(dest => dest.PickupCoveredGovernorates, opt => opt.MapFrom(src =>
+                src.PickupCoveredGovernorates.Select(g => new PickupCoveredGovernorate
+                {
+                    GovernorateId = g.GovernorateId,
+                    PickupCost = g.Cost
+                })))
+                .ForMember(dest => dest.DeliveryCoveredGovernorates, opt => opt.MapFrom(src =>
+                src.DeliveryCoveredGovernorates.Select(g => new DeliveryCoveredGovernorate
+                {
+                    GovernorateId = g.GovernorateId,
+                    DeliveryCost = g.Cost
+                })));
+
 
             CreateMap<Hub, HubListDto>()
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()))
@@ -139,6 +152,8 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.ToCustomer, opt => opt.MapFrom(src => src.ExchangeRequestShipments
                 .Where(s => s.ExchangeDirection == Enums.ExchangeDirectionEnum.ToCustomer).Select(c => c.Shipment)))
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.User.UserName));
+
+            CreateMap<Governorate, GovernorateListDto>();
         }
     }
 }

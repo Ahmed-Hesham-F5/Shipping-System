@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
 using ShippingSystem.Data;
+using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.HubDTOs;
 using ShippingSystem.Enums;
 using ShippingSystem.Interfaces;
@@ -76,6 +78,16 @@ namespace ShippingSystem.Repositories
                     "An unexpected error occurred. Please try again later.");
 
             return OperationResult.Ok();
+        }
+
+        public async Task<ValueOperationResult<List<GovernorateListDto>>> GetGovernoratesAsync()
+        {
+            var governorates = await _context.Governorates
+                .ProjectTo<GovernorateListDto>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return ValueOperationResult<List<GovernorateListDto>>.Ok(governorates);
         }
     }
 }

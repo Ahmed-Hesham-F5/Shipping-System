@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ShippingSystem.DTOs.AddressDTOs;
 using ShippingSystem.DTOs.HubDTOs;
 using ShippingSystem.Interfaces;
 using ShippingSystem.Responses;
@@ -69,6 +70,25 @@ namespace ShippingSystem.Controllers
                     new ApiResponse<string>(false, result.ErrorMessage));
 
             return Ok(new ApiResponse<string>(true, "Employee added to hub successfully."));
+        }
+
+
+        [HttpGet("governorates")]
+        public async Task<IActionResult> GetGovernorates()
+        {
+            var result = await _hubRepository.GetGovernoratesAsync();
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            var response = new ApiResponse<List<GovernorateListDto>>(
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
         }
     }
 }

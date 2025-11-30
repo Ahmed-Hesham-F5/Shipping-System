@@ -1,4 +1,5 @@
-﻿using ShippingSystem.DTOs.HubDTOs;
+﻿using ShippingSystem.DTOs.AddressDTOs;
+using ShippingSystem.DTOs.HubDTOs;
 using ShippingSystem.Results;
 
 namespace ShippingSystem.Interfaces
@@ -9,5 +10,6 @@ namespace ShippingSystem.Interfaces
         Task<ValueOperationResult<List<HubListDto>>> GetAllHubsAsync();
         Task<ValueOperationResult<List<HubSelectDto>>> GetSelectableHubs();
         Task<OperationResult> AddEmployeeToHubAsync(int hubId, AssignEmployeeDto assignEmployeeDto);
+        Task<ValueOperationResult<List<GovernorateListDto>>> GetGovernoratesAsync();
     }
 }

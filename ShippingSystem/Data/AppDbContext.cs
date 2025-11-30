@@ -24,6 +24,10 @@ namespace ShippingSystem.Data
         public DbSet<Employee> Employees { get; set; }
         public DbSet<ExchangeRequest> ExchangeRequests { get; set; }
         public DbSet<ExchangeRequestShipment> ExchangeRequestShipments { get; set; }
+        public DbSet<Governorate> Governorates { get; set; }
+        public DbSet<PickupCoveredGovernorate> PickupCoveredGovernorates { get; set; }
+        public DbSet<DeliveryCoveredGovernorate> DeliveryCoveredGovernorates { get; set; }
+
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

@@ -19,5 +19,7 @@ namespace ShippingSystem.Models
 
         public ICollection<Employee>? Employees { get; set; } = new List<Employee>();
         public ICollection<Shipment>? Shipments { get; set; } = new List<Shipment>();
+        public ICollection<PickupCoveredGovernorate> PickupCoveredGovernorates { get; set; } = new List<PickupCoveredGovernorate>();
+        public ICollection<DeliveryCoveredGovernorate> DeliveryCoveredGovernorates { get; set; } = new List<DeliveryCoveredGovernorate>();
     }
 }

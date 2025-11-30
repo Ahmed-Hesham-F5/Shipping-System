@@ -313,7 +313,7 @@ namespace ShippingSystem.Repositories
             var changeEmailResult = await _userManager.ChangeEmailAsync(user, changeEmailDto.NewEmail, decodedToken);
 
             if (!changeEmailResult.Succeeded)
-                return OperationResult.Fail(StatusCodes.Status500InternalServerError, "An unexpected error occurred. Please try again later.");
+                return OperationResult.Fail(StatusCodes.Status400BadRequest, "Invalid token, try again later, or try another email address.");
 
 
             user.UserName = changeEmailDto.NewEmail;

@@ -17,5 +17,10 @@ namespace ShippingSystem.DTOs.HubDTOs
         public string PhoneNumber { get; set; } = null!;
         [Required, Range(1, int.MaxValue, ErrorMessage = "Area must be greater than 0.")]
         public decimal AreaInSquareMeters { get; set; }
+
+        [MinLength(1)]
+        public List<GovernoratePricingDto> PickupCoveredGovernorates { get; set; } = new List<GovernoratePricingDto>();
+        [MinLength(1)]
+        public List<GovernoratePricingDto> DeliveryCoveredGovernorates { get; set; } = new List<GovernoratePricingDto>();
     }
 }
