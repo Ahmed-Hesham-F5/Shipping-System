@@ -2,24 +2,31 @@
 {
     public enum ShipmentStatusEnum
     {
+        // جديد
         NewShipment,
-        InWarehouse,
-        PickedUp,
-        Returned,
-        Exchanged,
-        Delivered,
-        Canceled,
         InReviewForPickup,
+        WaitingForPickup,
+        // الأوردرات قيد التنفيذ
+        PickedUp,
+        InWarehouse,
         InReviewForReturn,
         InReviewForExchange,
-        WaitingForPickup,
         WaitingForReturn,
         WaitingForExchange,
         WaitingForDelivery,
         OutForDelivery,
-        ReturningToWarehouse,
         ReturningToShipper,
+        // المتوقف حاليا
+        WaitingForShipperAction,
+        RejectedReturns,
+        // تم بنجاح
+        Exchanged,
+        Delivered,
+        // غير ناجح
+        Returned,
+        Canceled,
         FailedDelivery,
+        ReturningToWarehouse,
         Lost,
         Damaged
     }

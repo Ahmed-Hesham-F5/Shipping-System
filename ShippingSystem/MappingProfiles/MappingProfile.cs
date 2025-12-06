@@ -5,6 +5,7 @@ using ShippingSystem.DTOs.HubDTOs;
 using ShippingSystem.DTOs.RequestDTOs;
 using ShippingSystem.DTOs.ShipmentDTOs;
 using ShippingSystem.DTOs.ShipperDTOs;
+using ShippingSystem.Enums;
 using ShippingSystem.Models;
 
 namespace ShippingSystem.MappingProfiles
@@ -112,6 +113,16 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.RequestId, opt => opt.MapFrom(src => src.ReturnRequest.Id))
                 .ForMember(dest => dest.RequestType, opt => opt.MapFrom(src => src.ReturnRequest.RequestType));
 
+            CreateMap<CreateExchangeRequestDto, ExchangeRequest>()
+                .ForMember(dest => dest.ExchangeRequestShipments, opt => opt.Ignore());
+
+            CreateMap<ExchangeRequest, ExchangeRequestDetailsDto>()
+                .ForMember(dest => dest.FromCustomer, opt => opt.MapFrom(src => src.ExchangeRequestShipments
+                .Where(s => s.ExchangeDirection == ExchangeDirectionEnum.FromCustomer).Select(c => c.Shipment)))
+                .ForMember(dest => dest.ToCustomer, opt => opt.MapFrom(src => src.ExchangeRequestShipments
+                .Where(s => s.ExchangeDirection == ExchangeDirectionEnum.ToCustomer).Select(c => c.Shipment)))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.User.UserName));
+
             CreateMap<CreateHubDto, Hub>()
                 .ForMember(dest => dest.Type, opt => opt.Ignore())
                 .ForMember(dest => dest.PickupCoveredGovernorates, opt => opt.MapFrom(src =>
@@ -136,6 +147,15 @@ namespace ShippingSystem.MappingProfiles
             CreateMap<Hub, HubSelectDto>()
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
 
+            CreateMap<Hub, HubProfileDto>()
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()))
+                .ForMember(dest => dest.HubStatus, opt => opt.MapFrom(src => src.HubStatus.ToString()))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.Employees, opt => opt.MapFrom(src => src.Employees))
+                .ForMember(dest => dest.PickupCoveredGovernorates, opt => opt.MapFrom(src => src.PickupCoveredGovernorates))
+                .ForMember(dest => dest.DeliveryCoveredGovernorates, opt => opt.MapFrom(src => src.DeliveryCoveredGovernorates));
+
             CreateMap<Employee, EmployeeListDto>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.User.FirstName + " " + src.User.LastName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
@@ -143,17 +163,27 @@ namespace ShippingSystem.MappingProfiles
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role.ToString()))
                 .ForMember(dest => dest.HubName, opt => opt.MapFrom(src => src.Hub!.Name));
 
-            CreateMap<CreateExchangeRequestDto, ExchangeRequest>()
-                .ForMember(dest => dest.ExchangeRequestShipments, opt => opt.Ignore());
-
-            CreateMap<ExchangeRequest, ExchangeRequestDetailsDto>()
-                .ForMember(dest => dest.FromCustomer, opt => opt.MapFrom(src => src.ExchangeRequestShipments
-                .Where(s => s.ExchangeDirection == Enums.ExchangeDirectionEnum.FromCustomer).Select(c => c.Shipment)))
-                .ForMember(dest => dest.ToCustomer, opt => opt.MapFrom(src => src.ExchangeRequestShipments
-                .Where(s => s.ExchangeDirection == Enums.ExchangeDirectionEnum.ToCustomer).Select(c => c.Shipment)))
-                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.User.UserName));
+            CreateMap<Employee, EmployeeDetailsDto>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.User.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.User.LastName))
+                .ForMember(dest => dest.AccountStatus, opt => opt.MapFrom(src => src.User.AccountStatus.ToString()))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.User.Role.ToString()))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.User.Phones!.FirstOrDefault()!.PhoneNumber))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.User.Addresses!.FirstOrDefault()))
+                .ForMember(dest => dest.HubName, opt => opt.MapFrom(src => src.Hub != null ? src.Hub.Name : null));
 
             CreateMap<Governorate, GovernorateListDto>();
+
+            CreateMap<PickupCoveredGovernorate, CoveredGovernorateDetailsDto>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Governorate.Name))
+                .ForMember(dest => dest.CoveringType, opt => opt.MapFrom(src => CoverageTypeEnum.Pickup.ToString()))
+                .ForMember(dest => dest.Cost, opt => opt.MapFrom(src => src.PickupCost));
+
+            CreateMap<DeliveryCoveredGovernorate, CoveredGovernorateDetailsDto>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Governorate.Name))
+                .ForMember(dest => dest.CoveringType, opt => opt.MapFrom(src => CoverageTypeEnum.Delivery.ToString()))
+                .ForMember(dest => dest.Cost, opt => opt.MapFrom(src => src.DeliveryCost));
         }
     }
 }

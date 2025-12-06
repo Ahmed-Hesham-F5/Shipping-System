@@ -503,7 +503,7 @@ namespace ShippingSystem.Migrations
                     b.HasIndex("Token")
                         .IsUnique();
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("ShippingSystem.Models.RequestBase", b =>
@@ -895,7 +895,7 @@ namespace ShippingSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.ToTable("ReturnRequests");
+                    b.ToTable("ReturnRequests", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1031,7 +1031,7 @@ namespace ShippingSystem.Migrations
                         .HasForeignKey("ManagerId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "Address", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Hub.Address#ShippingSystem.Models.Address", "Address", b1 =>
                         {
                             b1.Property<int>("HubId")
                                 .HasColumnType("int");
@@ -1061,7 +1061,7 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("HubId");
 
-                            b1.ToTable("Hubs");
+                            b1.ToTable("Hubs", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("HubId");
@@ -1165,7 +1165,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "CustomerAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.Shipment.CustomerAddress#ShippingSystem.Models.Address", "CustomerAddress", b1 =>
                         {
                             b1.Property<int>("ShipmentId")
                                 .HasColumnType("int");
@@ -1195,7 +1195,7 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("ShipmentId");
 
-                            b1.ToTable("Shipments");
+                            b1.ToTable("Shipments", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ShipmentId");
@@ -1289,7 +1289,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "CustomerAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.ExchangeRequest.CustomerAddress#ShippingSystem.Models.Address", "CustomerAddress", b1 =>
                         {
                             b1.Property<int>("ExchangeRequestId")
                                 .HasColumnType("int");
@@ -1319,13 +1319,13 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("ExchangeRequestId");
 
-                            b1.ToTable("ExchangeRequests");
+                            b1.ToTable("ExchangeRequests", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ExchangeRequestId");
                         });
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "PickupAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.ExchangeRequest.PickupAddress#ShippingSystem.Models.Address", "PickupAddress", b1 =>
                         {
                             b1.Property<int>("ExchangeRequestId")
                                 .HasColumnType("int");
@@ -1355,7 +1355,7 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("ExchangeRequestId");
 
-                            b1.ToTable("ExchangeRequests");
+                            b1.ToTable("ExchangeRequests", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ExchangeRequestId");
@@ -1376,7 +1376,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "PickupAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.PickupRequest.PickupAddress#ShippingSystem.Models.Address", "PickupAddress", b1 =>
                         {
                             b1.Property<int>("PickupRequestId")
                                 .HasColumnType("int");
@@ -1406,7 +1406,7 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("PickupRequestId");
 
-                            b1.ToTable("PickupRequests");
+                            b1.ToTable("PickupRequests", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("PickupRequestId");
@@ -1424,7 +1424,7 @@ namespace ShippingSystem.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "CustomerAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.ReturnRequest.CustomerAddress#ShippingSystem.Models.Address", "CustomerAddress", b1 =>
                         {
                             b1.Property<int>("ReturnRequestId")
                                 .HasColumnType("int");
@@ -1449,13 +1449,13 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("ReturnRequestId");
 
-                            b1.ToTable("ReturnRequests");
+                            b1.ToTable("ReturnRequests", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ReturnRequestId");
                         });
 
-                    b.OwnsOne("ShippingSystem.Models.Address", "ShipperAddress", b1 =>
+                    b.OwnsOne("ShippingSystem.Models.ReturnRequest.ShipperAddress#ShippingSystem.Models.Address", "ShipperAddress", b1 =>
                         {
                             b1.Property<int>("ReturnRequestId")
                                 .HasColumnType("int");
@@ -1480,7 +1480,7 @@ namespace ShippingSystem.Migrations
 
                             b1.HasKey("ReturnRequestId");
 
-                            b1.ToTable("ReturnRequests");
+                            b1.ToTable("ReturnRequests", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("ReturnRequestId");

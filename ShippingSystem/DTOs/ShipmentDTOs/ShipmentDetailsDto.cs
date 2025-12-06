@@ -12,10 +12,6 @@ namespace ShippingSystem.DTOs.ShipmentDTOs
         public AddressDto CustomerAddress { get; set; } = null!;
         public string ShipmentDescription { get; set; } = null!;
         public decimal ShipmentWeight { get; set; }
-        public decimal ShipmentLength { get; set; }
-        public decimal ShipmentWidth { get; set; }
-        public decimal ShipmentHeight { get; set; }
-        public decimal ShipmentVolume { get; set; }
         public int Quantity { get; set; }
         public string? ShipmentNotes { get; set; }
         public bool CashOnDeliveryEnabled { get; set; }

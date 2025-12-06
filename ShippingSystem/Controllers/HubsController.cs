@@ -72,7 +72,6 @@ namespace ShippingSystem.Controllers
             return Ok(new ApiResponse<string>(true, "Employee added to hub successfully."));
         }
 
-
         [HttpGet("governorates")]
         public async Task<IActionResult> GetGovernorates()
         {
@@ -83,6 +82,24 @@ namespace ShippingSystem.Controllers
                     new ApiResponse<string>(false, result.ErrorMessage));
 
             var response = new ApiResponse<List<GovernorateListDto>>(
+                success: true,
+                message: null!,
+                data: result.Value!
+            );
+
+            return Ok(response);
+        }
+
+        [HttpGet("hub-profiles/{hubId}")]
+        public async Task<IActionResult> GetHubProfile(int hubId)
+        {
+            var result = await _hubRepository.GetHubProfileAsync(hubId);
+
+            if (!result.Success)
+                return StatusCode(result.StatusCode,
+                    new ApiResponse<string>(false, result.ErrorMessage));
+
+            var response = new ApiResponse<HubProfileDto>(
                 success: true,
                 message: null!,
                 data: result.Value!

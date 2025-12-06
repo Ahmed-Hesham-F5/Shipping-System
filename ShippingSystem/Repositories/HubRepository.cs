@@ -20,14 +20,15 @@ namespace ShippingSystem.Repositories
 
         public async Task<OperationResult> CreateHubAsync(CreateHubDto createHubDto)
         {
-            var hub = _mapper.Map<Hub>(createHubDto);
-
+            Hub hub = new Hub();
             if (Enum.TryParse<HubTypesEnum>(createHubDto.Type, true, out var hubType))
                 hub.Type = hubType;
             else
                 return OperationResult.Fail(StatusCodes.Status400BadRequest, "Invalid hub type");
+         
+            hub = _mapper.Map(createHubDto, hub);
 
-            hub.CreatedAt = UtcNowTrimmedToSeconds();
+            hub.CreatedAt = hub.UpdatedAt= UtcNowTrimmedToSeconds();
 
             await _context.Hubs.AddAsync(hub);
             var result = await _context.SaveChangesAsync();
@@ -88,6 +89,21 @@ namespace ShippingSystem.Repositories
                 .ToListAsync();
 
             return ValueOperationResult<List<GovernorateListDto>>.Ok(governorates);
+        }
+
+        public async Task<ValueOperationResult<HubProfileDto>> GetHubProfileAsync(int hubId)
+        {
+            var hub = await _context.Hubs
+                .Where(h => h.Id == hubId)
+                .ProjectTo<HubProfileDto>(_mapper.ConfigurationProvider)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(); 
+
+            if (hub == null)
+                return ValueOperationResult<HubProfileDto>.Fail(StatusCodes.Status404NotFound, "Hub not found");
+
+            var hubProfileDto = _mapper.Map<HubProfileDto>(hub);
+            return ValueOperationResult<HubProfileDto>.Ok(hubProfileDto);
         }
     }
 }

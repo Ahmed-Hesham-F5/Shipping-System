@@ -23,7 +23,7 @@ namespace ShippingSystem.DTOs.ShipmentDTOs
         [Required, MaxLength(500)]
         public string ShipmentDescription { get; set; } = null!;
 
-        [Range(0.0, double.MaxValue, ErrorMessage = "Shipment weight must be greater than 0.")]
+        [Range(0.0, double.MaxValue, ErrorMessage = "Shipment weight must non negative value.")]
         public decimal ShipmentWeight { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0.")]

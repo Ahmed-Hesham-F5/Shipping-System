@@ -11,5 +11,6 @@ namespace ShippingSystem.Interfaces
         Task<ValueOperationResult<List<HubSelectDto>>> GetSelectableHubs();
         Task<OperationResult> AddEmployeeToHubAsync(int hubId, AssignEmployeeDto assignEmployeeDto);
         Task<ValueOperationResult<List<GovernorateListDto>>> GetGovernoratesAsync();
+        Task<ValueOperationResult<HubProfileDto>> GetHubProfileAsync(int hubId);
     }
 }
